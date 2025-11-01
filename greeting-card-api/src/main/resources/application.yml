@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: greeting-card-api
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:greeting_cards_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:your_password}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your_email@gmail.com}
+    password: ${MAIL_PASSWORD:your_app_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:your-secret-key-change-this-in-production-min-256-bits-please-use-a-long-random-string}
+  access-token-validity: 900000  # 15 minutes in milliseconds
+  refresh-token-validity: 604800000  # 7 days in milliseconds
+  cookie-domain: ${JWT_COOKIE_DOMAIN:}
+  cookie-secure: ${JWT_COOKIE_SECURE:true}
+  cookie-same-site: Strict
+  redis:
+    refresh-token-prefix: "refresh_token:"
+    access-token-blacklist-prefix: "blacklist:access_token:"
+    refresh-token-blacklist-prefix: "blacklist:refresh_token:"
+
+# Application Configuration
+app:
+  web-url: ${APP_WEB_URL:http://localhost:3000}
+  mail:
+    from-name: Greeting Card API
+
+# Cloudinary Configuration
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:your_cloud_name}
+  api-key: ${CLOUDINARY_API_KEY:your_api_key}
+  api-secret: ${CLOUDINARY_API_SECRET:your_api_secret}
+  secure: ${CLOUDINARY_SECURE:true}
+  folder-base: ${CLOUDINARY_FOLDER_BASE:greeting-card}

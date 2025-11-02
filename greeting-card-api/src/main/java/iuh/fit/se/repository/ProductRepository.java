@@ -1,0 +1,110 @@
+package iuh.fit.se.repository;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import iuh.fit.se.entity.Product;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+  Optional<Product> findBySlug(String slug);
+
+  @Query(
+      "SELECT p FROM Product p LEFT JOIN FETCH p.images WHERE p.id = :id AND p.deletedAt IS NULL")
+  Optional<Product> findByIdWithImages(@Param("id") Long id);
+
+  boolean existsBySlug(String slug);
+
+  boolean existsBySku(String sku);
+
+  @Query(
+      value =
+          """
+            SELECT DISTINCT p FROM Product p
+            LEFT JOIN FETCH p.category
+            WHERE p.deletedAt IS NULL
+            AND (:categoryId IS NULL OR p.category.id = :categoryId)
+            AND (:isActive IS NULL OR p.isActive = :isActive)
+            AND (:isFeatured IS NULL OR p.isFeatured = :isFeatured)
+            AND (:keywordPattern IS NULL
+                OR p.name LIKE :keywordPattern
+                OR (p.description IS NOT NULL AND p.description LIKE :keywordPattern)
+                OR p.sku LIKE :keywordPattern
+            )
+            ORDER BY p.createdAt DESC
+            """,
+      countQuery =
+          """
+            SELECT COUNT(DISTINCT p.id) FROM Product p
+            WHERE p.deletedAt IS NULL
+            AND (:categoryId IS NULL OR p.category.id = :categoryId)
+            AND (:isActive IS NULL OR p.isActive = :isActive)
+            AND (:isFeatured IS NULL OR p.isFeatured = :isFeatured)
+            AND (:keywordPattern IS NULL
+                OR p.name LIKE :keywordPattern
+                OR (p.description IS NOT NULL AND p.description LIKE :keywordPattern)
+                OR p.sku LIKE :keywordPattern
+            )
+            """)
+  Page<Product> searchProducts(
+      @Param("categoryId") Long categoryId,
+      @Param("isActive") Boolean isActive,
+      @Param("isFeatured") Boolean isFeatured,
+      @Param("keywordPattern") String keywordPattern,
+      Pageable pageable);
+
+  // Dashboard: Get low stock products
+  @Query(
+      "SELECT p FROM Product p "
+          + "LEFT JOIN FETCH p.category "
+          + "LEFT JOIN FETCH p.images "
+          + "WHERE p.deletedAt IS NULL "
+          + "  AND p.stock <= :threshold "
+          + "  AND p.isActive = true "
+          + "ORDER BY p.stock ASC")
+  List<Product> findLowStockProducts(@Param("threshold") Integer threshold, Pageable pageable);
+
+  // Dashboard: Get best-selling products
+  @Query(
+      value =
+          """
+          SELECT p.id as productId,
+                 p.name as productName,
+                 p.slug as productSlug,
+                 (SELECT pi.image_url
+                  FROM product_images pi
+                  WHERE pi.product_id = p.id
+                  ORDER BY pi.is_primary DESC, pi.display_order ASC
+                  LIMIT 1) as productImage,
+                 COALESCE(SUM(oi.quantity), 0) as totalSold,
+                 COALESCE(SUM(oi.subtotal), 0) as totalRevenue
+          FROM products p
+          LEFT JOIN order_items oi ON p.id = oi.product_id
+          LEFT JOIN orders o ON oi.order_id = o.id
+          WHERE p.deleted_at IS NULL
+            AND (o.status IS NULL OR o.status != 'CANCELLED')
+          GROUP BY p.id, p.name, p.slug
+          ORDER BY totalSold DESC
+          """,
+      nativeQuery = true)
+  List<Object[]> findBestSellingProducts(Pageable pageable);
+
+  // Dashboard: Count active products
+  long countByIsActiveAndDeletedAtIsNull(Boolean isActive);
+
+  // Dashboard: Count low stock products
+  @Query(
+      "SELECT COUNT(p) FROM Product p WHERE p.deletedAt IS NULL AND p.isActive = true AND p.stock <= :threshold")
+  Long countLowStockProducts(@Param("threshold") Integer threshold);
+
+  // Check if product has any order items (for deletion safeguard)
+  @Query("SELECT COUNT(oi) > 0 FROM OrderItem oi WHERE oi.product.id = :productId")
+  boolean hasOrderItems(@Param("productId") Long productId);
+}

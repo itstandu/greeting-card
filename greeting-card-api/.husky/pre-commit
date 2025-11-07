@@ -1,0 +1,28 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Disable exit on error to handle spotless check failure
+set +e
+
+# Run Spotless check and capture exit code (suppress output to avoid confusion)
+./mvnw spotless:check > /dev/null 2>&1
+SPOTLESS_EXIT_CODE=$?
+
+# Re-enable exit on error
+set -e
+
+# If the check fails, run the format and add the changes
+if [ $SPOTLESS_EXIT_CODE -ne 0 ]; then
+  echo "Code formatting issues detected. Formatting code with Spotless..."
+  ./mvnw spotless:apply
+
+  # Add all modified and untracked Java files that were formatted
+  # This includes files already in staging and newly formatted files
+  git add -u
+  git add src/ 2>/dev/null || true
+
+  echo "Code has been formatted and staged. Proceeding with commit..."
+fi
+
+# Always exit with success to allow commit to proceed
+exit 0

@@ -189,7 +189,7 @@ export function ProductReviews({
 
               return (
                 <Card key={review.id}>
-                  <CardContent className="pt-6">
+                  <CardContent className="py-6">
                     <div className="flex gap-4">
                       <Avatar className="h-10 w-10">
                         {/* Backend currently only returns user full name, so we use initials as avatar */}

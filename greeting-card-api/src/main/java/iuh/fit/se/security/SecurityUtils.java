@@ -8,6 +8,7 @@ import iuh.fit.se.entity.User;
 import iuh.fit.se.exception.AuthenticationException;
 import iuh.fit.se.exception.ErrorCode;
 import iuh.fit.se.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -15,9 +16,11 @@ import lombok.RequiredArgsConstructor;
 public class SecurityUtils {
 
   private static UserRepository userRepository;
+  private final UserRepository userRepositoryInstance;
 
-  public SecurityUtils(UserRepository userRepo) {
-    SecurityUtils.userRepository = userRepo;
+  @PostConstruct
+  public void init() {
+    SecurityUtils.userRepository = userRepositoryInstance;
   }
 
   public static Long getCurrentUserId() {

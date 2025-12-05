@@ -45,9 +45,11 @@ import type {
   PaymentMethod,
   UpdatePaymentMethodRequest,
 } from '@/types';
+import { DragDropContext, Draggable, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { GripVertical, Pencil, Plus, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function AdminPaymentMethodsPage() {
   const { toast } = useToast();
@@ -189,42 +191,34 @@ export default function AdminPaymentMethodsPage() {
     }
   };
 
-  const handleMoveUp = async (index: number) => {
-    if (index === 0) return;
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
 
-    const newMethods = [...methods];
-    const temp = newMethods[index];
-    newMethods[index] = newMethods[index - 1];
-    newMethods[index - 1] = temp;
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
 
+    if (sourceIndex === destinationIndex) return;
+
+    const newMethods = Array.from(methods);
+    const [reorderedItem] = newMethods.splice(sourceIndex, 1);
+    newMethods.splice(destinationIndex, 0, reorderedItem);
+
+    // Optimistically update UI
+    setMethods(newMethods);
+
+    // Update displayOrder for all items
     const items = newMethods.map((m, i) => ({ id: m.id, displayOrder: i + 1 }));
 
     try {
       await updatePaymentMethodOrdering({ items });
-      setRefreshKey(prev => prev + 1);
-    } catch {
       toast({
-        title: 'Lỗi',
-        description: 'Không thể thay đổi thứ tự',
-        variant: 'destructive',
+        title: 'Thành công',
+        description: 'Đã cập nhật thứ tự phương thức thanh toán',
       });
-    }
-  };
-
-  const handleMoveDown = async (index: number) => {
-    if (index === methods.length - 1) return;
-
-    const newMethods = [...methods];
-    const temp = newMethods[index];
-    newMethods[index] = newMethods[index + 1];
-    newMethods[index + 1] = temp;
-
-    const items = newMethods.map((m, i) => ({ id: m.id, displayOrder: i + 1 }));
-
-    try {
-      await updatePaymentMethodOrdering({ items });
       setRefreshKey(prev => prev + 1);
     } catch {
+      // Revert on error
+      setRefreshKey(prev => prev + 1);
       toast({
         title: 'Lỗi',
         description: 'Không thể thay đổi thứ tự',
@@ -308,109 +302,114 @@ export default function AdminPaymentMethodsPage() {
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center">
-                  Đang tải...
-                </TableCell>
-              </TableRow>
-            ) : methods.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center">
-                  Không có phương thức thanh toán nào
-                </TableCell>
-              </TableRow>
-            ) : (
-              methods.map((method, index) => (
-                <TableRow key={method.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <GripVertical className="text-muted-foreground h-4 w-4 cursor-grab" />
-                      <div className="flex flex-col gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5"
-                          onClick={() => handleMoveUp(index)}
-                          disabled={index === 0}
-                        >
-                          ▲
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5"
-                          onClick={() => handleMoveDown(index)}
-                          disabled={index === methods.length - 1}
-                        >
-                          ▼
-                        </Button>
-                      </div>
-                      <span>{method.displayOrder}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">{method.name}</TableCell>
-                  <TableCell>
-                    <code className="bg-muted rounded px-2 py-1 text-sm">{method.code}</code>
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-[200px] truncate" title={method.description || ''}>
-                      {method.description || '-'}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {method.isActive ? (
-                      <Badge className="bg-green-500">Hoạt động</Badge>
-                    ) : (
-                      <Badge variant="secondary">Vô hiệu</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {method.createdAt
-                      ? format(new Date(method.createdAt), 'dd/MM/yyyy', { locale: vi })
-                      : '-'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleToggleStatus(method)}
-                        title={method.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
-                      >
-                        {method.isActive ? (
-                          <ToggleRight className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <ToggleLeft className="h-4 w-4 text-gray-400" />
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="payment-methods">
+              {provided => (
+                <TableBody {...provided.droppableProps} ref={provided.innerRef}>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-8 text-center">
+                        Đang tải...
+                      </TableCell>
+                    </TableRow>
+                  ) : methods.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-8 text-center">
+                        Không có phương thức thanh toán nào
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    methods.map((method, index) => (
+                      <Draggable key={method.id} draggableId={String(method.id)} index={index}>
+                        {(provided, snapshot) => (
+                          <TableRow
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={cn(
+                              snapshot.isDragging && 'bg-muted/50',
+                              'transition-colors',
+                            )}
+                          >
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  {...provided.dragHandleProps}
+                                  className="cursor-grab active:cursor-grabbing"
+                                >
+                                  <GripVertical className="text-muted-foreground h-5 w-5" />
+                                </div>
+                                <span className="font-medium">{method.displayOrder}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{method.name}</TableCell>
+                            <TableCell>
+                              <code className="bg-muted rounded px-2 py-1 text-sm">
+                                {method.code}
+                              </code>
+                            </TableCell>
+                            <TableCell>
+                              <div className="max-w-[200px] truncate" title={method.description || ''}>
+                                {method.description || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {method.isActive ? (
+                                <Badge className="bg-green-500">Hoạt động</Badge>
+                              ) : (
+                                <Badge variant="secondary">Vô hiệu</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {method.createdAt
+                                ? format(new Date(method.createdAt), 'dd/MM/yyyy', { locale: vi })
+                                : '-'}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleToggleStatus(method)}
+                                  title={method.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
+                                >
+                                  {method.isActive ? (
+                                    <ToggleRight className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <ToggleLeft className="h-4 w-4 text-gray-400" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleEdit(method)}
+                                  title="Chỉnh sửa"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setSelectedMethod(method);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                  className="text-red-600 hover:text-red-700"
+                                  title="Xóa"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
                         )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(method)}
-                        title="Chỉnh sửa"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setSelectedMethod(method);
-                          setDeleteDialogOpen(true);
-                        }}
-                        className="text-red-600 hover:text-red-700"
-                        title="Xóa"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+                      </Draggable>
+                    ))
+                  )}
+                  {provided.placeholder}
+                </TableBody>
+              )}
+            </Droppable>
+          </DragDropContext>
         </Table>
       </div>
 

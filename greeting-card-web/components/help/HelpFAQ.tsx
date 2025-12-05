@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Link, Search } from 'lucide-react';
 
 const faqs = [
   {
@@ -182,10 +182,10 @@ export function HelpFAQ() {
           {filteredFaqs.length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-muted-foreground">
-                Không tìm thấy kết quả cho "{searchQuery}". Vui lòng thử từ khóa khác hoặc{' '}
-                <a href="/contact" className="text-primary hover:underline">
+                Không tìm thấy kết quả cho &quot;{searchQuery}&quot;. Vui lòng thử từ khóa khác hoặc{' '}
+                <Link href="/contact" className="text-primary hover:underline">
                   liên hệ với chúng tôi
-                </a>
+                </Link>
                 .
               </p>
             </div>

@@ -1,5 +1,6 @@
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 
 const sections = [
   {
@@ -64,7 +65,7 @@ export function TermsContent() {
         <div className="mx-auto max-w-4xl">
           <div className="space-y-8">
             {sections.map((section, index) => (
-              <Card key={index} className="border-2">
+              <Card key={index} className="border-2 py-6">
                 <CardHeader>
                   <CardTitle className="text-foreground text-xl font-semibold">
                     {section.title}
@@ -75,41 +76,26 @@ export function TermsContent() {
                     {section.content}
                   </p>
                 </CardContent>
-                {index < sections.length - 1 && <Separator className="my-4" />}
               </Card>
             ))}
           </div>
 
           {/* Contact Section */}
-          <Card className="border-primary/20 mt-12 border-2">
+          <Card className="border-primary/20 mt-12 border-2 py-6">
             <CardHeader>
               <CardTitle className="text-foreground text-xl font-semibold">
                 Câu hỏi về điều khoản?
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Nếu bạn có bất kỳ câu hỏi nào về các điều khoản này, vui lòng liên hệ với chúng tôi:
+              <p className="text-muted-foreground mb-6">
+                Nếu bạn có bất kỳ câu hỏi nào về các điều khoản này, vui lòng liên hệ với chúng tôi
+                qua form liên hệ hoặc các phương thức sau:
               </p>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <span className="text-foreground font-medium">Email:</span>{' '}
-                  <a
-                    href="mailto:legal@greetingcard.vn"
-                    className="text-primary hover:text-primary/80 transition-colors hover:underline"
-                  >
-                    legal@greetingcard.vn
-                  </a>
-                </p>
-                <p>
-                  <span className="text-foreground font-medium">Điện thoại:</span>{' '}
-                  <a
-                    href="tel:19001234"
-                    className="text-primary hover:text-primary/80 transition-colors hover:underline"
-                  >
-                    1900 1234
-                  </a>
-                </p>
+              <div className="mb-6">
+                <Button asChild size="lg" className="rounded-full px-8">
+                  <Link href="/contact">Điền form liên hệ</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 
 const sections = [
   {
@@ -84,7 +83,7 @@ export function PrivacyContent() {
         <div className="mx-auto max-w-4xl">
           <div className="space-y-8">
             {sections.map((section, index) => (
-              <Card key={index} className="border-2">
+              <Card key={index} className="border-2 py-6">
                 <CardHeader>
                   <CardTitle className="text-foreground text-xl font-semibold">
                     {section.title}
@@ -95,13 +94,12 @@ export function PrivacyContent() {
                     {section.content}
                   </p>
                 </CardContent>
-                {index < sections.length - 1 && <Separator className="my-4" />}
               </Card>
             ))}
           </div>
 
           {/* Contact Section */}
-          <Card className="border-primary/20 mt-12 border-2">
+          <Card className="border-primary/20 mt-12 border-2 py-6">
             <CardHeader>
               <CardTitle className="text-foreground text-xl font-semibold">
                 Câu hỏi về quyền riêng tư?

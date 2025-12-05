@@ -3,19 +3,40 @@ import { Star } from 'lucide-react';
 
 const testimonials = [
   {
-    content: 'Tôi chưa bao giờ nghĩ việc tạo thiệp lại dễ dàng đến thế. Mẫu mã rất đẹp và đa dạng!',
-    author: 'Nguyễn Văn A',
-    role: 'Designer',
+    content:
+      'Mình đã mua thiệp sinh nhật cho bạn thân, chất lượng in ấn rất tốt và giao hàng đúng hẹn. Bạn mình rất thích!',
+    author: 'Minh Anh',
+    role: 'Sinh viên',
   },
   {
-    content: 'Rất thích tính năng gửi thiệp qua email. Bạn bè tôi đều bất ngờ khi nhận được.',
-    author: 'Trần Thị B',
-    role: 'Marketing Manager',
+    content:
+      'Công ty mình đặt 50 thiệp chúc mừng năm mới cho khách hàng. Giá cả hợp lý, thiết kế chuyên nghiệp và giao hàng nhanh. Sẽ đặt lại!',
+    author: 'Hoàng Nam',
+    role: 'Nhân viên Marketing',
   },
   {
-    content: 'Dịch vụ tuyệt vời, hỗ trợ nhiệt tình. Chắc chắn sẽ giới thiệu cho mọi người.',
-    author: 'Lê Văn C',
-    role: 'Freelancer',
+    content:
+      'Tạo thiệp cảm ơn online rất tiện lợi, không cần ra ngoài mua. Mẫu mã đẹp, dễ chỉnh sửa và gửi ngay được qua email.',
+    author: 'Lan Hương',
+    role: 'Giáo viên',
+  },
+  {
+    content:
+      'Thiệp kỷ niệm ngày cưới của mình rất đẹp, giấy dày và màu sắc sống động. Chồng mình rất xúc động khi nhận được.',
+    author: 'Thảo Vy',
+    role: 'Nhân viên văn phòng',
+  },
+  {
+    content:
+      'Đặt thiệp chúc mừng tốt nghiệp cho em trai. Nhân viên tư vấn nhiệt tình, giúp mình chọn được mẫu phù hợp. Cảm ơn shop!',
+    author: 'Đức Anh',
+    role: 'Kỹ sư',
+  },
+  {
+    content:
+      'Mình hay đặt thiệp ở đây vì có nhiều mẫu độc đáo, không bị trùng với các shop khác. Giá cũng rẻ hơn so với mặt bằng chung.',
+    author: 'Ngọc Trâm',
+    role: 'Chủ shop online',
   },
 ];
 

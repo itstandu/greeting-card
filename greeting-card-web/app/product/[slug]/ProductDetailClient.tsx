@@ -204,18 +204,6 @@ export function ProductDetailClient({
 
           {/* Right: Product Info */}
           <div className="space-y-6">
-            {/* Quick Stats - Real data */}
-            {reviewStats && (
-              <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                  <span>
-                    {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews} đánh giá)
-                  </span>
-                </div>
-              </div>
-            )}
-
             <Card>
               <CardContent className="p-6">
                 <ProductInfoClient product={product} />

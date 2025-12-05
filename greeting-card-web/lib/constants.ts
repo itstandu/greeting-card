@@ -207,3 +207,49 @@ export function getStockTransactionTypeColor(type: StockTransactionType): string
 export function getUserRoleLabel(role: UserRole): string {
   return USER_ROLE_LABELS[role] || role;
 }
+
+export const CONTACT_STATUS = {
+  NEW: 'NEW',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export type ContactStatus = (typeof CONTACT_STATUS)[keyof typeof CONTACT_STATUS];
+
+export const CONTACT_STATUS_LABELS: Record<ContactStatus, string> = {
+  NEW: 'Mới',
+  IN_PROGRESS: 'Đang xử lý',
+  RESOLVED: 'Đã phản hồi',
+  CLOSED: 'Đã đóng',
+};
+
+export const CONTACT_STATUS_VARIANTS: Record<
+  ContactStatus,
+  'default' | 'secondary' | 'outline' | 'destructive'
+> = {
+  NEW: 'secondary',
+  IN_PROGRESS: 'default',
+  RESOLVED: 'outline',
+  CLOSED: 'destructive',
+};
+
+export const CONTACT_CATEGORY_LABELS: Record<string, string> = {
+  support: 'Hỗ trợ kỹ thuật',
+  sales: 'Tư vấn bán hàng',
+  feedback: 'Góp ý',
+  partnership: 'Hợp tác',
+  other: 'Khác',
+};
+
+export const CONTACT_CATEGORIES = [
+  { value: 'support', label: 'Hỗ trợ kỹ thuật' },
+  { value: 'sales', label: 'Tư vấn bán hàng' },
+  { value: 'feedback', label: 'Góp ý' },
+  { value: 'partnership', label: 'Hợp tác' },
+  { value: 'other', label: 'Khác' },
+] as const;
+
+export function getContactStatusLabel(status: ContactStatus): string {
+  return CONTACT_STATUS_LABELS[status] || status;
+}

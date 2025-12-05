@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,21 +13,27 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { CONTACT_CATEGORIES } from '@/lib/constants';
+import { submitContact } from '@/services/contact.service';
+import type { CreateContactRequest } from '@/types';
 import { Send } from 'lucide-react';
 import { toast } from 'sonner';
 
-type FormData = {
-  name: string;
-  email: string;
-  phone: string;
-  subject: string;
-  category: string;
-  message: string;
-};
-
 export function ContactForm() {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
+  const initialFormData: CreateContactRequest = useMemo(
+    () => ({
+      fullName: '',
+      email: '',
+      phone: '',
+      subject: '',
+      category: '',
+      message: '',
+    }),
+    [],
+  );
+
+  const [formData, setFormData] = useState<CreateContactRequest>({
+    fullName: '',
     email: '',
     phone: '',
     subject: '',
@@ -38,24 +44,32 @@ export function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.category) {
+      toast.error('Vui lòng chọn chủ đề liên hệ');
+      return;
+    }
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      await submitContact({
+        ...formData,
+        fullName: formData.fullName.trim(),
+        subject: formData.subject.trim(),
+        category: formData.category,
+        message: formData.message.trim(),
+        phone: formData.phone?.trim() || undefined,
+      });
 
-    toast.success('Đã gửi thành công', {
-      description: 'Chúng tôi sẽ phản hồi bạn trong thời gian sớm nhất.',
-    });
-
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      subject: '',
-      category: '',
-      message: '',
-    });
-    setIsSubmitting(false);
+      toast.success('Đã gửi thành công', {
+        description: 'Chúng tôi sẽ phản hồi bạn trong thời gian sớm nhất.',
+      });
+      setFormData(initialFormData);
+    } catch (error) {
+      const message = (error as Error)?.message || 'Gửi liên hệ thất bại. Vui lòng thử lại.';
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -96,13 +110,13 @@ export function ContactForm() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="name">
+                    <Label htmlFor="fullName">
                       Họ và tên <span className="text-destructive">*</span>
                     </Label>
                     <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
+                      id="fullName"
+                      name="fullName"
+                      value={formData.fullName}
                       onChange={handleChange}
                       required
                       placeholder="Nhập họ và tên"
@@ -145,11 +159,11 @@ export function ContactForm() {
                         <SelectValue placeholder="Chọn chủ đề" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="support">Hỗ trợ kỹ thuật</SelectItem>
-                        <SelectItem value="sales">Tư vấn bán hàng</SelectItem>
-                        <SelectItem value="feedback">Góp ý</SelectItem>
-                        <SelectItem value="partnership">Hợp tác</SelectItem>
-                        <SelectItem value="other">Khác</SelectItem>
+                        {CONTACT_CATEGORIES.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

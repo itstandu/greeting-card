@@ -97,6 +97,8 @@ public class SecurityConfig {
                     .hasRole("ADMIN")
                     .requestMatchers("/api/coupons/**")
                     .permitAll()
+                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/contacts")
+                    .permitAll()
                     // Upload endpoints - require authentication
                     .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/upload/**")
                     .hasAnyRole("ADMIN", "CUSTOMER")

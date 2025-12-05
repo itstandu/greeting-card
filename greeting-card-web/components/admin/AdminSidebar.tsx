@@ -31,6 +31,7 @@ import {
   Tag,
   Users,
   Warehouse,
+  PhoneCall,
 } from 'lucide-react';
 
 export function AdminSidebar() {
@@ -87,6 +88,11 @@ export function AdminSidebar() {
       title: 'Đánh giá',
       url: '/admin/reviews',
       icon: MessageSquare,
+    },
+    {
+      title: 'Liên hệ',
+      url: '/admin/contacts',
+      icon: PhoneCall,
     },
     {
       title: 'Phương thức thanh toán',

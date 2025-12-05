@@ -17,3 +17,4 @@ export * from './category.service';
 export * from './upload.service';
 export * from './admin-users.service';
 export * from './token-manager';
+export * from './contact.service';

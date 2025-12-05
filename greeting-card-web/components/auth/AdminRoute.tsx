@@ -35,6 +35,7 @@ const routeTitles: Record<string, string> = {
   '/admin/coupons': 'Khuyến mãi',
   '/admin/stock-transactions': 'Quản lý kho',
   '/admin/notifications': 'Thông báo',
+  '/admin/contacts': 'Liên hệ',
 };
 
 // Hàm tạo breadcrumbs từ pathname

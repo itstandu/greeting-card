@@ -13,3 +13,4 @@ export type * from './service';
 export type * from './stock';
 export type * from './users';
 export type * from './wishlist';
+export type * from './contact';

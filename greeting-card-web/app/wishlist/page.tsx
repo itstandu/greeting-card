@@ -23,15 +23,22 @@ import { ShoppingBag } from 'lucide-react';
 // Helper function để convert WishlistResponse sang Wishlist
 function convertWishlistResponseToWishlist(wishlistResponse: WishlistResponse): Wishlist {
   return {
-    items: wishlistResponse.items.map(item => ({
-      productId: item.product.id,
-      productName: item.product.name,
-      productSlug: item.product.slug,
-      productImage: item.product.imageUrl,
-      price: Number(item.product.price),
-      stock: item.product.stock,
-      addedAt: item.addedAt,
-    })),
+    items: wishlistResponse.items.map(item => {
+      // Lấy primary image hoặc image đầu tiên từ images array
+      const primaryImage =
+        item.product.images?.find(img => img.isPrimary) || item.product.images?.[0];
+      const productImage = primaryImage?.imageUrl || '';
+
+      return {
+        productId: item.product.id,
+        productName: item.product.name,
+        productSlug: item.product.slug,
+        productImage,
+        price: Number(item.product.price),
+        stock: item.product.stock,
+        addedAt: item.addedAt,
+      };
+    }),
     totalItems: wishlistResponse.totalItems,
   };
 }

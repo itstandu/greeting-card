@@ -34,7 +34,13 @@ export type WishlistResponse = {
       description?: string;
       price: number;
       stock: number;
-      imageUrl: string;
+      images: Array<{
+        id: number;
+        imageUrl: string;
+        altText?: string;
+        isPrimary: boolean;
+        displayOrder: number;
+      }>;
     };
     addedAt: string;
   }>;

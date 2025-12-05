@@ -107,7 +107,7 @@ export function UserOrdersClient() {
 
       <div className="space-y-4">
         {orders.map(order => (
-          <Card key={order.id}>
+          <Card key={order.id} className="py-6">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>

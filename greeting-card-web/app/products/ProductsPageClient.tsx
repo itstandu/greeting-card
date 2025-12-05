@@ -1,17 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ProductCard, ProductCardSkeleton } from '@/components/product';
 import { ProductListItem, ProductListItemSkeleton } from '@/components/product/ProductListItem';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PromoBanner, TrustBadges } from '@/components/ui/decorative-elements';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from '@/components/ui/pagination';
 import { ProductFilters, ViewMode } from '@/components/ui/product-filters';
 import {
   Select,
@@ -35,10 +43,18 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { useToast } from '@/hooks/use-toast';
 import { cartStorage } from '@/lib/store/cart/cart-storage';
 import { cn, formatCurrency } from '@/lib/utils';
+import { getAllCategories, getProducts } from '@/services';
 import { addToCart as addToCartApi } from '@/services/cart.service';
-import type { Category, Product } from '@/types';
+import type {
+  Category,
+  PaginationResponse,
+  Product,
+  ProductFilters as ProductFiltersType,
+} from '@/types';
 import {
   ArrowRight,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
   Filter,
   FolderOpen,
   Grid3X3,
@@ -46,7 +62,6 @@ import {
   Package,
   Search,
   SlidersHorizontal,
-  Sparkles,
   Star,
   Tag,
   TrendingUp,
@@ -54,9 +69,9 @@ import {
 } from 'lucide-react';
 
 interface ProductsPageClientProps {
-  products: Product[];
-  categories: Category[];
-  loading?: boolean;
+  initialProducts?: Product[];
+  initialCategories?: Category[];
+  initialPagination?: PaginationResponse;
 }
 
 // Stats for visual appeal
@@ -66,20 +81,73 @@ const pageStats = {
 };
 
 export function ProductsPageClient({
-  products,
-  categories,
-  loading = false,
+  initialProducts = [],
+  initialCategories = [],
+  initialPagination,
 }: ProductsPageClientProps) {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('newest');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
-  const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
-  const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Use ref to store toast to avoid dependency issues
+  const toastRef = React.useRef(toast);
+  React.useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
+
+  // Initialize state from URL params
+  const getInitialStateFromUrl = useCallback(() => {
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const size = parseInt(searchParams.get('size') || '12', 10);
+    const search = searchParams.get('search') || '';
+    const sort = searchParams.get('sort') || 'newest';
+    const view = (searchParams.get('view') || 'grid') as ViewMode;
+    const categoriesParam = searchParams.get('categories');
+    const categories = categoriesParam
+      ? categoriesParam.split(',').map(Number).filter(Boolean)
+      : [];
+    const featured = searchParams.get('featured') === 'true';
+    const inStock = searchParams.get('inStock') === 'true';
+    const priceMin = parseInt(searchParams.get('priceMin') || '0', 10);
+    const priceMax = parseInt(searchParams.get('priceMax') || '1000000', 10);
+
+    return {
+      page,
+      size,
+      search,
+      sort,
+      view,
+      categories,
+      featured,
+      inStock,
+      priceMin,
+      priceMax,
+    };
+  }, [searchParams]);
+
+  const urlState = getInitialStateFromUrl();
+
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [pagination, setPagination] = useState<PaginationResponse>(
+    initialPagination || { page: 1, size: 12, total: 0, totalPages: 0 },
+  );
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(urlState.search);
+  const [sortBy, setSortBy] = useState(urlState.sort);
+  const [viewMode, setViewMode] = useState<ViewMode>(urlState.view);
+  const [selectedCategories, setSelectedCategories] = useState<number[]>(urlState.categories);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    urlState.priceMin,
+    urlState.priceMax,
+  ]);
+  const [showFeaturedOnly, setShowFeaturedOnly] = useState(urlState.featured);
+  const [showInStockOnly, setShowInStockOnly] = useState(urlState.inStock);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(urlState.page);
+  const [itemsPerPage, setItemsPerPage] = useState(urlState.size);
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -122,10 +190,14 @@ export function ProductsPageClient({
           title: 'Đã thêm vào giỏ hàng',
           description: product.name,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage =
+          error && typeof error === 'object' && 'response' in error
+            ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+            : undefined;
         toast({
           title: 'Lỗi',
-          description: error.response?.data?.message || 'Không thể thêm vào giỏ hàng',
+          description: errorMessage || 'Không thể thêm vào giỏ hàng',
           variant: 'destructive',
         });
       }
@@ -133,7 +205,7 @@ export function ProductsPageClient({
     [isAuthenticated, toast],
   );
 
-  // Calculate price bounds
+  // Calculate price bounds from all products (for slider)
   const priceBounds = useMemo(() => {
     if (products.length === 0) return { min: 0, max: 1000000 };
     const prices = products.map(p => p.price);
@@ -143,73 +215,393 @@ export function ProductsPageClient({
     };
   }, [products]);
 
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
+  // Map sortBy to API sortBy and sortDir
+  const getSortParams = useCallback(
+    (sortBy: string): { sortBy?: string; sortDir?: 'asc' | 'desc' } => {
+      switch (sortBy) {
+        case 'price-asc':
+          return { sortBy: 'price', sortDir: 'asc' };
+        case 'price-desc':
+          return { sortBy: 'price', sortDir: 'desc' };
+        case 'name-asc':
+          return { sortBy: 'name', sortDir: 'asc' };
+        case 'name-desc':
+          return { sortBy: 'name', sortDir: 'desc' };
+        case 'oldest':
+          return { sortBy: 'createdAt', sortDir: 'asc' };
+        case 'newest':
+        default:
+          return { sortBy: 'createdAt', sortDir: 'desc' };
+      }
+    },
+    [],
+  );
 
-    // Search filter
-    if (debouncedSearch) {
-      const query = debouncedSearch.toLowerCase();
-      result = result.filter(
-        p =>
-          p.name.toLowerCase().includes(query) ||
-          p.description?.toLowerCase().includes(query) ||
-          p.sku.toLowerCase().includes(query) ||
-          p.category?.name?.toLowerCase().includes(query),
-      );
+  // Fetch categories only once on mount
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categoriesResponse = await getAllCategories();
+        if (categoriesResponse.data) {
+          setCategories(categoriesResponse.data);
+        }
+      } catch {
+        // Silently fail, categories are not critical
+      }
+    };
+
+    if (categories.length === 0) {
+      fetchCategories();
     }
+  }, [categories.length]);
 
-    // Category filter
-    if (selectedCategories.length > 0) {
-      result = result.filter(p => selectedCategories.includes(p.category?.id));
+  // Sync state with URL when URL changes (browser back/forward)
+  // Only sync when searchParams actually change, not when state changes
+  const searchParamsString = searchParams.toString();
+  React.useEffect(() => {
+    const urlState = getInitialStateFromUrl();
+
+    // Only update if different to avoid loops
+    if (urlState.page !== currentPage) setCurrentPage(urlState.page);
+    if (urlState.size !== itemsPerPage) setItemsPerPage(urlState.size);
+    if (urlState.search !== searchQuery) setSearchQuery(urlState.search);
+    if (urlState.sort !== sortBy) setSortBy(urlState.sort);
+    if (urlState.view !== viewMode) setViewMode(urlState.view);
+    const currentCategoriesKey = selectedCategories.sort((a, b) => a - b).join(',');
+    const urlCategoriesKey = urlState.categories.sort((a, b) => a - b).join(',');
+    if (urlCategoriesKey !== currentCategoriesKey) {
+      setSelectedCategories(urlState.categories);
     }
-
-    // Price filter
-    result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
-
-    // Featured filter
-    if (showFeaturedOnly) {
-      result = result.filter(p => p.isFeatured);
+    if (urlState.priceMin !== priceRange[0] || urlState.priceMax !== priceRange[1]) {
+      setPriceRange([urlState.priceMin, urlState.priceMax]);
     }
+    if (urlState.featured !== showFeaturedOnly) setShowFeaturedOnly(urlState.featured);
+    if (urlState.inStock !== showInStockOnly) setShowInStockOnly(urlState.inStock);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsString]);
 
-    // In stock filter
-    if (showInStockOnly) {
-      result = result.filter(p => p.stock > 0);
-    }
+  // Memoize selectedCategories string key to avoid unnecessary re-renders
+  const selectedCategoriesKey = useMemo(
+    () => [...selectedCategories].sort((a, b) => a - b).join(','),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedCategories.join(',')],
+  );
 
-    // Sort
-    switch (sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'name-asc':
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'name-desc':
-        result.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'oldest':
-        result.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-        break;
-      case 'newest':
-      default:
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-    }
+  // Memoize priceRange string key to avoid unnecessary re-renders
+  const priceRangeKey = useMemo(
+    () => `${priceRange[0]},${priceRange[1]}`,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [priceRange[0], priceRange[1]],
+  );
 
-    return result;
+  // Update URL when filters change
+  const updateUrl = useCallback(
+    (updates: {
+      page?: number;
+      size?: number;
+      search?: string;
+      sort?: string;
+      view?: ViewMode;
+      categories?: number[];
+      featured?: boolean;
+      inStock?: boolean;
+      priceMin?: number;
+      priceMax?: number;
+    }) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      // Update or remove params
+      if (updates.page !== undefined) {
+        if (updates.page === 1) {
+          params.delete('page');
+        } else {
+          params.set('page', updates.page.toString());
+        }
+      }
+      if (updates.size !== undefined) {
+        if (updates.size === 12) {
+          params.delete('size');
+        } else {
+          params.set('size', updates.size.toString());
+        }
+      }
+      if (updates.search !== undefined) {
+        if (updates.search === '') {
+          params.delete('search');
+        } else {
+          params.set('search', updates.search);
+        }
+      }
+      if (updates.sort !== undefined) {
+        if (updates.sort === 'newest') {
+          params.delete('sort');
+        } else {
+          params.set('sort', updates.sort);
+        }
+      }
+      if (updates.view !== undefined) {
+        if (updates.view === 'grid') {
+          params.delete('view');
+        } else {
+          params.set('view', updates.view);
+        }
+      }
+      if (updates.categories !== undefined) {
+        if (updates.categories.length === 0) {
+          params.delete('categories');
+        } else {
+          params.set('categories', updates.categories.sort((a, b) => a - b).join(','));
+        }
+      }
+      if (updates.featured !== undefined) {
+        if (!updates.featured) {
+          params.delete('featured');
+        } else {
+          params.set('featured', 'true');
+        }
+      }
+      if (updates.inStock !== undefined) {
+        if (!updates.inStock) {
+          params.delete('inStock');
+        } else {
+          params.set('inStock', 'true');
+        }
+      }
+      if (updates.priceMin !== undefined) {
+        if (updates.priceMin === 0) {
+          params.delete('priceMin');
+        } else {
+          params.set('priceMin', updates.priceMin.toString());
+        }
+      }
+      if (updates.priceMax !== undefined) {
+        if (updates.priceMax === 1000000) {
+          params.delete('priceMax');
+        } else {
+          params.set('priceMax', updates.priceMax.toString());
+        }
+      }
+
+      const newUrl = `${pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+      router.replace(newUrl, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  // Fetch products when filters change
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        // Parse selectedCategories from key
+        const selectedCategoriesArray = selectedCategoriesKey
+          ? selectedCategoriesKey.split(',').map(Number)
+          : [];
+
+        // Parse priceRange from key
+        const [priceMin, priceMax] = priceRangeKey.split(',').map(Number);
+
+        const sortParams = getSortParams(sortBy);
+        const categoryId =
+          selectedCategoriesArray.length === 1 ? selectedCategoriesArray[0] : undefined;
+        const filters: ProductFiltersType = {
+          page: currentPage,
+          size: itemsPerPage,
+          isActive: true,
+          search: debouncedSearch || undefined,
+          categoryId,
+          isFeatured: showFeaturedOnly || undefined,
+          ...sortParams,
+        };
+
+        const productsResponse = await getProducts(filters, isAuthenticated);
+
+        if (cancelled) return;
+
+        let fetchedProducts = productsResponse.data?.products || [];
+
+        // Apply client-side filters that API doesn't support
+        // Price range filter
+        fetchedProducts = fetchedProducts.filter(p => p.price >= priceMin && p.price <= priceMax);
+
+        // Multiple categories filter (API only supports single categoryId)
+        if (selectedCategoriesArray.length > 1) {
+          fetchedProducts = fetchedProducts.filter(p =>
+            selectedCategoriesArray.includes(p.category?.id),
+          );
+        }
+
+        // In stock filter
+        if (showInStockOnly) {
+          fetchedProducts = fetchedProducts.filter(p => p.stock > 0);
+        }
+
+        setProducts(fetchedProducts);
+        if (productsResponse.data?.pagination) {
+          setPagination(productsResponse.data.pagination);
+        }
+      } catch (error: unknown) {
+        if (cancelled) return;
+
+        const errorMessage =
+          error instanceof Error ? error.message : 'Không thể tải danh sách sản phẩm';
+        toastRef.current({
+          title: 'Lỗi',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setProducts([]);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
-    products,
+    currentPage,
+    itemsPerPage,
     debouncedSearch,
-    selectedCategories,
-    priceRange,
+    selectedCategoriesKey,
+    sortBy,
     showFeaturedOnly,
     showInStockOnly,
-    sortBy,
+    priceRangeKey,
+    isAuthenticated,
+    getSortParams,
   ]);
+
+  // Wrapper functions to update state and URL
+  const updateSearchQuery = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+      updateUrl({ search: value, page: 1 });
+    },
+    [updateUrl],
+  );
+
+  const updateSortBy = useCallback(
+    (value: string) => {
+      setSortBy(value);
+      updateUrl({ sort: value, page: 1 });
+    },
+    [updateUrl],
+  );
+
+  const updateViewMode = useCallback(
+    (value: ViewMode) => {
+      setViewMode(value);
+      updateUrl({ view: value });
+    },
+    [updateUrl],
+  );
+
+  const updateSelectedCategories = useCallback(
+    (value: number[]) => {
+      setSelectedCategories(value);
+      updateUrl({ categories: value, page: 1 });
+    },
+    [updateUrl],
+  );
+
+  const updatePriceRange = useCallback(
+    (value: [number, number]) => {
+      setPriceRange(value);
+      updateUrl({ priceMin: value[0], priceMax: value[1], page: 1 });
+    },
+    [updateUrl],
+  );
+
+  const updateShowFeaturedOnly = useCallback(
+    (value: boolean) => {
+      setShowFeaturedOnly(value);
+      updateUrl({ featured: value, page: 1 });
+    },
+    [updateUrl],
+  );
+
+  const updateShowInStockOnly = useCallback(
+    (value: boolean) => {
+      setShowInStockOnly(value);
+      updateUrl({ inStock: value, page: 1 });
+    },
+    [updateUrl],
+  );
+
+  const updateCurrentPage = useCallback(
+    (value: number) => {
+      setCurrentPage(value);
+      updateUrl({ page: value });
+    },
+    [updateUrl],
+  );
+
+  const updateItemsPerPage = useCallback(
+    (value: number) => {
+      setItemsPerPage(value);
+      updateUrl({ size: value, page: 1 });
+    },
+    [updateUrl],
+  );
+
+  // Reset to page 1 when filters change (except page itself)
+  const prevFilters = React.useRef({
+    debouncedSearch,
+    selectedCategories: selectedCategories.join(','),
+    sortBy,
+    showFeaturedOnly,
+    priceRange: priceRange.join(','),
+    showInStockOnly,
+    itemsPerPage,
+  });
+
+  React.useEffect(() => {
+    const currentFilters = {
+      debouncedSearch,
+      selectedCategories: selectedCategories.join(','),
+      sortBy,
+      showFeaturedOnly,
+      priceRange: priceRange.join(','),
+      showInStockOnly,
+      itemsPerPage,
+    };
+
+    const filtersChanged =
+      prevFilters.current.debouncedSearch !== currentFilters.debouncedSearch ||
+      prevFilters.current.selectedCategories !== currentFilters.selectedCategories ||
+      prevFilters.current.sortBy !== currentFilters.sortBy ||
+      prevFilters.current.showFeaturedOnly !== currentFilters.showFeaturedOnly ||
+      prevFilters.current.priceRange !== currentFilters.priceRange ||
+      prevFilters.current.showInStockOnly !== currentFilters.showInStockOnly ||
+      prevFilters.current.itemsPerPage !== currentFilters.itemsPerPage;
+
+    if (filtersChanged && currentPage !== 1) {
+      updateCurrentPage(1);
+    }
+
+    prevFilters.current = currentFilters;
+  }, [
+    debouncedSearch,
+    selectedCategories,
+    sortBy,
+    showFeaturedOnly,
+    priceRange,
+    showInStockOnly,
+    itemsPerPage,
+    currentPage,
+    updateCurrentPage,
+  ]);
+
+  const totalPages = pagination.totalPages;
+  const startIndex = (pagination.page - 1) * pagination.size + 1;
+  const endIndex = Math.min(pagination.page * pagination.size, pagination.total);
 
   // Active categories
   const activeCategories = useMemo(() => {
@@ -226,19 +618,30 @@ export function ProductsPageClient({
     return count;
   }, [selectedCategories, priceRange, priceBounds, showFeaturedOnly, showInStockOnly]);
 
-  const handleCategoryToggle = useCallback((categoryId: number) => {
-    setSelectedCategories(prev =>
-      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId],
-    );
-  }, []);
+  const handleCategoryToggle = useCallback(
+    (categoryId: number) => {
+      const newCategories = selectedCategories.includes(categoryId)
+        ? selectedCategories.filter(id => id !== categoryId)
+        : [...selectedCategories, categoryId];
+      updateSelectedCategories(newCategories);
+    },
+    [selectedCategories, updateSelectedCategories],
+  );
 
   const handleClearFilters = useCallback(() => {
-    setSelectedCategories([]);
-    setPriceRange([priceBounds.min, priceBounds.max]);
-    setShowFeaturedOnly(false);
-    setShowInStockOnly(false);
-    setSearchQuery('');
-  }, [priceBounds]);
+    updateSelectedCategories([]);
+    updatePriceRange([priceBounds.min, priceBounds.max]);
+    updateShowFeaturedOnly(false);
+    updateShowInStockOnly(false);
+    updateSearchQuery('');
+  }, [
+    priceBounds,
+    updateSelectedCategories,
+    updatePriceRange,
+    updateShowFeaturedOnly,
+    updateShowInStockOnly,
+    updateSearchQuery,
+  ]);
 
   const breadcrumbs = [{ label: 'Tất cả sản phẩm' }];
 
@@ -284,7 +687,7 @@ export function ProductsPageClient({
         <div className="space-y-4">
           <Slider
             value={priceRange}
-            onValueChange={value => setPriceRange(value as [number, number])}
+            onValueChange={value => updatePriceRange(value as [number, number])}
             min={priceBounds.min}
             max={priceBounds.max}
             step={10000}
@@ -310,7 +713,7 @@ export function ProductsPageClient({
             <Checkbox
               id="featured-only"
               checked={showFeaturedOnly}
-              onCheckedChange={checked => setShowFeaturedOnly(checked as boolean)}
+              onCheckedChange={checked => updateShowFeaturedOnly(checked as boolean)}
             />
             <Label htmlFor="featured-only" className="cursor-pointer text-sm">
               Chỉ sản phẩm nổi bật
@@ -320,7 +723,7 @@ export function ProductsPageClient({
             <Checkbox
               id="in-stock-only"
               checked={showInStockOnly}
-              onCheckedChange={checked => setShowInStockOnly(checked as boolean)}
+              onCheckedChange={checked => updateShowInStockOnly(checked as boolean)}
             />
             <Label htmlFor="in-stock-only" className="cursor-pointer text-sm">
               Chỉ còn hàng
@@ -420,7 +823,7 @@ export function ProductsPageClient({
                   type="text"
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={e => updateSearchQuery(e.target.value)}
                   className="pr-8 pl-9"
                 />
                 {searchQuery && (
@@ -428,7 +831,7 @@ export function ProductsPageClient({
                     variant="ghost"
                     size="icon"
                     className="absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2"
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => updateSearchQuery('')}
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -465,10 +868,10 @@ export function ProductsPageClient({
                 {/* View Mode Toggle & Sort */}
                 <ProductFilters
                   viewMode={viewMode}
-                  onViewModeChange={setViewMode}
+                  onViewModeChange={updateViewMode}
                   sortBy={sortBy}
-                  onSortChange={setSortBy}
-                  totalProducts={filteredProducts.length}
+                  onSortChange={updateSortBy}
+                  totalProducts={pagination.total}
                   showViewToggle
                   showSearch={false}
                   className="hidden sm:flex"
@@ -498,7 +901,7 @@ export function ProductsPageClient({
                   <Badge
                     variant="secondary"
                     className="cursor-pointer"
-                    onClick={() => setShowFeaturedOnly(false)}
+                    onClick={() => updateShowFeaturedOnly(false)}
                   >
                     Nổi bật
                     <X className="ml-1 h-3 w-3" />
@@ -508,7 +911,7 @@ export function ProductsPageClient({
                   <Badge
                     variant="secondary"
                     className="cursor-pointer"
-                    onClick={() => setShowInStockOnly(false)}
+                    onClick={() => updateShowInStockOnly(false)}
                   >
                     Còn hàng
                     <X className="ml-1 h-3 w-3" />
@@ -526,9 +929,32 @@ export function ProductsPageClient({
             )}
 
             {/* Results Info */}
-            <div className="text-muted-foreground mb-4 text-sm">
-              Hiển thị <strong>{filteredProducts.length}</strong> sản phẩm
-              {debouncedSearch && ` cho "${debouncedSearch}"`}
+            <div className="text-muted-foreground mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm">
+                Hiển thị <strong>{startIndex}</strong> - <strong>{endIndex}</strong> trong tổng số{' '}
+                <strong>{pagination.total}</strong> sản phẩm
+                {debouncedSearch && ` cho "${debouncedSearch}"`}
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="items-per-page" className="text-muted-foreground text-xs">
+                  Hiển thị:
+                </Label>
+                <Select
+                  value={itemsPerPage.toString()}
+                  onValueChange={value => {
+                    updateItemsPerPage(Number(value));
+                  }}
+                >
+                  <SelectTrigger id="items-per-page" className="h-8 w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="12">12</SelectItem>
+                    <SelectItem value="24">24</SelectItem>
+                    <SelectItem value="48">48</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Products */}
@@ -556,7 +982,7 @@ export function ProductsPageClient({
                   ))}
                 </div>
               )
-            ) : filteredProducts.length === 0 ? (
+            ) : products.length === 0 ? (
               <Card className="py-16 text-center">
                 <CardContent>
                   <Grid3X3 className="text-muted-foreground/50 mx-auto mb-4 h-16 w-16" />
@@ -573,7 +999,7 @@ export function ProductsPageClient({
               </Card>
             ) : viewMode === 'list' ? (
               <div className="space-y-4">
-                {filteredProducts.map(product => (
+                {products.map(product => (
                   <ProductListItem
                     key={product.id}
                     product={product}
@@ -593,7 +1019,7 @@ export function ProductsPageClient({
                     : 'grid-cols-1 gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-3',
                 )}
               >
-                {filteredProducts.map(product => (
+                {products.map(product => (
                   <ProductCard
                     key={product.id}
                     product={product}
@@ -605,6 +1031,130 @@ export function ProductsPageClient({
                     onAddToCart={handleAddToCart}
                   />
                 ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <button
+                        type="button"
+                        onClick={() => updateCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1 || loading}
+                        className={cn(
+                          buttonVariants({
+                            variant: 'ghost',
+                            size: 'default',
+                          }),
+                          'cursor-pointer gap-1 px-2.5 sm:pl-2.5',
+                          (currentPage === 1 || loading) && 'pointer-events-none opacity-50',
+                        )}
+                        aria-label="Trang trước"
+                      >
+                        <ChevronLeftIcon />
+                        <span className="hidden sm:block">Trước</span>
+                      </button>
+                    </PaginationItem>
+
+                    {/* Generate page numbers to display */}
+                    {(() => {
+                      const pages: (number | 'ellipsis')[] = [];
+
+                      // Always show first page
+                      pages.push(1);
+
+                      // Calculate range around current page
+                      const startPage = Math.max(2, currentPage - 1);
+                      const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+                      // Add ellipsis after page 1 if needed
+                      if (startPage > 2) {
+                        pages.push('ellipsis');
+                      }
+
+                      // Add pages around current page
+                      for (let i = startPage; i <= endPage; i++) {
+                        if (i !== 1 && i !== totalPages) {
+                          pages.push(i);
+                        }
+                      }
+
+                      // Add ellipsis before last page if needed
+                      if (endPage < totalPages - 1) {
+                        pages.push('ellipsis');
+                      }
+
+                      // Always show last page (if more than 1 page)
+                      if (totalPages > 1) {
+                        pages.push(totalPages);
+                      }
+
+                      // Remove duplicates and sort
+                      const uniquePages: (number | 'ellipsis')[] = [];
+                      let lastNum = 0;
+                      for (const page of pages) {
+                        if (page === 'ellipsis') {
+                          if (uniquePages[uniquePages.length - 1] !== 'ellipsis') {
+                            uniquePages.push('ellipsis');
+                          }
+                        } else {
+                          if (page !== lastNum) {
+                            uniquePages.push(page);
+                            lastNum = page;
+                          }
+                        }
+                      }
+
+                      return uniquePages.map((page, index) => {
+                        if (page === 'ellipsis') {
+                          return (
+                            <PaginationItem key={`ellipsis-${index}`}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          );
+                        }
+                        return (
+                          <PaginationItem key={page}>
+                            <PaginationLink
+                              onClick={() => !loading && updateCurrentPage(page)}
+                              isActive={currentPage === page}
+                              className={cn(
+                                'cursor-pointer',
+                                loading && 'pointer-events-none opacity-50',
+                              )}
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      });
+                    })()}
+
+                    <PaginationItem>
+                      <button
+                        type="button"
+                        onClick={() => updateCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages || loading}
+                        className={cn(
+                          buttonVariants({
+                            variant: 'ghost',
+                            size: 'default',
+                          }),
+                          'cursor-pointer gap-1 px-2.5 sm:pr-2.5',
+                          (currentPage === totalPages || loading) &&
+                            'pointer-events-none opacity-50',
+                        )}
+                        aria-label="Trang sau"
+                      >
+                        <span className="hidden sm:block">Sau</span>
+                        <ChevronRightIcon />
+                      </button>
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </main>

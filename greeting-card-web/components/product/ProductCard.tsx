@@ -245,13 +245,6 @@ export function ProductCard({
             />
             {renderOverlays()}
 
-            {/* Quick Actions */}
-            {showAddToCart && (
-              <div className="absolute top-3 right-3 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                {renderQuickActions()}
-              </div>
-            )}
-
             {/* Badges */}
             <div className="absolute top-3 left-3 flex flex-col gap-1.5">
               {product.isFeatured && (

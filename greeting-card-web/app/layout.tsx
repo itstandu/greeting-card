@@ -35,7 +35,7 @@ export default function RootLayout({
           <HeaderWrapper />
           <main className="min-h-screen">{children}</main>
           <FooterWrapper />
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="top-right" closeButton />
         </StoreProvider>
       </body>
     </html>

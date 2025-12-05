@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ProductCard, ProductCardSkeleton } from '@/components/product';
 import { ProductListItem, ProductListItemSkeleton } from '@/components/product/ProductListItem';
 import { Badge } from '@/components/ui/badge';
@@ -12,8 +12,12 @@ import { PageHeader } from '@/components/ui/page-header';
 import { ProductFilters, ViewMode } from '@/components/ui/product-filters';
 import { SafeImage } from '@/components/ui/safe-image';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/use-auth';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useToast } from '@/hooks/use-toast';
+import { cartStorage } from '@/lib/store/cart/cart-storage';
 import { cn, formatCurrency } from '@/lib/utils';
+import { addToCart as addToCartApi } from '@/services/cart.service';
 import type { Category, Product } from '@/types';
 import {
   ArrowRight,
@@ -48,11 +52,67 @@ export function CategoryDetailClient({
   loading = false,
   error = false,
 }: CategoryDetailClientProps) {
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const debouncedSearch = useDebounce(searchQuery, 300);
+
+  // Handle add to cart
+  const handleAddToCart = useCallback(
+    async (product: Product) => {
+      if (!product.isActive || product.stock <= 0) {
+        toast({
+          title: 'Không thể thêm vào giỏ',
+          description: 'Sản phẩm này hiện không có sẵn.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      try {
+        if (isAuthenticated) {
+          // Add to server cart
+          await addToCartApi({ productId: product.id, quantity: 1 });
+        } else {
+          // Add to local cart
+          const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+          cartStorage.addItem(
+            {
+              productId: product.id,
+              productName: product.name,
+              productSlug: product.slug,
+              productImage: primaryImage?.imageUrl || '',
+              price: product.price,
+              stock: product.stock,
+            },
+            1,
+          );
+        }
+
+        // Dispatch cart changed event
+        window.dispatchEvent(new Event('cart-changed'));
+
+        toast({
+          title: 'Đã thêm vào giỏ hàng',
+          description: product.name,
+        });
+      } catch (error: unknown) {
+        const errorMessage =
+          error && typeof error === 'object' && 'response' in error
+            ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+            : undefined;
+        toast({
+          title: 'Lỗi',
+          description: errorMessage || 'Không thể thêm vào giỏ hàng',
+          variant: 'destructive',
+        });
+      }
+    },
+    [isAuthenticated, toast],
+  );
 
   // Filter and sort products - MUST be called before early returns (Rules of Hooks)
   const filteredProducts = useMemo(() => {
@@ -301,6 +361,8 @@ export function CategoryDetailClient({
                     product={product}
                     showCategory={false}
                     showAddToWishlist
+                    showAddToCart
+                    onAddToCart={handleAddToCart}
                   />
                 ))}
               </div>
@@ -321,6 +383,8 @@ export function CategoryDetailClient({
                     showCategory={false}
                     showDescription={viewMode !== 'compact'}
                     showAddToWishlist
+                    showAddToCart
+                    onAddToCart={handleAddToCart}
                   />
                 ))}
               </div>

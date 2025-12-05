@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,6 +37,21 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+  @Value("${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}")
+  private String corsAllowedOrigins;
+
+  @Value("${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}")
+  private String corsAllowedMethods;
+
+  @Value("${CORS_ALLOWED_HEADERS:*}")
+  private String corsAllowedHeaders;
+
+  @Value("${CORS_ALLOW_CREDENTIALS:true}")
+  private boolean corsAllowCredentials;
+
+  @Value("${CORS_MAX_AGE:3600}")
+  private long corsMaxAge;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -134,11 +150,37 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(Arrays.asList("*"));
-    configuration.setAllowCredentials(true);
-    configuration.setMaxAge(3600L);
+
+    // Parse allowed origins from comma-separated string
+    List<String> allowedOrigins =
+        Arrays.stream(corsAllowedOrigins.split(","))
+            .map(String::trim)
+            .filter(origin -> !origin.isEmpty())
+            .toList();
+    configuration.setAllowedOrigins(allowedOrigins);
+
+    // Parse allowed methods from comma-separated string
+    List<String> allowedMethods =
+        Arrays.stream(corsAllowedMethods.split(","))
+            .map(String::trim)
+            .filter(method -> !method.isEmpty())
+            .toList();
+    configuration.setAllowedMethods(allowedMethods);
+
+    // Parse allowed headers
+    if ("*".equals(corsAllowedHeaders)) {
+      configuration.setAllowedHeaders(Arrays.asList("*"));
+    } else {
+      List<String> allowedHeaders =
+          Arrays.stream(corsAllowedHeaders.split(","))
+              .map(String::trim)
+              .filter(header -> !header.isEmpty())
+              .toList();
+      configuration.setAllowedHeaders(allowedHeaders);
+    }
+
+    configuration.setAllowCredentials(corsAllowCredentials);
+    configuration.setMaxAge(corsMaxAge);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);

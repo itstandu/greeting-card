@@ -52,7 +52,7 @@ jwt:
   refresh-token-validity: 604800000  # 7 days in milliseconds
   cookie-domain: ${JWT_COOKIE_DOMAIN:}
   cookie-secure: ${JWT_COOKIE_SECURE:true}
-  cookie-same-site: Strict
+  cookie-same-site: ${JWT_COOKIE_SAME_SITE:Strict}
   redis:
     refresh-token-prefix: "refresh_token:"
     access-token-blacklist-prefix: "blacklist:access_token:"

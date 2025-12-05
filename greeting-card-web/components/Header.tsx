@@ -46,7 +46,6 @@ import {
   Shield,
   ShoppingBag,
   ShoppingCart,
-  Tag,
   User,
   X,
 } from 'lucide-react';
@@ -164,7 +163,7 @@ export function Header() {
               <ShoppingBag className="text-primary size-5" />
             </div>
             <span className="hidden text-xl font-bold sm:block">
-              <span className="from-primary to-primary/60 bg-gradient-to-r bg-clip-text text-transparent">
+              <span className="from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent">
                 Greeting
               </span>
               <span className="ml-1">Card</span>

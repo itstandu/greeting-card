@@ -58,6 +58,7 @@ export function Header() {
   const router = useRouter();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -146,6 +147,7 @@ export function Header() {
     if (searchQuery.trim()) {
       router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+      setSearchDialogOpen(false);
     }
   };
 
@@ -169,8 +171,8 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <NavigationMenu className="hidden md:flex">
+          {/* Desktop Navigation - chỉ hiển thị từ 1024px trở lên */}
+          <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
@@ -204,42 +206,16 @@ export function Header() {
           </NavigationMenu>
         </div>
 
-        {/* Center - Search Bar (Desktop) */}
-        <form onSubmit={handleSearch} className="hidden max-w-md flex-1 lg:block">
-          <div className="relative">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-            <Input
-              type="text"
-              placeholder="Tìm kiếm sản phẩm..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="h-9 pr-4 pl-9"
-            />
-            {searchQuery && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2"
-                onClick={() => setSearchQuery('')}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        </form>
-
         {/* Right side - Actions and Auth controls */}
         <div className="flex items-center gap-2">
-          {/* Search Button (Mobile) */}
-          <Sheet>
+          <Sheet open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
+              <Button variant="ghost" size="icon">
                 <Search className="size-5" />
                 <span className="sr-only">Tìm kiếm</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="top" className="px-4 py-12">
+            <SheetContent side="top" className="px-4 py-6">
               <SheetHeader className="p-0">
                 <SheetTitle>Tìm kiếm sản phẩm</SheetTitle>
                 <SheetDescription>Nhập tên sản phẩm hoặc từ khóa để tìm kiếm</SheetDescription>
@@ -252,9 +228,20 @@ export function Header() {
                     placeholder="Tìm kiếm sản phẩm..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="h-11 pr-4 pl-9"
+                    className="h-11 pr-10 pl-9"
                     autoFocus
                   />
+                  {searchQuery && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2"
+                      onClick={() => setSearchQuery('')}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </form>
             </SheetContent>
@@ -292,85 +279,88 @@ export function Header() {
             </Link>
           </Button>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Toggle - hiển thị dưới 1024px */}
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
 
-          {isLoading || !hasCheckedAuth ? (
-            <div className="bg-muted size-8 animate-pulse rounded-full" />
-          ) : isAuthenticated && user ? (
-            <>
-              <NotificationDropdown />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative size-10 rounded-full">
-                    <Avatar className="size-10">
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {getInitials(user.fullName)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm leading-none font-medium">
-                        {user.fullName || 'Người dùng'}
-                      </p>
-                      <p className="text-muted-foreground text-xs leading-none">{user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex cursor-pointer items-center">
-                      <User className="mr-2 size-4" />
-                      <span>Hồ sơ</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  {user.role === 'ADMIN' && (
-                    <>
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin" className="flex cursor-pointer items-center">
-                          <Shield className="mr-2 size-4" />
-                          <span>Trang quản trị</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setLogoutDialogOpen(true)}
-                    className="cursor-pointer"
-                  >
-                    <LogOut className="mr-2 size-4" />
-                    <span>Đăng xuất</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/auth/login">Đăng nhập</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/auth/register">Đăng ký</Link>
-              </Button>
-            </div>
-          )}
+          {/* Auth controls - chỉ hiển thị trên desktop (>= 1024px) */}
+          <div className="hidden lg:flex lg:items-center lg:gap-2">
+            {isLoading || !hasCheckedAuth ? (
+              <div className="bg-muted size-8 animate-pulse rounded-full" />
+            ) : isAuthenticated && user ? (
+              <>
+                <NotificationDropdown />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative size-10 rounded-full">
+                      <Avatar className="size-10">
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                          {getInitials(user.fullName)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm leading-none font-medium">
+                          {user.fullName || 'Người dùng'}
+                        </p>
+                        <p className="text-muted-foreground text-xs leading-none">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="flex cursor-pointer items-center">
+                        <User className="mr-2 size-4" />
+                        <span>Hồ sơ</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    {user.role === 'ADMIN' && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin" className="flex cursor-pointer items-center">
+                            <Shield className="mr-2 size-4" />
+                            <span>Trang quản trị</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setLogoutDialogOpen(true)}
+                      className="cursor-pointer"
+                    >
+                      <LogOut className="mr-2 size-4" />
+                      <span>Đăng xuất</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/auth/login">Đăng nhập</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/auth/register">Đăng ký</Link>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile Navigation Menu - hiển thị dưới 1024px */}
       {mobileMenuOpen && (
-        <div className="bg-background border-t md:hidden">
+        <div className="bg-background border-t lg:hidden">
           <nav className="container mx-auto px-4 py-4">
             <ul className="space-y-2">
               <li>
@@ -411,6 +401,91 @@ export function Header() {
                   Liên hệ
                 </Link>
               </li>
+
+              {/* Separator */}
+              <li className="border-border my-4 border-t" />
+
+              {/* Auth section in mobile menu */}
+              {isLoading || !hasCheckedAuth ? (
+                <li>
+                  <div className="bg-muted flex h-10 items-center justify-center rounded-lg">
+                    <div className="bg-muted size-6 animate-pulse rounded-full" />
+                  </div>
+                </li>
+              ) : isAuthenticated && user ? (
+                <>
+                  {/* User info */}
+                  <li className="px-3 py-2">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-10">
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                          {getInitials(user.fullName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <p className="text-sm font-medium">{user.fullName || 'Người dùng'}</p>
+                        <p className="text-muted-foreground text-xs">{user.email}</p>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    <Link
+                      href="/profile"
+                      className="hover:bg-accent flex items-center gap-2 rounded-lg px-3 py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <User className="h-4 w-4" />
+                      Hồ sơ
+                    </Link>
+                  </li>
+                  {user.role === 'ADMIN' && (
+                    <li>
+                      <Link
+                        href="/admin"
+                        className="hover:bg-accent flex items-center gap-2 rounded-lg px-3 py-2"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Shield className="h-4 w-4" />
+                        Trang quản trị
+                      </Link>
+                    </li>
+                  )}
+                  <li className="border-border my-2 border-t" />
+                  <li>
+                    <button
+                      className="hover:bg-accent flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setLogoutDialogOpen(true);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Đăng xuất
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      href="/auth/login"
+                      className="hover:bg-accent flex items-center justify-center gap-2 rounded-lg border px-3 py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Đăng nhập
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/auth/register"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 rounded-lg px-3 py-2 font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Đăng ký
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </nav>
         </div>

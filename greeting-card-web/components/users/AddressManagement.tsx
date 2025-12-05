@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -35,7 +35,6 @@ import {
 import type { UserAddress } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit2, MapPin, Plus, Trash2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const addressSchema = z.object({
@@ -82,7 +81,7 @@ export function AddressManagement() {
       if (response.data) {
         setAddresses(response.data);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Không thể tải danh sách địa chỉ',
@@ -236,8 +235,8 @@ export function AddressManagement() {
         {[1, 2].map(i => (
           <Card key={i}>
             <CardContent className="p-6">
-              <Skeleton className="h-6 w-48 mb-4" />
-              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="mb-4 h-6 w-48" />
+              <Skeleton className="mb-2 h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
             </CardContent>
           </Card>
@@ -260,7 +259,7 @@ export function AddressManagement() {
               Thêm địa chỉ
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingAddress ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ mới'}</DialogTitle>
               <DialogDescription>
@@ -388,17 +387,17 @@ export function AddressManagement() {
                   control={form.control}
                   name="isDefault"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormItem className="flex flex-row items-start space-y-0 space-x-3">
                       <FormControl>
                         <input
                           type="checkbox"
                           checked={field.value}
                           onChange={field.onChange}
-                          className="mt-1 h-4 w-4 rounded border-gray-300"
+                          className="mr-0 h-4 w-4 rounded border-gray-300"
                         />
                       </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>Đặt làm địa chỉ mặc định</FormLabel>
+                      <div className="flex items-center leading-none">
+                        <FormLabel className="text-sm">Đặt làm địa chỉ mặc định</FormLabel>
                       </div>
                     </FormItem>
                   )}
@@ -417,7 +416,7 @@ export function AddressManagement() {
       </div>
 
       {addresses.length === 0 ? (
-        <Card>
+        <Card className="py-6">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <MapPin className="text-muted-foreground mb-4 h-12 w-12" />
             <h3 className="mb-2 text-lg font-semibold">Chưa có địa chỉ</h3>
@@ -433,7 +432,7 @@ export function AddressManagement() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {addresses.map(address => (
-            <Card key={address.id} className={address.isDefault ? 'border-primary' : ''}>
+            <Card key={address.id} className={`py-6 ${address.isDefault ? 'border-primary' : ''}`}>
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -458,7 +457,7 @@ export function AddressManagement() {
                       size="icon"
                       onClick={() => handleDelete(address.id)}
                       disabled={deletingAddressId === address.id}
-                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive h-8 w-8"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -473,9 +472,7 @@ export function AddressManagement() {
                     <p className="text-muted-foreground">{address.addressLine2}</p>
                   )}
                   <p className="text-muted-foreground">
-                    {[address.ward, address.district, address.city]
-                      .filter(Boolean)
-                      .join(', ')}
+                    {[address.ward, address.district, address.city].filter(Boolean).join(', ')}
                   </p>
                   {address.postalCode && (
                     <p className="text-muted-foreground">Mã bưu điện: {address.postalCode}</p>
@@ -499,4 +496,3 @@ export function AddressManagement() {
     </div>
   );
 }
-

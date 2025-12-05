@@ -65,6 +65,9 @@ public class User extends BaseEntity {
   @Column(name = "email_verification_expires_at")
   private LocalDateTime emailVerificationExpiresAt;
 
+  @Column(name = "avatar_url", length = 500)
+  private String avatarUrl;
+
   // Relationships
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private Cart cart;

@@ -20,6 +20,7 @@ public class UserMapper {
         .phone(user.getPhone())
         .role(user.getRole().name())
         .emailVerified(user.getEmailVerified())
+        .avatarUrl(user.getAvatarUrl())
         .createdAt(user.getCreatedAt())
         .updatedAt(user.getUpdatedAt())
         .build();

@@ -19,6 +19,7 @@ public class UserResponse {
   private String phone;
   private String role;
   private Boolean emailVerified;
+  private String avatarUrl;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 }

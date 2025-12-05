@@ -100,6 +100,23 @@ export const uploadProductImages = async (
   };
 };
 
+// Upload avatar người dùng (convenience method)
+export const uploadUserAvatar = async (file: File): Promise<ServiceResponse<UploadResponse>> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await apiClient.post<ApiResponse<UploadResponse>>('/upload/users', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return {
+    data: response.data.data!,
+    message: response.data.message,
+  };
+};
+
 // Upload hình ảnh danh mục (convenience method)
 export const uploadCategoryImage = async (file: File): Promise<ServiceResponse<UploadResponse>> => {
   const formData = new FormData();

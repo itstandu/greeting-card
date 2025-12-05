@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AddressManagement } from '@/components/users/AddressManagement';
 import { ChangePasswordForm } from '@/components/users/ChangePasswordForm';
 import { UpdateProfileForm } from '@/components/users/UpdateProfileForm';
 import { useAuth } from '@/hooks/use-auth';
@@ -51,6 +52,7 @@ export function ProfileClient() {
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="profile">Thông tin cá nhân</TabsTrigger>
+            <TabsTrigger value="addresses">Địa chỉ</TabsTrigger>
             <TabsTrigger value="password">Đổi mật khẩu</TabsTrigger>
           </TabsList>
 
@@ -62,6 +64,18 @@ export function ProfileClient() {
               </CardHeader>
               <CardContent>
                 <UpdateProfileForm />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="addresses">
+            <Card className="py-6">
+              <CardHeader>
+                <CardTitle>Quản lý địa chỉ</CardTitle>
+                <CardDescription>Thêm, sửa và xóa địa chỉ giao hàng của bạn</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AddressManagement />
               </CardContent>
             </Card>
           </TabsContent>

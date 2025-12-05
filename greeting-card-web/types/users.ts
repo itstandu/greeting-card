@@ -4,6 +4,7 @@ import type { User, UserRole } from './auth';
 export type UpdateUserRequest = {
   fullName: string;
   phone?: string;
+  avatarUrl?: string;
 };
 
 export type ChangePasswordRequest = {

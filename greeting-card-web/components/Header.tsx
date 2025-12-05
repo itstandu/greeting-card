@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LogoutDialog } from '@/components/auth/LogoutDialog';
 import { NotificationDropdown } from '@/components/notifications';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -299,6 +299,7 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative size-10 rounded-full">
                       <Avatar className="size-10">
+                        <AvatarImage src={user.avatarUrl} alt={user.fullName} />
                         <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                           {getInitials(user.fullName)}
                         </AvatarFallback>
@@ -417,6 +418,7 @@ export function Header() {
                   <li className="px-3 py-2">
                     <div className="flex items-center gap-3">
                       <Avatar className="size-10">
+                        <AvatarImage src={user.avatarUrl} alt={user.fullName} />
                         <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                           {getInitials(user.fullName)}
                         </AvatarFallback>

@@ -90,6 +90,9 @@ public class UserService {
     if (request.getPhone() != null) {
       user.setPhone(request.getPhone());
     }
+    if (request.getAvatarUrl() != null) {
+      user.setAvatarUrl(request.getAvatarUrl());
+    }
 
     user = userRepository.save(user);
 

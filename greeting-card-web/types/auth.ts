@@ -7,6 +7,7 @@ export type User = {
   phone?: string;
   role: UserRole;
   emailVerified: boolean;
+  avatarUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 };

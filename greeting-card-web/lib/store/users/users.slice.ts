@@ -1,6 +1,7 @@
 import { changePassword, getUserById, updateUser } from '@/services';
 import type { ChangePasswordRequest, UpdateUserRequest, User, UsersState } from '@/types';
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { setUser } from '../auth/auth.slice';
 
 const initialState: UsersState = {
   currentUser: null,
@@ -11,9 +12,11 @@ const initialState: UsersState = {
 // Async thunks for user operations
 export const updateUserProfile = createAsyncThunk(
   'users/updateProfile',
-  async (request: UpdateUserRequest, { rejectWithValue }) => {
+  async (request: UpdateUserRequest, { rejectWithValue, dispatch }) => {
     try {
       const response = await updateUser(request);
+      // Update auth store with new user data to sync avatar across the app
+      dispatch(setUser(response.data));
       return { user: response.data, message: response.message };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Cập nhật thông tin thất bại';

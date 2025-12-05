@@ -91,7 +91,7 @@ export function VerifyEmailPage() {
   if (verificationState === 'verifying') {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md py-6">
           <CardHeader>
             <CardTitle>Xác thực Email</CardTitle>
             <CardDescription>Đang xác thực email của bạn...</CardDescription>
@@ -111,7 +111,7 @@ export function VerifyEmailPage() {
   if (verificationState === 'success') {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md py-6">
           <CardHeader>
             <CardTitle>Xác thực Thành Công</CardTitle>
             <CardDescription>Email của bạn đã được xác thực thành công</CardDescription>
@@ -134,7 +134,7 @@ export function VerifyEmailPage() {
   // Show form when no token in URL or verification failed
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md py-6">
         <CardHeader>
           <CardTitle>Xác thực Email</CardTitle>
           <CardDescription>

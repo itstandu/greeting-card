@@ -177,26 +177,21 @@ const authSlice = createSlice({
     // Register
     builder
       .addCase(registerUser.pending, state => {
-        state.isLoading = true;
         state.error = null;
       })
       .addCase(registerUser.fulfilled, state => {
-        state.isLoading = false;
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
         state.error = action.payload as string;
       });
 
     // Login
     builder
       .addCase(loginUser.pending, state => {
-        state.isLoading = true;
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
         state.isAuthenticated = true;
@@ -204,7 +199,6 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
         state.error = action.payload as string;
       });
 

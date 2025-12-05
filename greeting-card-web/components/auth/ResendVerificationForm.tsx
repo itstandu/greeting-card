@@ -80,8 +80,8 @@ export function ResendVerificationForm({ onSuccess }: ResendVerificationFormProp
             )}
           />
 
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Đang gửi...' : 'Gửi lại Email Xác Thực'}
+          <Button type="submit" loading={isLoading} disabled={isLoading} className="w-full">
+            Gửi lại Email Xác Thực
           </Button>
         </div>
       </form>

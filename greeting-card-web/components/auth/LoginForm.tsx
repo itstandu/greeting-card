@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { loginUser } from '@/lib/store/auth/auth.slice';
-import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { useAppDispatch } from '@/lib/store/hooks';
 import { getLocalCartItemCount } from '@/lib/utils/cart-sync';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -35,7 +36,7 @@ interface LoginFormProps {
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isLoading } = useAppSelector(state => state.auth);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -46,6 +47,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   });
 
   const onSubmit = async (values: LoginFormValues) => {
+    setIsSubmitting(true);
     try {
       // Kiểm tra số lượng items trong localStorage cart trước khi login
       const localCartItemCount = getLocalCartItemCount();
@@ -72,6 +74,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       toast.error('Đăng nhập thất bại', {
         description,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -113,8 +117,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             </Link>
           </div>
 
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+          <Button type="submit" loading={isSubmitting} disabled={isSubmitting} className="w-full">
+            Đăng nhập
           </Button>
         </div>
       </form>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { registerUser } from '@/lib/store/auth/auth.slice';
-import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { useAppDispatch } from '@/lib/store/hooks';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -41,7 +42,7 @@ interface RegisterFormProps {
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isLoading } = useAppSelector(state => state.auth);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -55,6 +56,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   });
 
   const onSubmit = async (values: RegisterFormValues) => {
+    setIsSubmitting(true);
     try {
       const result = await dispatch(
         registerUser({
@@ -77,6 +79,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       toast.error('Đăng ký thất bại', {
         description,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -154,8 +158,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             )}
           />
 
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
+          <Button type="submit" loading={isSubmitting} disabled={isSubmitting} className="w-full">
+            Đăng ký
           </Button>
         </div>
       </form>

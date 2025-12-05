@@ -1,12 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import { CONTACT_INFO } from '@/lib/constants/contact';
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 
 const contactMethods = [
   {
     icon: Mail,
     title: 'Email',
-    description: 'Gửi email cho chúng tôi bất cứ lúc nào',
+    description: 'Gửi email cho chúng tôi mọi lúc',
     value: CONTACT_INFO.supportEmail,
     link: `mailto:${CONTACT_INFO.supportEmail}`,
     action: 'Gửi email',

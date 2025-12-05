@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CONTACT_INFO } from '@/lib/constants/contact';
 
 const sections = [
   {
@@ -70,9 +71,9 @@ Bạn có thể kiểm soát cookies thông qua cài đặt trình duyệt của
     title: '9. Liên hệ với chúng tôi',
     content: `Nếu bạn có bất kỳ câu hỏi hoặc mối quan ngại nào về chính sách bảo mật này hoặc cách chúng tôi xử lý thông tin cá nhân của bạn, vui lòng liên hệ với chúng tôi:
 
-Email: privacy@greetingcard.vn
-Điện thoại: 1900 1234
-Địa chỉ: Tầng 15, Landmark 81, 720A Điện Biên Phủ, Quận Bình Thạnh, TP. Hồ Chí Minh`,
+Email: ${CONTACT_INFO.privacyEmail}
+Điện thoại: ${CONTACT_INFO.phone}
+Địa chỉ: ${CONTACT_INFO.address.full}`,
   },
 ];
 
@@ -114,19 +115,19 @@ export function PrivacyContent() {
                 <p>
                   <span className="text-foreground font-medium">Email:</span>{' '}
                   <a
-                    href="mailto:privacy@greetingcard.vn"
+                    href={`mailto:${CONTACT_INFO.privacyEmail}`}
                     className="text-primary hover:text-primary/80 transition-colors hover:underline"
                   >
-                    privacy@greetingcard.vn
+                    {CONTACT_INFO.privacyEmail}
                   </a>
                 </p>
                 <p>
                   <span className="text-foreground font-medium">Điện thoại:</span>{' '}
                   <a
-                    href="tel:19001234"
+                    href={CONTACT_INFO.phoneLink}
                     className="text-primary hover:text-primary/80 transition-colors hover:underline"
                   >
-                    1900 1234
+                    {CONTACT_INFO.phone}
                   </a>
                 </p>
               </div>

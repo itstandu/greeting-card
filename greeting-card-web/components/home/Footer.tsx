@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Facebook, Instagram, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react';
+import { CONTACT_INFO } from '@/lib/constants/contact';
 
 export function Footer() {
   return (
@@ -18,27 +19,27 @@ export function Footer() {
             <div className="mb-4 space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 shrink-0" />
-                <span>Tầng 15, Landmark 81, Q. Bình Thạnh, TP.HCM</span>
+                <span>{CONTACT_INFO.address.short}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 shrink-0" />
-                <a href="tel:19001234" className="hover:text-foreground transition-colors">
-                  1900 1234
+                <a href={CONTACT_INFO.phoneLink} className="hover:text-foreground transition-colors">
+                  {CONTACT_INFO.phone}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 shrink-0" />
                 <a
-                  href="mailto:support@greetingcard.vn"
+                  href={`mailto:${CONTACT_INFO.supportEmail}`}
                   className="hover:text-foreground transition-colors"
                 >
-                  support@greetingcard.vn
+                  {CONTACT_INFO.supportEmail}
                 </a>
               </div>
             </div>
             <div className="flex gap-4">
               <a
-                href="https://facebook.com/greetingcardvn"
+                href={CONTACT_INFO.socialMedia.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
@@ -47,7 +48,7 @@ export function Footer() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://instagram.com/greetingcardvn"
+                href={CONTACT_INFO.socialMedia.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
@@ -56,7 +57,7 @@ export function Footer() {
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="https://twitter.com/greetingcardvn"
+                href={CONTACT_INFO.socialMedia.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
@@ -65,7 +66,7 @@ export function Footer() {
                 <Twitter className="h-5 w-5" />
               </a>
               <a
-                href="https://youtube.com/@greetingcardvn"
+                href={CONTACT_INFO.socialMedia.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"

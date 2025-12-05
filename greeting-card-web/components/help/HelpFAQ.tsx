@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { Link, Search } from 'lucide-react';
+import { CONTACT_INFO } from '@/lib/constants/contact';
 
 const faqs = [
   {
@@ -105,8 +106,7 @@ const faqs = [
       },
       {
         question: 'Đơn hàng của tôi bị chậm, tôi phải làm gì?',
-        answer:
-          'Nếu đơn hàng của bạn bị chậm quá thời gian dự kiến, vui lòng kiểm tra trạng thái đơn hàng hoặc liên hệ hotline 1900 1234 để được hỗ trợ.',
+        answer: `Nếu đơn hàng của bạn bị chậm quá thời gian dự kiến, vui lòng kiểm tra trạng thái đơn hàng hoặc liên hệ hotline ${CONTACT_INFO.phone} để được hỗ trợ.`,
       },
     ],
   },
@@ -131,8 +131,7 @@ const faqs = [
       },
       {
         question: 'Làm sao để xóa tài khoản của tôi?',
-        answer:
-          'Nếu bạn muốn xóa tài khoản, vui lòng liên hệ với bộ phận hỗ trợ qua email support@greetingcard.vn. Lưu ý rằng việc xóa tài khoản là không thể hoàn tác.',
+        answer: `Nếu bạn muốn xóa tài khoản, vui lòng liên hệ với bộ phận hỗ trợ qua email ${CONTACT_INFO.supportEmail}. Lưu ý rằng việc xóa tài khoản là không thể hoàn tác.`,
       },
     ],
   },

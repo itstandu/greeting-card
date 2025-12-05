@@ -1,36 +1,37 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
+import { CONTACT_INFO } from '@/lib/constants/contact';
 
 const contactMethods = [
   {
     icon: Mail,
     title: 'Email',
     description: 'Gửi email cho chúng tôi bất cứ lúc nào',
-    value: 'support@greetingcard.vn',
-    link: 'mailto:support@greetingcard.vn',
+    value: CONTACT_INFO.supportEmail,
+    link: `mailto:${CONTACT_INFO.supportEmail}`,
     action: 'Gửi email',
   },
   {
     icon: Phone,
     title: 'Điện thoại',
     description: 'Gọi cho chúng tôi trong giờ làm việc',
-    value: '1900 1234',
-    link: 'tel:19001234',
+    value: CONTACT_INFO.phone,
+    link: CONTACT_INFO.phoneLink,
     action: 'Gọi ngay',
   },
   {
     icon: MapPin,
     title: 'Văn phòng',
     description: 'Đến thăm văn phòng của chúng tôi',
-    value: 'Tầng 15, Landmark 81, 720A Điện Biên Phủ, Q. Bình Thạnh, TP.HCM',
-    link: 'https://maps.google.com/?q=Landmark+81+Ho+Chi+Minh',
+    value: CONTACT_INFO.address.full,
+    link: CONTACT_INFO.address.googleMapsUrl,
     action: 'Xem bản đồ',
   },
   {
     icon: Clock,
     title: 'Giờ làm việc',
     description: 'Thời gian chúng tôi có mặt',
-    value: 'Thứ 2 - Thứ 6: 8:30 - 17:30 | Thứ 7: 9:00 - 12:00',
+    value: CONTACT_INFO.workingHours,
     link: '#',
     action: null,
   },

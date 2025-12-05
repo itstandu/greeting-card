@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Clock, MapPin, Phone } from 'lucide-react';
+import { CONTACT_INFO } from '@/lib/constants/contact';
 
 export function ContactMap() {
   return (
@@ -20,7 +21,7 @@ export function ContactMap() {
               {/* Google Maps Embed - Landmark 81, TP.HCM */}
               <div className="relative aspect-video w-full">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.126124868823!2d106.72144807480642!3d10.794820458974688!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317527c2f8f30517%3A0x46225f8ee1a8e914!2sLandmark%2081!5e0!3m2!1svi!2s!4v1701619200000!5m2!1svi!2s"
+                  src={CONTACT_INFO.address.googleMapsEmbed}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -42,11 +43,11 @@ export function ContactMap() {
                 </div>
                 <h3 className="text-foreground mb-2 text-lg font-semibold">Địa chỉ</h3>
                 <p className="text-muted-foreground text-sm">
-                  Tầng 15, Landmark 81
+                  {CONTACT_INFO.address.line1}
                   <br />
-                  720A Điện Biên Phủ, Phường 22
+                  {CONTACT_INFO.address.line2}
                   <br />
-                  Quận Bình Thạnh, TP. Hồ Chí Minh
+                  {CONTACT_INFO.address.line3}
                 </p>
               </CardContent>
             </Card>
@@ -73,17 +74,10 @@ export function ContactMap() {
                 <h3 className="text-foreground mb-2 text-lg font-semibold">Điện thoại</h3>
                 <p className="text-muted-foreground text-sm">
                   <a
-                    href="tel:19001234"
+                    href={CONTACT_INFO.phoneLink}
                     className="text-primary hover:text-primary/80 transition-colors hover:underline"
                   >
-                    1900 1234
-                  </a>
-                  <br />
-                  <a
-                    href="tel:02838221234"
-                    className="text-primary hover:text-primary/80 transition-colors hover:underline"
-                  >
-                    028 3822 1234
+                    {CONTACT_INFO.phone}
                   </a>
                 </p>
               </CardContent>

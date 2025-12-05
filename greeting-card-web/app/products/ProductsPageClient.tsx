@@ -151,6 +151,12 @@ export function ProductsPageClient({
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
+  // Debounce price range to avoid too many API calls while dragging slider
+  const debouncedPriceRange = useDebounce(priceRange, 500);
+
+  // Debounce category selections to avoid too many API calls when clicking multiple checkboxes
+  const debouncedSelectedCategories = useDebounce(selectedCategories, 300);
+
   // Handle add to cart
   const handleAddToCart = useCallback(
     async (product: Product) => {
@@ -204,16 +210,6 @@ export function ProductsPageClient({
     },
     [isAuthenticated, toast],
   );
-
-  // Calculate price bounds from all products (for slider)
-  const priceBounds = useMemo(() => {
-    if (products.length === 0) return { min: 0, max: 1000000 };
-    const prices = products.map(p => p.price);
-    return {
-      min: Math.min(...prices),
-      max: Math.max(...prices),
-    };
-  }, [products]);
 
   // Map sortBy to API sortBy and sortDir
   const getSortParams = useCallback(
@@ -280,18 +276,18 @@ export function ProductsPageClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParamsString]);
 
-  // Memoize selectedCategories string key to avoid unnecessary re-renders
+  // Memoize debounced selectedCategories string key to avoid unnecessary re-renders
   const selectedCategoriesKey = useMemo(
-    () => [...selectedCategories].sort((a, b) => a - b).join(','),
+    () => [...debouncedSelectedCategories].sort((a, b) => a - b).join(','),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedCategories.join(',')],
+    [debouncedSelectedCategories.join(',')],
   );
 
-  // Memoize priceRange string key to avoid unnecessary re-renders
+  // Memoize debounced priceRange string key to avoid unnecessary re-renders
   const priceRangeKey = useMemo(
-    () => `${priceRange[0]},${priceRange[1]}`,
+    () => `${debouncedPriceRange[0]},${debouncedPriceRange[1]}`,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [priceRange[0], priceRange[1]],
+    [debouncedPriceRange[0], debouncedPriceRange[1]],
   );
 
   // Update URL when filters change
@@ -387,6 +383,35 @@ export function ProductsPageClient({
     },
     [pathname, router, searchParams],
   );
+
+  // Debounce URL updates for price range and categories
+  React.useEffect(() => {
+    const urlState = getInitialStateFromUrl();
+    // Only update URL if debounced values differ from URL state
+    if (
+      debouncedPriceRange[0] !== urlState.priceMin ||
+      debouncedPriceRange[1] !== urlState.priceMax
+    ) {
+      updateUrl({
+        priceMin: debouncedPriceRange[0],
+        priceMax: debouncedPriceRange[1],
+        page: 1,
+      });
+    }
+  }, [debouncedPriceRange, updateUrl, getInitialStateFromUrl]);
+
+  React.useEffect(() => {
+    const urlState = getInitialStateFromUrl();
+    const urlCategoriesKey = [...urlState.categories].sort((a, b) => a - b).join(',');
+    const debouncedCategoriesKey = [...debouncedSelectedCategories].sort((a, b) => a - b).join(',');
+    // Only update URL if debounced values differ from URL state
+    if (urlCategoriesKey !== debouncedCategoriesKey) {
+      updateUrl({
+        categories: debouncedSelectedCategories,
+        page: 1,
+      });
+    }
+  }, [debouncedSelectedCategories, updateUrl, getInitialStateFromUrl]);
 
   // Fetch products when filters change
   React.useEffect(() => {
@@ -503,21 +528,15 @@ export function ProductsPageClient({
     [updateUrl],
   );
 
-  const updateSelectedCategories = useCallback(
-    (value: number[]) => {
-      setSelectedCategories(value);
-      updateUrl({ categories: value, page: 1 });
-    },
-    [updateUrl],
-  );
+  const updateSelectedCategories = useCallback((value: number[]) => {
+    setSelectedCategories(value);
+    // URL update is handled by debounced useEffect
+  }, []);
 
-  const updatePriceRange = useCallback(
-    (value: [number, number]) => {
-      setPriceRange(value);
-      updateUrl({ priceMin: value[0], priceMax: value[1], page: 1 });
-    },
-    [updateUrl],
-  );
+  const updatePriceRange = useCallback((value: [number, number]) => {
+    setPriceRange(value);
+    // URL update is handled by debounced useEffect
+  }, []);
 
   const updateShowFeaturedOnly = useCallback(
     (value: boolean) => {
@@ -612,11 +631,11 @@ export function ProductsPageClient({
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (selectedCategories.length > 0) count++;
-    if (priceRange[0] > priceBounds.min || priceRange[1] < priceBounds.max) count++;
+    if (priceRange[0] > 0 || priceRange[1] < 1000000) count++;
     if (showFeaturedOnly) count++;
     if (showInStockOnly) count++;
     return count;
-  }, [selectedCategories, priceRange, priceBounds, showFeaturedOnly, showInStockOnly]);
+  }, [selectedCategories, priceRange, showFeaturedOnly, showInStockOnly]);
 
   const handleCategoryToggle = useCallback(
     (categoryId: number) => {
@@ -629,19 +648,24 @@ export function ProductsPageClient({
   );
 
   const handleClearFilters = useCallback(() => {
-    updateSelectedCategories([]);
-    updatePriceRange([priceBounds.min, priceBounds.max]);
-    updateShowFeaturedOnly(false);
-    updateShowInStockOnly(false);
-    updateSearchQuery('');
-  }, [
-    priceBounds,
-    updateSelectedCategories,
-    updatePriceRange,
-    updateShowFeaturedOnly,
-    updateShowInStockOnly,
-    updateSearchQuery,
-  ]);
+    // Update all state values
+    setSelectedCategories([]);
+    setPriceRange([0, 1000000]);
+    setShowFeaturedOnly(false);
+    setShowInStockOnly(false);
+    setSearchQuery('');
+
+    // Update URL in a single call to ensure proper synchronization
+    updateUrl({
+      categories: [],
+      priceMin: 0,
+      priceMax: 1000000,
+      featured: false,
+      inStock: false,
+      search: '',
+      page: 1,
+    });
+  }, [updateUrl]);
 
   const breadcrumbs = [{ label: 'Tất cả sản phẩm' }];
 
@@ -688,8 +712,8 @@ export function ProductsPageClient({
           <Slider
             value={priceRange}
             onValueChange={value => updatePriceRange(value as [number, number])}
-            min={priceBounds.min}
-            max={priceBounds.max}
+            min={0}
+            max={1000000}
             step={10000}
             className="w-full"
           />

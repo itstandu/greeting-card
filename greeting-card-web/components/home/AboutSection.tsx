@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
 export function AboutSection() {
@@ -8,8 +9,14 @@ export function AboutSection() {
         <div className="flex flex-col items-center gap-16 lg:flex-row">
           <div className="w-full lg:w-1/2">
             <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-              <div className="from-primary/10 to-accent/10 flex aspect-4/3 items-center justify-center bg-linear-to-br">
-                <span className="text-muted-foreground font-medium">About Image Placeholder</span>
+              <div className="relative aspect-4/3">
+                <Image
+                  src="/images/greetings-thank.jpg"
+                  alt="Thank you greeting card"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
             </div>
           </div>

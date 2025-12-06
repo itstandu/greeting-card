@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { SafeImage } from '@/components/ui/safe-image';
 import { cn } from '@/lib/utils';
 import { ProductImage } from '@/types';
-import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ProductImageGalleryProps {
   images: ProductImage[];
@@ -22,6 +23,10 @@ export function ProductImageGallery({
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [thumbApi, setThumbApi] = useState<CarouselApi>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalStartIndex, setModalStartIndex] = useState(0);
+  const [modalApi, setModalApi] = useState<CarouselApi>();
+  const [modalCurrent, setModalCurrent] = useState(0);
 
   // Sync main carousel with thumbnail selection
   const onSelect = useCallback(() => {
@@ -40,6 +45,31 @@ export function ProductImageGallery({
     };
   }, [api, onSelect]);
 
+  // Sync modal carousel selection
+  useEffect(() => {
+    if (!modalApi) return;
+
+    const handleSelect = () => {
+      setModalCurrent(modalApi.selectedScrollSnap());
+    };
+
+    handleSelect();
+    modalApi.on('select', handleSelect);
+    modalApi.on('reInit', handleSelect);
+
+    return () => {
+      modalApi.off('select', handleSelect);
+      modalApi.off('reInit', handleSelect);
+    };
+  }, [modalApi]);
+
+  // Move modal carousel to the tapped image when opened
+  useEffect(() => {
+    if (isModalOpen && modalApi) {
+      modalApi.scrollTo(modalStartIndex);
+    }
+  }, [isModalOpen, modalApi, modalStartIndex]);
+
   const scrollPrev = useCallback(() => {
     api?.scrollPrev();
   }, [api]);
@@ -48,12 +78,25 @@ export function ProductImageGallery({
     api?.scrollNext();
   }, [api]);
 
+  const modalScrollPrev = useCallback(() => {
+    modalApi?.scrollPrev();
+  }, [modalApi]);
+
+  const modalScrollNext = useCallback(() => {
+    modalApi?.scrollNext();
+  }, [modalApi]);
+
   const scrollTo = useCallback(
     (index: number) => {
       api?.scrollTo(index);
     },
     [api],
   );
+
+  const openModalAt = useCallback((index: number) => {
+    setModalStartIndex(index);
+    setIsModalOpen(true);
+  }, []);
 
   if (!images || images.length === 0) {
     return (
@@ -64,119 +107,191 @@ export function ProductImageGallery({
   }
 
   return (
-    <div className="space-y-4">
-      {/* Main Image Carousel */}
-      <div className="group relative">
-        <Carousel
-          setApi={setApi}
-          opts={{
-            loop: true,
-            align: 'start',
-          }}
-          className="w-full"
-        >
-          <CarouselContent>
-            {images.map((image, index) => (
-              <CarouselItem key={image.id}>
-                <div className="relative aspect-square overflow-hidden rounded-xl border bg-white">
-                  <SafeImage
-                    src={image.imageUrl}
-                    alt={image.altText || `${productName} - ${index + 1}`}
-                    className="h-full w-full object-cover transition-transform duration-500"
-                    loading={index === 0 ? 'eager' : 'lazy'}
-                    decoding={index === 0 ? 'sync' : 'async'}
-                  />
+    <>
+      <div className="space-y-4">
+        {/* Main Image Carousel */}
+        <div className="group relative">
+          <Carousel
+            setApi={setApi}
+            opts={{
+              loop: true,
+              align: 'start',
+            }}
+            className="w-full"
+          >
+            <CarouselContent>
+              {images.map((image, index) => (
+                <CarouselItem key={image.id}>
+                  <button
+                    type="button"
+                    onClick={() => openModalAt(index)}
+                    className="relative aspect-square w-full overflow-hidden rounded-xl border bg-white text-left"
+                    aria-label={`Xem hình ${index + 1} ở kích thước lớn`}
+                  >
+                    <SafeImage
+                      src={image.imageUrl}
+                      alt={image.altText || `${productName} - ${index + 1}`}
+                      className="h-full w-full object-cover transition-transform duration-500"
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      decoding={index === 0 ? 'sync' : 'async'}
+                    />
 
-                  {/* Zoom Icon */}
-                  <div className="absolute top-4 right-4 rounded-full bg-black/50 p-2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <ZoomIn className="h-4 w-4 text-white" />
-                  </div>
+                    {/* Out of Stock Overlay */}
+                    {isOutOfStock && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                        <span className="text-xl font-bold tracking-wider text-white uppercase">
+                          Hết hàng
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
 
-                  {/* Out of Stock Overlay */}
-                  {isOutOfStock && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-                      <span className="text-xl font-bold tracking-wider text-white uppercase">
-                        Hết hàng
-                      </span>
-                    </div>
+          {/* Navigation Arrows */}
+          {images.length > 1 && (
+            <>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-1/2 left-3 h-10 w-10 -translate-y-1/2 rounded-full opacity-0 shadow-lg transition-all group-hover:opacity-100 hover:scale-110"
+                onClick={scrollPrev}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-1/2 right-3 h-10 w-10 -translate-y-1/2 rounded-full opacity-0 shadow-lg transition-all group-hover:opacity-100 hover:scale-110"
+                onClick={scrollNext}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </>
+          )}
+
+          {/* Image Counter & Dots */}
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 backdrop-blur-sm">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => scrollTo(index)}
+                  className={cn(
+                    'h-2 w-2 rounded-full transition-all',
+                    current === index ? 'w-4 bg-white' : 'bg-white/50 hover:bg-white/80',
                   )}
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
-        {/* Navigation Arrows */}
+        {/* Thumbnail Carousel */}
         {images.length > 1 && (
-          <>
-            <Button
-              variant="secondary"
-              size="icon"
-              className="absolute top-1/2 left-3 h-10 w-10 -translate-y-1/2 rounded-full opacity-0 shadow-lg transition-all group-hover:opacity-100 hover:scale-110"
-              onClick={scrollPrev}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="secondary"
-              size="icon"
-              className="absolute top-1/2 right-3 h-10 w-10 -translate-y-1/2 rounded-full opacity-0 shadow-lg transition-all group-hover:opacity-100 hover:scale-110"
-              onClick={scrollNext}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </>
-        )}
-
-        {/* Image Counter & Dots */}
-        {images.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 backdrop-blur-sm">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => scrollTo(index)}
-                className={cn(
-                  'h-2 w-2 rounded-full transition-all',
-                  current === index ? 'w-4 bg-white' : 'bg-white/50 hover:bg-white/80',
-                )}
-              />
-            ))}
-          </div>
+          <Carousel
+            setApi={setThumbApi}
+            opts={{
+              align: 'start',
+              containScroll: 'keepSnaps',
+              dragFree: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2">
+              {images.map((image, index) => (
+                <CarouselItem key={image.id} className="basis-1/5 pl-2">
+                  <button
+                    onClick={() => scrollTo(index)}
+                    className={cn(
+                      'hover:border-primary relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all',
+                      current === index ? 'border-primary ring-primary' : 'border-transparent',
+                    )}
+                  >
+                    <SafeImage
+                      src={image.imageUrl}
+                      alt={image.altText || `${productName} thumbnail ${index + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
         )}
       </div>
 
-      {/* Thumbnail Carousel */}
-      {images.length > 1 && (
-        <Carousel
-          setApi={setThumbApi}
-          opts={{
-            align: 'start',
-            containScroll: 'keepSnaps',
-            dragFree: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2">
-            {images.map((image, index) => (
-              <CarouselItem key={image.id} className="basis-1/5 pl-2">
-                <button
-                  onClick={() => scrollTo(index)}
-                  className={cn(
-                    'hover:border-primary relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg border-2 transition-all',
-                    current === index ? 'border-primary ring-primary' : 'border-transparent',
-                  )}
+      {/* Fullscreen modal carousel */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-5xl! border-none bg-transparent p-4 sm:p-6" showCloseButton>
+          <div className="relative">
+            <Carousel
+              key={modalStartIndex}
+              setApi={setModalApi}
+              opts={{
+                loop: true,
+                align: 'start',
+                startIndex: modalStartIndex,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {images.map((image, index) => (
+                  <CarouselItem key={image.id} className="pl-0">
+                    <div className="relative flex h-[80vh] min-h-80 w-full items-center justify-center overflow-hidden rounded-xl bg-transparent">
+                      <SafeImage
+                        src={image.imageUrl}
+                        alt={image.altText || `${productName} - ${index + 1}`}
+                        className="h-full w-full object-contain"
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        decoding={index === 0 ? 'sync' : 'async'}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+
+            {images.length > 1 && (
+              <>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute top-1/2 left-3 h-10 w-10 -translate-y-1/2 rounded-full border border-white/20 bg-white/10 text-white shadow-lg backdrop-blur transition hover:bg-white/20"
+                  onClick={modalScrollPrev}
                 >
-                  <SafeImage
-                    src={image.imageUrl}
-                    alt={image.altText || `${productName} thumbnail ${index + 1}`}
-                    className="h-full w-full object-cover"
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute top-1/2 right-3 h-10 w-10 -translate-y-1/2 rounded-full border border-white/20 bg-white/10 text-white shadow-lg backdrop-blur transition hover:bg-white/20"
+                  onClick={modalScrollNext}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => modalApi?.scrollTo(index)}
+                    className={cn(
+                      'h-2 w-2 rounded-full transition-all',
+                      modalCurrent === index ? 'w-4 bg-white' : 'bg-white/60 hover:bg-white/90',
+                    )}
                   />
-                </button>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-      )}
-    </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

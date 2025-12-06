@@ -876,8 +876,8 @@ export function ProductsPageClient({
                       )}
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-80 overflow-y-auto">
-                    <SheetHeader>
+                  <SheetContent side="left" className="w-80 overflow-y-auto px-4">
+                    <SheetHeader className="px-0">
                       <SheetTitle>Bộ lọc sản phẩm</SheetTitle>
                       <SheetDescription>
                         Lọc sản phẩm theo danh mục, giá và các tiêu chí khác

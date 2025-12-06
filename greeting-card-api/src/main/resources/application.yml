@@ -1,6 +1,11 @@
 spring:
   application:
     name: greeting-card-api
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
   mvc:
     throw-exception-if-no-handler-found: true
   web:
@@ -48,15 +53,15 @@ spring:
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:your-secret-key-change-this-in-production-min-256-bits-please-use-a-long-random-string}
-  access-token-validity: 900000  # 15 minutes in milliseconds
-  refresh-token-validity: 604800000  # 7 days in milliseconds
+  access-token-validity: 900000 # 15 minutes in milliseconds
+  refresh-token-validity: 604800000 # 7 days in milliseconds
   cookie-domain: ${JWT_COOKIE_DOMAIN:}
   cookie-secure: ${JWT_COOKIE_SECURE:true}
   cookie-same-site: ${JWT_COOKIE_SAME_SITE:Strict}
   redis:
-    refresh-token-prefix: "refresh_token:"
-    access-token-blacklist-prefix: "blacklist:access_token:"
-    refresh-token-blacklist-prefix: "blacklist:refresh_token:"
+    refresh-token-prefix: 'refresh_token:'
+    access-token-blacklist-prefix: 'blacklist:access_token:'
+    refresh-token-blacklist-prefix: 'blacklist:refresh_token:'
 
 # Application Configuration
 app:

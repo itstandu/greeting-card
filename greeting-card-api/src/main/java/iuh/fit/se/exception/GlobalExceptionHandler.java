@@ -15,6 +15,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import iuh.fit.se.dto.response.ApiResponse;
@@ -64,6 +66,18 @@ public class GlobalExceptionHandler {
 
     return buildErrorResponse(
         ErrorCode.VALIDATION_ERROR, "Dữ liệu không hợp lệ", HttpStatus.BAD_REQUEST, errors);
+  }
+
+  @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
+  public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(Exception ex) {
+    Map<String, String> errors = new HashMap<>();
+    errors.put("file", "Dung lượng tệp vượt quá giới hạn cho phép (tối đa 20MB)");
+
+    return buildErrorResponse(
+        ErrorCode.VALIDATION_ERROR,
+        "Kích thước tệp vượt quá giới hạn (tối đa 20MB). Vui lòng chọn tệp nhỏ hơn",
+        HttpStatus.PAYLOAD_TOO_LARGE,
+        errors);
   }
 
   @ExceptionHandler(BadCredentialsException.class)
@@ -139,8 +153,8 @@ public class GlobalExceptionHandler {
         message = sb.toString();
         break;
       } else if (cause instanceof org.hibernate.exception.ConstraintViolationException hEx) {
-        String sqlMessage =
-            hEx.getSQLException() != null ? hEx.getSQLException().getMessage() : hEx.getMessage();
+        SQLException sqlException = hEx.getSQLException();
+        String sqlMessage = sqlException != null ? sqlException.getMessage() : hEx.getMessage();
         message = "Vi phạm ràng buộc dữ liệu: " + sqlMessage;
         break;
       } else if (cause instanceof PersistenceException) {

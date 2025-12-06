@@ -245,6 +245,7 @@ public class AuthService {
     cookieUtil.deleteRefreshTokenCookie(response);
   }
 
+  @SuppressWarnings("null")
   @Transactional
   public void logoutAll(Long userId, HttpServletResponse response) {
     if (!userRepository.existsById(userId)) {

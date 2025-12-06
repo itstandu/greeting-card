@@ -30,6 +30,7 @@ public class EmailService {
       NumberFormat.getCurrencyInstance(Locale.of("vi", "VN"));
 
   @Async
+  @SuppressWarnings("null")
   public void sendOrderConfirmationEmail(User user, Order order) {
     try {
       MimeMessage message = mailSender.createMimeMessage();
@@ -51,6 +52,7 @@ public class EmailService {
   }
 
   @Async
+  @SuppressWarnings("null")
   public void sendOrderStatusUpdateEmail(User user, Order order, String newStatus, String notes) {
     try {
       MimeMessage message = mailSender.createMimeMessage();

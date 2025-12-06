@@ -31,6 +31,7 @@ public class EmailVerificationService {
   private String fromName;
 
   // Gửi email xác thực
+  @SuppressWarnings("null")
   public void sendVerificationEmail(User user, String token) {
     try {
       String verificationUrl = webUrl + "/auth/verify-email?token=" + token;

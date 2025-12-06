@@ -77,8 +77,8 @@ public class WishlistService {
 
     return mapToWishlistResponse(wishlist);
   }
-
   // Xóa item khỏi wishlist
+  @SuppressWarnings("null")
   public void removeWishlistItem(Long userId, Long productId) {
     Wishlist wishlist = getWishlistByUserIdOrThrow(userId);
 
@@ -95,6 +95,7 @@ public class WishlistService {
   }
 
   // Xóa toàn bộ wishlist
+  @SuppressWarnings("null")
   public void clearWishlist(Long userId) {
     Wishlist wishlist = getWishlistByUserIdOrThrow(userId);
     wishlist.clearItems();
@@ -141,6 +142,7 @@ public class WishlistService {
 
   // === Helper Methods ===
 
+  @SuppressWarnings("null")
   private Wishlist getOrCreateWishlist(Long userId) {
     return wishlistRepository
         .findByUserIdWithItems(userId)
@@ -162,6 +164,7 @@ public class WishlistService {
         .orElseThrow(() -> new ResourceNotFoundException("Danh sách yêu thích không tồn tại"));
   }
 
+  @SuppressWarnings("null")
   private Product getProductOrThrow(Long productId) {
     return productRepository
         .findById(productId)

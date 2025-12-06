@@ -77,6 +77,7 @@ public class ReviewService {
 
   // Customer: Create a review
   @Transactional
+  @SuppressWarnings("null")
   public ReviewResponse createReview(Long productId, CreateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
 
@@ -120,6 +121,7 @@ public class ReviewService {
 
   // Customer: Update own review
   @Transactional
+  @SuppressWarnings("null")
   public ReviewResponse updateReview(Long productId, Long reviewId, UpdateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
 
@@ -155,6 +157,7 @@ public class ReviewService {
 
   // Customer: Delete own review
   @Transactional
+  @SuppressWarnings("null")
   public void deleteReview(Long productId, Long reviewId) {
     Long userId = SecurityUtils.getCurrentUserId();
 
@@ -217,6 +220,7 @@ public class ReviewService {
   }
 
   // Admin: Get review by ID
+  @SuppressWarnings("null")
   public ReviewResponse getReviewById(Long reviewId) {
     ProductReview review =
         reviewRepository
@@ -227,6 +231,7 @@ public class ReviewService {
 
   // Admin: Approve review
   @Transactional
+  @SuppressWarnings("null")
   public ReviewResponse approveReview(Long reviewId) {
     ProductReview review =
         reviewRepository
@@ -242,6 +247,7 @@ public class ReviewService {
 
   // Admin: Reject review
   @Transactional
+  @SuppressWarnings("null")
   public ReviewResponse rejectReview(Long reviewId, String reason) {
     ProductReview review =
         reviewRepository
@@ -257,6 +263,7 @@ public class ReviewService {
 
   // Admin: Delete any review
   @Transactional
+  @SuppressWarnings("null")
   public void adminDeleteReview(Long reviewId) {
     ProductReview review =
         reviewRepository

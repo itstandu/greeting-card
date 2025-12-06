@@ -46,6 +46,7 @@ public class AdminUserService {
 
   // Lấy thông tin user chi tiết
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public UserResponse getUserDetail(Long id) {
     User user =
         userRepository
@@ -57,6 +58,7 @@ public class AdminUserService {
 
   // Admin cập nhật thông tin và vai trò người dùng
   @Transactional(rollbackFor = Exception.class)
+  @SuppressWarnings("null")
   public UserResponse updateUser(Long id, AdminUpdateUserRequest request) {
     User user =
         userRepository
@@ -97,6 +99,7 @@ public class AdminUserService {
 
   // Admin xóa (soft delete) user nếu chưa phát sinh đơn hàng
   @Transactional
+  @SuppressWarnings("null")
   public void deleteUser(Long id) {
     User user =
         userRepository

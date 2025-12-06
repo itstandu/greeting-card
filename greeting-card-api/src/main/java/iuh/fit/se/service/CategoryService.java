@@ -48,6 +48,7 @@ public class CategoryService {
     return categoryPage.map(categoryMapper::toResponse);
   }
 
+  @SuppressWarnings("null")
   @Transactional(readOnly = true)
   public CategoryResponse getCategoryById(Long id) {
     Category category =
@@ -69,6 +70,7 @@ public class CategoryService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public CategoryResponse createCategory(CreateCategoryRequest request) {
     // Validate parent if provided
     Category parent = null;
@@ -103,6 +105,7 @@ public class CategoryService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public CategoryResponse updateCategory(Long id, UpdateCategoryRequest request) {
     Category category =
         categoryRepository
@@ -162,6 +165,7 @@ public class CategoryService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public void deleteCategory(Long id) {
     Category category =
         categoryRepository

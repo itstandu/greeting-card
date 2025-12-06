@@ -32,6 +32,7 @@ public class NotificationService {
 
   /** Tạo thông báo mới */
   @Transactional
+  @SuppressWarnings("null")
   public NotificationResponse createNotification(
       Long userId, NotificationType type, String title, String message, String linkUrl) {
     User user =

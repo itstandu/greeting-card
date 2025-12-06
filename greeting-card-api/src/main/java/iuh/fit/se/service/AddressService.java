@@ -32,6 +32,7 @@ public class AddressService {
     return addresses.stream().map(this::toResponse).collect(Collectors.toList());
   }
 
+  @SuppressWarnings("null")
   public UserAddressResponse createAddress(Long userId, CreateAddressRequest request) {
     User user =
         userRepository
@@ -65,6 +66,7 @@ public class AddressService {
     return toResponse(address);
   }
 
+  @SuppressWarnings("null")
   public UserAddressResponse updateAddress(
       Long userId, Long addressId, UpdateAddressRequest request) {
     UserAddress address =
@@ -106,6 +108,7 @@ public class AddressService {
     return toResponse(address);
   }
 
+  @SuppressWarnings("null")
   public void deleteAddress(Long userId, Long addressId) {
     UserAddress address =
         addressRepository
@@ -130,6 +133,7 @@ public class AddressService {
     }
   }
 
+  @SuppressWarnings("null")
   public UserAddressResponse setDefaultAddress(Long userId, Long addressId) {
     UserAddress address =
         addressRepository

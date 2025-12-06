@@ -23,7 +23,6 @@ import iuh.fit.se.entity.enumeration.PaymentStatus;
 import iuh.fit.se.exception.ResourceNotFoundException;
 import iuh.fit.se.mapper.PaymentMapper;
 import iuh.fit.se.repository.OrderRepository;
-import iuh.fit.se.repository.PaymentMethodRepository;
 import iuh.fit.se.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,13 +34,13 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentService {
   private final PaymentRepository paymentRepository;
   private final OrderRepository orderRepository;
-  private final PaymentMethodRepository paymentMethodRepository;
   private final PaymentMapper paymentMapper;
   private final NotificationService notificationService;
   private final ObjectMapper objectMapper;
   private final Random random = new Random();
 
   /** Xử lý thanh toán giả lập */
+  @SuppressWarnings("null")
   public PaymentResponse processPayment(Long userId, ProcessPaymentRequest request) {
     // 1. Validate order
     Order order =
@@ -127,6 +126,7 @@ public class PaymentService {
   }
 
   /** Hoàn tiền */
+  @SuppressWarnings("null")
   public PaymentResponse refundPayment(Long userId, RefundPaymentRequest request) {
     // 1. Validate payment
     Payment payment =
@@ -197,6 +197,7 @@ public class PaymentService {
 
   /** Lấy payment theo ID */
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public PaymentResponse getPaymentById(Long userId, Long paymentId) {
     Payment payment =
         paymentRepository
@@ -212,6 +213,7 @@ public class PaymentService {
 
   /** Lấy payments của một order */
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public List<PaymentResponse> getOrderPayments(Long userId, Long orderId) {
     Order order =
         orderRepository

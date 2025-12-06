@@ -95,6 +95,7 @@ public class CartService {
   }
 
   // Cập nhật số lượng của item trong giỏ hàng (quantity = 0 sẽ xóa item)
+  @SuppressWarnings("null")
   public CartResponse updateCartItem(Long userId, Long productId, UpdateCartItemRequest request) {
     Cart cart = getCartByUserIdOrThrow(userId);
 
@@ -128,6 +129,7 @@ public class CartService {
   }
 
   // Xóa item khỏi giỏ hàng
+  @SuppressWarnings("null")
   public void removeCartItem(Long userId, Long productId) {
     Cart cart = getCartByUserIdOrThrow(userId);
 
@@ -143,6 +145,7 @@ public class CartService {
   }
 
   // Xóa toàn bộ giỏ hàng
+  @SuppressWarnings("null")
   public void clearCart(Long userId) {
     Cart cart = getCartByUserIdOrThrow(userId);
     cart.clearItems();
@@ -196,6 +199,7 @@ public class CartService {
 
   // === Helper Methods ===
 
+  @SuppressWarnings("null")
   private Cart getOrCreateCart(Long userId) {
     return cartRepository
         .findByUserIdWithItems(userId)
@@ -217,6 +221,7 @@ public class CartService {
         .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tồn tại"));
   }
 
+  @SuppressWarnings("null")
   private Product getProductOrThrow(Long productId) {
     return productRepository
         .findById(productId)

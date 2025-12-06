@@ -52,6 +52,7 @@ public class PromotionService {
   }
 
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public PromotionResponse getPromotionById(Long id) {
     Promotion promotion =
         promotionRepository
@@ -61,6 +62,7 @@ public class PromotionService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public PromotionResponse createPromotion(CreatePromotionRequest request) {
     // Validate date range
     if (request.getValidUntil().isBefore(request.getValidFrom())) {
@@ -139,6 +141,7 @@ public class PromotionService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public PromotionResponse updatePromotion(Long id, UpdatePromotionRequest request) {
     Promotion promotion =
         promotionRepository
@@ -257,6 +260,7 @@ public class PromotionService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public void deletePromotion(Long id) {
     Promotion promotion =
         promotionRepository

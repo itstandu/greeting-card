@@ -121,6 +121,7 @@ public class ProductService {
   }
 
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public ProductResponse getProductById(Long id, Long userId) {
     Product product =
         productRepository
@@ -147,6 +148,7 @@ public class ProductService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public ProductResponse createProduct(CreateProductRequest request) {
     Category category =
         categoryRepository
@@ -182,6 +184,7 @@ public class ProductService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
     Product product =
         productRepository
@@ -231,6 +234,7 @@ public class ProductService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public void deleteProduct(Long id) {
     Product product =
         productRepository

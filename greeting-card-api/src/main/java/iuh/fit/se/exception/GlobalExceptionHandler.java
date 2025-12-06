@@ -115,6 +115,7 @@ public class GlobalExceptionHandler {
         null);
   }
 
+  @SuppressWarnings("null")
   private ResponseEntity<ApiResponse<Void>> buildErrorResponse(
       ErrorCode errorCode, String message, HttpStatus status, Map<String, String> errors) {
     ApiResponse<Void> response = ApiResponse.failure(errorCode, message, errors);

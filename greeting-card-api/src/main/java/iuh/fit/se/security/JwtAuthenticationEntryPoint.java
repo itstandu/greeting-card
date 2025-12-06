@@ -54,6 +54,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
   }
 
   // Kiểm tra xem có handler nào xử lý request này không
+  @SuppressWarnings("null")
   private boolean isHandlerExists(HttpServletRequest request) {
     if (requestMappingHandlerMapping == null) {
       // Nếu handler mapping chưa được khởi tạo, giả định endpoint tồn tại

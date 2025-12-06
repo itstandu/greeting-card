@@ -24,7 +24,6 @@ import iuh.fit.se.entity.Order;
 import iuh.fit.se.entity.Product;
 import iuh.fit.se.entity.enumeration.OrderStatus;
 import iuh.fit.se.mapper.OrderMapper;
-import iuh.fit.se.repository.CategoryRepository;
 import iuh.fit.se.repository.OrderRepository;
 import iuh.fit.se.repository.ProductRepository;
 import iuh.fit.se.repository.UserRepository;
@@ -39,7 +38,6 @@ public class DashboardService {
   private final UserRepository userRepository;
   private final OrderRepository orderRepository;
   private final ProductRepository productRepository;
-  private final CategoryRepository categoryRepository;
   private final OrderMapper orderMapper;
 
   public DashboardStatsResponse getDashboardStats() {

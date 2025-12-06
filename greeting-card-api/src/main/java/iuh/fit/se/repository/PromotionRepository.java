@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import iuh.fit.se.entity.Promotion;
@@ -16,7 +17,9 @@ import iuh.fit.se.entity.enumeration.PromotionType;
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
   // Tìm promotion theo ID (đã filter soft delete)
-  Optional<Promotion> findById(Long id);
+  @Override
+  @NonNull
+  Optional<Promotion> findById(@NonNull Long id);
 
   // Tìm các promotion đang active và hợp lệ
   @Query(

@@ -33,6 +33,7 @@ public class StockService {
   private final StockTransactionMapper stockTransactionMapper;
 
   @Transactional
+  @SuppressWarnings("null")
   public StockTransactionResponse createStockTransaction(
       CreateStockTransactionRequest request, Long adminUserId) {
     // Lấy sản phẩm
@@ -129,6 +130,7 @@ public class StockService {
   }
 
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public Page<StockTransactionResponse> getStockTransactions(
       Long productId, StockTransactionType type, String keyword, Pageable pageable) {
     // Tính toán pagination
@@ -177,6 +179,7 @@ public class StockService {
   }
 
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public StockTransactionResponse getStockTransaction(Long id) {
     StockTransaction transaction =
         stockTransactionRepository

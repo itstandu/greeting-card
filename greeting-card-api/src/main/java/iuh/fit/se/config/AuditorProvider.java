@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.hibernate.Session;
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,8 @@ public class AuditorProvider implements AuditorAware<User> {
   @PersistenceContext private EntityManager entityManager;
 
   @Override
+  @NonNull
+  @SuppressWarnings("null")
   public Optional<User> getCurrentAuditor() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

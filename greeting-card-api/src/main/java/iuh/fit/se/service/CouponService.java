@@ -40,8 +40,8 @@ public class CouponService {
     Pageable pageable = PageRequest.of(page, size, sort);
     return couponRepository.findAll(pageable).map(couponMapper::toResponse);
   }
-
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public CouponResponse getCouponById(Long id) {
     Coupon coupon =
         couponRepository
@@ -97,6 +97,7 @@ public class CouponService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public CouponResponse updateCoupon(Long id, UpdateCouponRequest request) {
     Coupon coupon =
         couponRepository
@@ -144,6 +145,7 @@ public class CouponService {
   }
 
   @Transactional
+  @SuppressWarnings("null")
   public void deleteCoupon(Long id) {
     Coupon coupon =
         couponRepository

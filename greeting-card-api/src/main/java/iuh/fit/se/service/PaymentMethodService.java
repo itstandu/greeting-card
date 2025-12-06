@@ -50,6 +50,7 @@ public class PaymentMethodService {
   }
 
   // Admin: Get payment method by ID
+  @SuppressWarnings("null")
   public PaymentMethodResponse getPaymentMethodById(Long id) {
     PaymentMethod method =
         paymentMethodRepository
@@ -89,6 +90,7 @@ public class PaymentMethodService {
 
   // Admin: Update payment method
   @Transactional
+  @SuppressWarnings("null")
   public PaymentMethodResponse updatePaymentMethod(Long id, UpdatePaymentMethodRequest request) {
     PaymentMethod method =
         paymentMethodRepository
@@ -128,6 +130,7 @@ public class PaymentMethodService {
 
   // Admin: Toggle payment method active status
   @Transactional
+  @SuppressWarnings("null")
   public PaymentMethodResponse togglePaymentMethodStatus(Long id) {
     PaymentMethod method =
         paymentMethodRepository
@@ -148,6 +151,7 @@ public class PaymentMethodService {
 
   // Admin: Update payment method ordering
   @Transactional
+  @SuppressWarnings("null")
   public List<PaymentMethodResponse> updatePaymentMethodOrdering(
       UpdatePaymentMethodOrderRequest request) {
     for (UpdatePaymentMethodOrderRequest.PaymentMethodOrderItem item : request.getItems()) {
@@ -170,6 +174,7 @@ public class PaymentMethodService {
 
   // Admin: Delete payment method
   @Transactional
+  @SuppressWarnings("null")
   public void deletePaymentMethod(Long id) {
     PaymentMethod method =
         paymentMethodRepository

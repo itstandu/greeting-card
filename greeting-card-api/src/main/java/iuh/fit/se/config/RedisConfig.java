@@ -24,6 +24,7 @@ public class RedisConfig {
   private String redisPassword;
 
   @Bean
+  @SuppressWarnings("null")
   public RedisConnectionFactory redisConnectionFactory() {
     RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
     config.setHostName(redisHost);

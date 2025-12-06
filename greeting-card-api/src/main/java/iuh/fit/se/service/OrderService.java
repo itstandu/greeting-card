@@ -66,6 +66,7 @@ public class OrderService {
   private final EmailService emailService;
 
   // Tạo đơn hàng mới từ giỏ hàng của user (yêu cầu: user đã login, giỏ hàng không rỗng)
+  @SuppressWarnings("null")
   public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
     // 1. Validate user
     User user =
@@ -361,6 +362,7 @@ public class OrderService {
 
   // Lấy lịch sử trạng thái đơn hàng
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public List<OrderStatusHistoryResponse> getOrderStatusHistory(Long userId, Long orderId) {
     Order order =
         orderRepository
@@ -381,6 +383,7 @@ public class OrderService {
 
   // Admin: Get all orders
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public Page<OrderResponse.Simple> getAllOrders(Pageable pageable) {
     Page<Order> orders = orderRepository.findAll(pageable);
     return orders.map(orderMapper::toSimpleOrderResponse);
@@ -413,6 +416,7 @@ public class OrderService {
 
   // Admin: Lấy lịch sử trạng thái đơn hàng (không cần validate ownership)
   @Transactional(readOnly = true)
+  @SuppressWarnings("null")
   public List<OrderStatusHistoryResponse> getOrderStatusHistoryAdmin(Long orderId) {
     Order order =
         orderRepository
@@ -425,6 +429,7 @@ public class OrderService {
   }
 
   // Admin: Cập nhật trạng thái đơn hàng
+  @SuppressWarnings("null")
   public OrderResponse updateOrderStatus(
       Long orderId, UpdateOrderStatusRequest request, Long adminUserId) {
     Order order =
@@ -462,6 +467,7 @@ public class OrderService {
   }
 
   // Admin: Update order item quantity
+  @SuppressWarnings("null")
   public OrderResponse updateOrderItemQuantity(
       Long orderId, Long orderItemId, Integer newQuantity, Long adminUserId) {
     Order order =
@@ -536,23 +542,18 @@ public class OrderService {
 
   // === HELPER METHODS ===
 
-  // Generate unique order number (Format: ORD-YYYY-MM-DD-XXX)
-  // Ví dụ: ORD-2024-12-25-001 (năm-tháng-ngày-số thứ tự)
   private String generateOrderNumber() {
     LocalDate today = LocalDate.now();
     String datePrefix = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-    // Get the latest order number for today
     Pageable pageable = Pageable.ofSize(1);
     List<String> latestNumbers = orderRepository.findLatestOrderNumber(pageable);
 
     int sequence = 1;
     if (!latestNumbers.isEmpty()) {
       String latestNumber = latestNumbers.get(0);
-      // Check if latest order is from today (format: ORD-YYYY-MM-DD-XXX)
       if (latestNumber.startsWith("ORD-" + datePrefix)) {
         try {
-          // Extract sequence from format: ORD-YYYY-MM-DD-XXX
           String seqStr = latestNumber.substring(latestNumber.lastIndexOf('-') + 1);
           sequence = Integer.parseInt(seqStr) + 1;
         } catch (Exception e) {

@@ -57,6 +57,7 @@ public class UserService {
   }
 
   // Lấy thông tin user theo ID
+  @SuppressWarnings("null")
   public UserResponse getUserById(Long id) {
     User user =
         userRepository

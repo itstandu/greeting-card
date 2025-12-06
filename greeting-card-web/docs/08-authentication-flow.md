@@ -3,6 +3,7 @@
 ## 1. Tổng Quan Authentication
 
 Frontend application sử dụng **JWT (JSON Web Token)** authentication với:
+
 - **accessToken:** Ngắn hạn (15 phút), lưu trong localStorage
 - **refreshToken:** Dài hạn (7 ngày), lưu trong HTTP-only cookie
 
@@ -11,6 +12,7 @@ Frontend application sử dụng **JWT (JSON Web Token)** authentication với:
 ### 2.1. Đăng Ký (Register)
 
 **Flow:**
+
 1. User điền form đăng ký
 2. Frontend gửi request đến `/api/auth/register`
 3. Backend tạo user mới và gửi email xác thực
@@ -72,6 +74,7 @@ export function RegisterForm() {
 ### 2.2. Xác Thực Email (Email Verification)
 
 **Flow:**
+
 1. User nhận email với link xác thực
 2. Click link hoặc nhập token vào trang `/auth/verify-email`
 3. Frontend gửi request đến `/api/auth/verify-email?token=...`
@@ -134,6 +137,7 @@ export default function VerifyEmailPage() {
 ### 2.3. Đăng Nhập (Login)
 
 **Flow:**
+
 1. User điền email và password
 2. Frontend gửi request đến `/api/auth/login`
 3. Backend kiểm tra credentials và email đã xác thực
@@ -174,13 +178,14 @@ export const loginUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Đăng nhập thất bại');
     }
-  }
+  },
 );
 ```
 
 ### 2.4. Refresh Token Mechanism
 
 **Flow:**
+
 1. User thực hiện API request với accessToken
 2. Nếu accessToken hết hạn (401), interceptor tự động gọi `/api/auth/refresh`
 3. Backend kiểm tra refreshToken từ HTTP-only cookie
@@ -199,7 +204,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
   if (!refreshRequest) {
     refreshRequest = apiClient
       .post<ApiResponse<TokenResponse>>('/auth/refresh')
-      .then((response) => {
+      .then(response => {
         const newToken = response.data.data?.accessToken ?? null;
         if (!newToken) {
           throw new Error('Không nhận được access token mới');
@@ -217,7 +222,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
 
 // Response interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
+  response => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
@@ -243,13 +248,14 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
 ### 2.5. Get Current User
 
 **Flow:**
+
 1. App load, `useAuth` hook được gọi
 2. Hook dispatch `getCurrentUser` thunk
 3. Thunk gửi request đến `/api/auth/me` với accessToken
@@ -275,15 +281,13 @@ export const getCurrentUser = createAsyncThunk(
       }
       return rejectWithValue(error instanceof Error ? error.message : 'Lỗi xác thực');
     }
-  }
+  },
 );
 
 // hooks/use-auth.ts
 export function useAuth() {
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, isLoading, hasCheckedAuth } = useAppSelector(
-    (state) => state.auth
-  );
+  const { user, isAuthenticated, isLoading, hasCheckedAuth } = useAppSelector(state => state.auth);
 
   useEffect(() => {
     if (!hasCheckedAuth && !isAuthenticated && !isLoading) {
@@ -303,6 +307,7 @@ export function useAuth() {
 ### 2.6. Đăng Xuất (Logout)
 
 **Flow:**
+
 1. User click nút "Đăng xuất"
 2. Frontend gửi request đến `/api/auth/logout`
 3. Backend xóa refreshToken từ database và cookie
@@ -314,20 +319,17 @@ export function useAuth() {
 
 ```typescript
 // lib/store/slices/auth.slice.ts
-export const logoutUser = createAsyncThunk(
-  'auth/logout',
-  async (_, { rejectWithValue }) => {
-    try {
-      await authService.logout();
-      clearAccessToken();
-      return null;
-    } catch (error) {
-      // Even if logout fails on server, clear local state
-      clearAccessToken();
-      return rejectWithValue(error instanceof Error ? error.message : 'Đăng xuất thất bại');
-    }
+export const logoutUser = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
+  try {
+    await authService.logout();
+    clearAccessToken();
+    return null;
+  } catch (error) {
+    // Even if logout fails on server, clear local state
+    clearAccessToken();
+    return rejectWithValue(error instanceof Error ? error.message : 'Đăng xuất thất bại');
   }
-);
+});
 
 // hooks/use-auth.ts
 export function useAuth() {
@@ -476,8 +478,8 @@ export function clearAccessToken(): void {
 
 ```typescript
 // __tests__/hooks/use-auth.test.ts
-import { renderHook } from '@testing-library/react';
 import { useAuth } from '@/hooks/use-auth';
+import { renderHook } from '@testing-library/react';
 
 describe('useAuth', () => {
   it('returns auth state', () => {
@@ -522,4 +524,3 @@ describe('LoginForm', () => {
 - Token đã hết hạn
 - Refresh token mechanism không hoạt động
 - Backend validation failed
-

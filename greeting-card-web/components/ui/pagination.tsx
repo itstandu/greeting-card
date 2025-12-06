@@ -32,7 +32,13 @@ function PaginationItem({ ...props }: React.ComponentProps<'li'>) {
 type PaginationLinkProps = {
   isActive?: boolean;
 } & Pick<React.ComponentProps<typeof Button>, 'size'> &
-  (React.ComponentProps<'a'> | (React.ComponentProps<'button'> & { href?: never }));
+  (
+    | (React.ComponentProps<'a'> & { onClick?: React.MouseEventHandler<HTMLAnchorElement> })
+    | (React.ComponentProps<'button'> & {
+        href?: never;
+        onClick?: React.MouseEventHandler<HTMLButtonElement>;
+      })
+  );
 
 function PaginationLink({
   className,
@@ -50,6 +56,7 @@ function PaginationLink({
   );
 
   if (onClick || !('href' in props)) {
+    const buttonOnClick = onClick as React.MouseEventHandler<HTMLButtonElement> | undefined;
     return (
       <button
         type="button"
@@ -57,7 +64,7 @@ function PaginationLink({
         data-slot="pagination-link"
         data-active={isActive}
         className={baseClassName}
-        onClick={onClick}
+        onClick={buttonOnClick}
         {...(props as React.ComponentProps<'button'>)}
       />
     );

@@ -1,4 +1,4 @@
-import { Mail, MessageSquare } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 
 export function ContactHero() {
   return (

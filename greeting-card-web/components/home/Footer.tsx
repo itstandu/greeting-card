@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { Facebook, Instagram, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react';
 import { CONTACT_INFO } from '@/lib/constants/contact';
+import { Facebook, Instagram, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -23,7 +23,10 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 shrink-0" />
-                <a href={CONTACT_INFO.phoneLink} className="hover:text-foreground transition-colors">
+                <a
+                  href={CONTACT_INFO.phoneLink}
+                  className="hover:text-foreground transition-colors"
+                >
                   {CONTACT_INFO.phone}
                 </a>
               </div>

@@ -55,7 +55,7 @@ export function AboutTimeline() {
 
         <div className="relative mx-auto max-w-6xl">
           {/* Vertical timeline line - centered */}
-          <div className="from-primary/30 via-primary to-primary/30 absolute left-1/2 top-0 hidden h-full w-0.5 -translate-x-1/2 bg-gradient-to-b md:block" />
+          <div className="from-primary/30 via-primary to-primary/30 absolute top-0 left-1/2 hidden h-full w-0.5 -translate-x-1/2 bg-gradient-to-b md:block" />
 
           <div className="space-y-12 md:space-y-16">
             {milestones.map((milestone, index) => {
@@ -127,7 +127,7 @@ export function AboutTimeline() {
                       <div className="flex-1">
                         <Card className="hover:border-primary/50 border-2 transition-all hover:shadow-lg">
                           <CardContent className="p-6">
-                            <div className="text-primary mb-3 flex items-center gap-2 text-sm font-medium md:justify-end md:flex-row-reverse">
+                            <div className="text-primary mb-3 flex items-center gap-2 text-sm font-medium md:flex-row-reverse md:justify-end">
                               <Calendar className="h-4 w-4" />
                               <span>{milestone.year}</span>
                             </div>

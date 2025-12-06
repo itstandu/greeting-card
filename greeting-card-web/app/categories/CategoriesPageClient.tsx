@@ -8,9 +8,8 @@ import { PromoBanner, TrustBadges } from '@/components/ui/decorative-elements';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { useDebounce } from '@/hooks/use-debounce';
-import { cn } from '@/lib/utils';
 import type { Category } from '@/types';
-import { FolderOpen, Layers, Search, Sparkles, Star, X } from 'lucide-react';
+import { FolderOpen, Layers, Search, Star, X } from 'lucide-react';
 
 interface CategoriesPageClientProps {
   categories: Category[];
@@ -26,10 +25,6 @@ const pageStats = {
 export function CategoriesPageClient({ categories }: CategoriesPageClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
-
-  const featuredCategories = useMemo(() => {
-    return categories.filter(c => c.isFeatured && c.isActive !== false);
-  }, [categories]);
 
   const filteredCategories = useMemo(() => {
     if (!debouncedSearch) return categories.filter(c => c.isActive !== false);

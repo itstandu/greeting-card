@@ -89,9 +89,11 @@ export function WishlistButton({
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Không thể cập nhật danh sách yêu thích';
       toast.error('Có lỗi xảy ra', {
-        description: error.message || 'Không thể cập nhật danh sách yêu thích',
+        description: message,
       });
     } finally {
       setIsLoading(false);

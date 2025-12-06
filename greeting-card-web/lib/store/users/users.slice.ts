@@ -1,7 +1,7 @@
+import { setUser } from '../auth/auth.slice';
 import { changePassword, getUserById, updateUser } from '@/services';
 import type { ChangePasswordRequest, UpdateUserRequest, User, UsersState } from '@/types';
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { setUser } from '../auth/auth.slice';
 
 const initialState: UsersState = {
   currentUser: null,

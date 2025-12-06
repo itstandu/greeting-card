@@ -132,7 +132,7 @@ export default function CartPage() {
         await clearCart();
         setCart({ items: [], total: 0, totalItems: 0 });
         window.dispatchEvent(new Event('cart-changed'));
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Failed to clear cart:', error);
       }
     } else {

@@ -151,13 +151,20 @@ export function WishlistSheet({
                             <TableRow key={item.id}>
                               <TableCell className="w-[280px] max-w-[350px] min-w-[200px]">
                                 <div className="flex items-center gap-3">
-                                  {item.product.imageUrl && (
-                                    <img
-                                      src={item.product.imageUrl}
-                                      alt={item.product.name}
-                                      className="size-12 shrink-0 rounded object-cover"
-                                    />
-                                  )}
+                                  {(() => {
+                                    const primaryImage = item.product.images.find(
+                                      img => img.isPrimary,
+                                    );
+                                    const imageUrl =
+                                      primaryImage?.imageUrl || item.product.images[0]?.imageUrl;
+                                    return imageUrl ? (
+                                      <img
+                                        src={imageUrl}
+                                        alt={item.product.name}
+                                        className="size-12 shrink-0 rounded object-cover"
+                                      />
+                                    ) : null;
+                                  })()}
                                   <div className="min-w-0 flex-1">
                                     <p className="truncate font-medium" title={item.product.name}>
                                       {item.product.name}

@@ -63,9 +63,10 @@ export function FeaturedProductsSection() {
         toast.success('Đã thêm vào giỏ hàng', {
           description: product.name,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Có lỗi xảy ra';
         toast.error('Không thể thêm vào giỏ hàng', {
-          description: error.message || 'Có lỗi xảy ra',
+          description: message,
         });
       }
       return;

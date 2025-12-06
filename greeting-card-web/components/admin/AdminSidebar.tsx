@@ -26,12 +26,12 @@ import {
   LogOut,
   MessageSquare,
   Package,
+  PhoneCall,
   ShoppingBag,
   ShoppingCart,
   Tag,
   Users,
   Warehouse,
-  PhoneCall,
 } from 'lucide-react';
 
 export function AdminSidebar() {

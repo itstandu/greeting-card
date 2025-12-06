@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { ProductInfo } from '@/components/product';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +13,6 @@ interface ProductInfoClientProps {
 
 export function ProductInfoClient({ product }: ProductInfoClientProps) {
   const { user } = useAuth();
-  const router = useRouter();
   const { toast } = useToast();
 
   const handleAddToCart = async (productId: number, quantity: number) => {
@@ -40,10 +38,12 @@ export function ProductInfoClient({ product }: ProductInfoClientProps) {
           title: 'Thành công',
           description: `Đã thêm ${quantity} sản phẩm vào giỏ hàng`,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : 'Không thể thêm sản phẩm vào giỏ hàng';
         toast({
           title: 'Lỗi',
-          description: error.message || 'Không thể thêm sản phẩm vào giỏ hàng',
+          description: message,
           variant: 'destructive',
         });
         throw error;
@@ -64,10 +64,12 @@ export function ProductInfoClient({ product }: ProductInfoClientProps) {
         title: 'Thành công',
         description: `Đã thêm ${quantity} sản phẩm vào giỏ hàng`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Không thể thêm sản phẩm vào giỏ hàng';
       toast({
         title: 'Lỗi',
-        description: error.message || 'Không thể thêm sản phẩm vào giỏ hàng',
+        description: message,
         variant: 'destructive',
       });
       throw error;

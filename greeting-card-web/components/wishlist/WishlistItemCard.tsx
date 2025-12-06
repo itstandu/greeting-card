@@ -54,9 +54,10 @@ export function WishlistItemCard({ item, onRemove }: WishlistItemCardProps) {
         toast.success('Đã thêm vào giỏ hàng', {
           description: `${item.productName} đã được thêm vào giỏ hàng`,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Có lỗi xảy ra';
         toast.error('Không thể thêm vào giỏ hàng', {
-          description: error.message || 'Có lỗi xảy ra',
+          description: message,
         });
       }
       return;
@@ -93,9 +94,10 @@ export function WishlistItemCard({ item, onRemove }: WishlistItemCardProps) {
           window.dispatchEvent(new Event('wishlist-changed'));
         }
         onRemove();
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Có lỗi xảy ra';
         toast.error('Không thể xóa khỏi yêu thích', {
-          description: error.message || 'Có lỗi xảy ra',
+          description: message,
         });
       }
       return;

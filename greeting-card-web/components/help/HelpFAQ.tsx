@@ -8,8 +8,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Link, Search } from 'lucide-react';
 import { CONTACT_INFO } from '@/lib/constants/contact';
+import { Link, Search } from 'lucide-react';
 
 const faqs = [
   {

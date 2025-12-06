@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import {
   createPaymentMethod,
   deletePaymentMethod,
@@ -49,7 +50,6 @@ import { DragDropContext, Draggable, Droppable, type DropResult } from '@hello-p
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { GripVertical, Pencil, Plus, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export default function AdminPaymentMethodsPage() {
   const { toast } = useToast();
@@ -348,7 +348,10 @@ export default function AdminPaymentMethodsPage() {
                               </code>
                             </TableCell>
                             <TableCell>
-                              <div className="max-w-[200px] truncate" title={method.description || ''}>
+                              <div
+                                className="max-w-[200px] truncate"
+                                title={method.description || ''}
+                              >
                                 {method.description || '-'}
                               </div>
                             </TableCell>

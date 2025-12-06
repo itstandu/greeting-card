@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getOrderDetail } from '@/services/order.service';
 import { processPayment } from '@/services/payment.service';
 import type { Order } from '@/types';
+import { AxiosError } from 'axios';
 import { ArrowLeft, CheckCircle2, CreditCard, Loader2, XCircle } from 'lucide-react';
 
 type PaymentStatus = 'processing' | 'success' | 'failed';
@@ -55,13 +56,18 @@ export default function PaymentProcessingPage() {
           // Bắt đầu xử lý thanh toán tự động
           processPaymentWithDelay(response.data);
         }
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Không thể tải thông tin đơn hàng');
+      } catch (err: unknown) {
+        let errorMessage = 'Không thể tải thông tin đơn hàng';
+        if (err instanceof AxiosError && err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        }
+        setError(errorMessage);
         setLoading(false);
       }
     };
 
     fetchOrder();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
   // Xử lý thanh toán với setTimeout simulation
@@ -95,9 +101,12 @@ export default function PaymentProcessingPage() {
           variant: 'destructive',
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      let errorMessage = 'Có lỗi xảy ra khi xử lý thanh toán';
+      if (err instanceof AxiosError && err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
       setPaymentStatus('failed');
-      const errorMessage = err.response?.data?.message || 'Có lỗi xảy ra khi xử lý thanh toán';
       setError(errorMessage);
       toast({
         title: 'Lỗi thanh toán',

@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, MapPin, Phone } from 'lucide-react';
 import { CONTACT_INFO } from '@/lib/constants/contact';
+import { Clock, MapPin, Phone } from 'lucide-react';
 
 export function ContactMap() {
   return (

@@ -82,7 +82,7 @@ export function ProductDetailClient({
         ]);
         setReviews(reviewsRes.data || []);
         setReviewStats(statsRes.data || null);
-      } catch (error) {
+      } catch {
         console.error('Failed to fetch reviews:', error);
       } finally {
         setLoadingReviews(false);
@@ -90,6 +90,7 @@ export function ProductDetailClient({
     };
 
     fetchReviewData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
   // Check if user can review product (only if authenticated)
@@ -105,8 +106,7 @@ export function ProductDetailClient({
         setLoadingCanReview(true);
         const response = await canUserReviewProduct(product.id);
         setCanReview(response.data || false);
-      } catch (error) {
-        // If error (e.g., not authenticated), user cannot review
+      } catch {
         setCanReview(false);
       } finally {
         setLoadingCanReview(false);
@@ -157,15 +157,6 @@ export function ProductDetailClient({
     month: 'long',
     day: 'numeric',
   });
-
-  // Calculate satisfaction percentage from real data
-  const satisfactionPercent = reviewStats
-    ? Math.round(
-        (((reviewStats.ratingDistribution[4] || 0) + (reviewStats.ratingDistribution[5] || 0)) /
-          (reviewStats.totalReviews || 1)) *
-          100,
-      )
-    : 0;
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -457,6 +448,7 @@ export function ProductDetailClient({
                   stats={reviewStats || undefined}
                   canReview={canReview}
                   isAuthenticated={isAuthenticated}
+                  loadingCanReview={loadingCanReview}
                   onSubmitReview={async (rating, comment) => {
                     await createProductReview(product.id, { rating, comment });
                     // Refresh reviews after submission

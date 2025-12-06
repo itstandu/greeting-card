@@ -54,9 +54,10 @@ export function CartItemCard({ item, onUpdate }: CartItemCardProps) {
         // Dispatch event để header fetch lại từ API
         window.dispatchEvent(new Event('cart-changed'));
         onUpdate();
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Có lỗi xảy ra';
         toast.error('Không thể cập nhật số lượng', {
-          description: error.message || 'Có lỗi xảy ra',
+          description: message,
         });
       }
       return;
@@ -83,9 +84,10 @@ export function CartItemCard({ item, onUpdate }: CartItemCardProps) {
         // Dispatch event để header fetch lại từ API
         window.dispatchEvent(new Event('cart-changed'));
         onUpdate();
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Có lỗi xảy ra';
         toast.error('Không thể xóa sản phẩm', {
-          description: error.message || 'Có lỗi xảy ra',
+          description: message,
         });
       }
       return;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,7 @@ interface ProductReviewsProps {
   onSubmitReview?: (rating: number, comment: string) => Promise<void>;
   canReview?: boolean;
   isAuthenticated?: boolean;
+  loadingCanReview?: boolean;
 }
 
 export function ProductReviews({
@@ -29,6 +30,7 @@ export function ProductReviews({
   onSubmitReview,
   canReview = false,
   isAuthenticated = false,
+  loadingCanReview = false,
 }: ProductReviewsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rating, setRating] = useState(0);
@@ -49,7 +51,7 @@ export function ProductReviews({
         title: 'Thành công',
         description: 'Đánh giá của bạn đã được gửi và đang chờ phê duyệt',
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Không thể gửi đánh giá',
@@ -105,7 +107,16 @@ export function ProductReviews({
       {/* Write Review */}
       {isAuthenticated && (
         <>
-          {canReview ? (
+          {loadingCanReview ? (
+            <Card className="py-6">
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <div className="text-muted-foreground border-t-primary mb-3 h-8 w-8 animate-spin rounded-full border-4 border-r-transparent border-b-transparent border-l-transparent" />
+                <p className="text-muted-foreground text-center text-sm">
+                  Đang kiểm tra quyền đánh giá...
+                </p>
+              </CardContent>
+            </Card>
+          ) : canReview ? (
             <Card className="py-6">
               <CardHeader>
                 <CardTitle>Viết đánh giá</CardTitle>

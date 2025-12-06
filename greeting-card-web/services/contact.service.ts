@@ -23,7 +23,9 @@ export const submitContact = async (
 
 export const getAdminContacts = async (
   filters?: ContactFilters,
-): Promise<ContactListResponse & { pagination?: PaginatedApiResponse<ContactMessage>['pagination'] }> => {
+): Promise<
+  ContactListResponse & { pagination?: PaginatedApiResponse<ContactMessage>['pagination'] }
+> => {
   const searchParams = new URLSearchParams();
   if (filters?.status) searchParams.append('status', filters.status);
   if (filters?.category) searchParams.append('category', filters.category);
@@ -34,8 +36,9 @@ export const getAdminContacts = async (
   if (filters?.sortDir) searchParams.append('sortDir', filters.sortDir);
 
   const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-  const response =
-      await apiClient.get<PaginatedApiResponse<ContactMessage>>(`/admin/contacts${query}`);
+  const response = await apiClient.get<PaginatedApiResponse<ContactMessage>>(
+    `/admin/contacts${query}`,
+  );
 
   return {
     data: response.data.data || [],
@@ -44,9 +47,7 @@ export const getAdminContacts = async (
   };
 };
 
-export const getAdminContactById = async (
-  id: number,
-): Promise<ServiceResponse<ContactMessage>> => {
+export const getAdminContactById = async (id: number): Promise<ServiceResponse<ContactMessage>> => {
   const response = await apiClient.get<ApiResponse<ContactMessage>>(`/admin/contacts/${id}`);
   return {
     data: response.data.data!,
@@ -76,4 +77,3 @@ export const deleteAdminContact = async (id: number): Promise<ServiceResponse<vo
     message: response.data.message,
   };
 };
-

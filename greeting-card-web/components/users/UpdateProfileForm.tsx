@@ -231,7 +231,12 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
 
           {error && <p className="text-destructive text-sm">{error}</p>}
 
-          <Button type="submit" loading={isSubmitting || isLoading} disabled={isSubmitting || isLoading} className="w-full">
+          <Button
+            type="submit"
+            loading={isSubmitting || isLoading}
+            disabled={isSubmitting || isLoading}
+            className="w-full"
+          >
             Cập nhật thông tin
           </Button>
         </div>

@@ -136,7 +136,7 @@ export default function WishlistPage() {
         await clearWishlist();
         setWishlist({ items: [], totalItems: 0 });
         window.dispatchEvent(new Event('wishlist-changed'));
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Failed to clear wishlist:', error);
       }
     } else {

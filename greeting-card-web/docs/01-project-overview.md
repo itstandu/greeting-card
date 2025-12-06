@@ -184,26 +184,32 @@ greeting-card-web/
 ## 6. Tiêu Chí Đánh Giá (CLO)
 
 ### CLO 1: Làm Việc Nhóm
+
 - Tham gia các hoạt động nhóm trong quá trình hoàn thành công việc
 - Hoàn thành công việc được phân công
 
 ### CLO 2: Viết Tài Liệu
+
 - Tài liệu báo cáo rõ ràng, đúng cấu trúc
 - Đầy đủ nội dung, trích dẫn, tài liệu tham khảo
 
 ### CLO 3: Phân Tích Yêu Cầu
+
 - Xác định mục tiêu công việc và ràng buộc của ứng dụng Web
 
 ### CLO 4: Frontend Development
+
 - Sử dụng React/Next.js để xây dựng UI
 - Responsive design
 - Component-based architecture
 
 ### CLO 5: Modern Web Technologies
+
 - Trình bày các công nghệ trong phát triển ứng dụng Web
 - Trình bày kiến trúc và cấu hình môi trường Next.js
 
 ### CLO 6: API Integration
+
 - Tích hợp với RESTful Web Services
 - Xử lý authentication và authorization
 - Error handling và loading states
@@ -211,6 +217,7 @@ greeting-card-web/
 ## 7. Tính Năng Chính
 
 ### 7.1. Public Features (Guest)
+
 - Xem danh sách sản phẩm
 - Xem chi tiết sản phẩm
 - Tìm kiếm và lọc sản phẩm
@@ -220,6 +227,7 @@ greeting-card-web/
 - Xác thực email
 
 ### 7.2. Customer Features
+
 - Tất cả features của Guest
 - Đăng nhập/Đăng xuất
 - Quản lý giỏ hàng (sync với server)
@@ -231,6 +239,7 @@ greeting-card-web/
 - Xem thông báo
 
 ### 7.3. Admin Features
+
 - Tất cả features của Customer
 - Dashboard quản trị
 - Quản lý sản phẩm (CRUD)
@@ -244,36 +253,42 @@ greeting-card-web/
 ## 8. Công Nghệ Stack
 
 ### 8.1. Core
+
 - **Next.js 16.0.7:** React framework với App Router
 - **React 19.2.1:** UI library
 - **TypeScript 5:** Type safety
 
 ### 8.2. Styling
+
 - **Tailwind CSS 4:** Utility-first CSS framework
 - **Radix UI:** Accessible component primitives
 - **shadcn/ui:** Pre-built component library
 
 ### 8.3. State Management
+
 - **Redux Toolkit 2.11.0:** State management
 - **React Redux 9.2.0:** React bindings
 
 ### 8.4. Forms & Validation
+
 - **React Hook Form 7.68.0:** Form handling
 - **Zod 4.1.13:** Schema validation
 - **@hookform/resolvers 5.2.2:** Form validation resolvers
 
 ### 8.5. HTTP Client
+
 - **Axios 1.13.2:** HTTP client với interceptors
 
 ### 8.6. UI Components
+
 - **Lucide React:** Icon library
 - **Sonner:** Toast notifications
 - **Recharts:** Chart library
 - **date-fns:** Date utilities
 
 ### 8.7. Development Tools
+
 - **ESLint:** Code linting
 - **Prettier:** Code formatting
 - **TypeScript:** Type checking
 - **Husky:** Git hooks
-

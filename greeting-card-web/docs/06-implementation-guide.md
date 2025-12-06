@@ -112,8 +112,8 @@ npx shadcn@latest init
 
 ```typescript
 // lib/store/index.ts
-import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/auth.slice';
+import { configureStore } from '@reduxjs/toolkit';
 
 export const store = configureStore({
   reducer: {
@@ -130,7 +130,7 @@ export type AppDispatch = typeof store.dispatch;
 ```typescript
 // lib/store/hooks.ts
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from './index';
+import type { AppDispatch, RootState } from './index';
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -175,8 +175,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ```typescript
 // services/client.ts
-import axios, { AxiosInstance } from 'axios';
 import { getAccessToken } from './token-manager';
+import axios, { AxiosInstance } from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 
@@ -189,7 +189,7 @@ export const apiClient: AxiosInstance = axios.create({
 });
 
 // Request interceptor
-apiClient.interceptors.request.use((config) => {
+apiClient.interceptors.request.use(config => {
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -199,11 +199,11 @@ apiClient.interceptors.request.use((config) => {
 
 // Response interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     // Handle errors
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -233,7 +233,7 @@ export function setAccessToken(token: string | null): void {
 ```typescript
 // services/auth.service.ts
 import { apiClient } from './client';
-import type { ApiResponse, LoginRequest, RegisterRequest, User, TokenResponse } from '@/types';
+import type { ApiResponse, LoginRequest, RegisterRequest, TokenResponse, User } from '@/types';
 
 export const authService = {
   async register(request: RegisterRequest): Promise<ApiResponse<User>> {
@@ -257,10 +257,10 @@ export const authService = {
 
 ```typescript
 // lib/store/slices/auth.slice.ts
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as authService from '@/services/auth.service';
 import { setAccessToken } from '@/services/token-manager';
 import type { AuthState, LoginRequest, RegisterRequest, User } from '@/types';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 const initialState: AuthState = {
   user: null,
@@ -281,22 +281,22 @@ export const loginUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Đăng nhập thất bại');
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    logout: (state) => {
+    logout: state => {
       state.user = null;
       state.accessToken = null;
       state.isAuthenticated = false;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
-      .addCase(loginUser.pending, (state) => {
+      .addCase(loginUser.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
@@ -327,9 +327,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 
 export function useAuth() {
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, isLoading, hasCheckedAuth } = useAppSelector(
-    (state) => state.auth
-  );
+  const { user, isAuthenticated, isLoading, hasCheckedAuth } = useAppSelector(state => state.auth);
 
   useEffect(() => {
     if (!hasCheckedAuth && !isAuthenticated && !isLoading) {
@@ -516,12 +514,14 @@ describe('LoginForm', () => {
 ## 7. Checklist Triển Khai
 
 ### 7.1. Setup
+
 - [ ] Cài đặt Node.js và npm
 - [ ] Clone repository
 - [ ] Cài đặt dependencies
 - [ ] Cấu hình environment variables
 
 ### 7.2. Core Features
+
 - [ ] Setup Redux store
 - [ ] Tạo API client
 - [ ] Tạo auth service và slice
@@ -529,6 +529,7 @@ describe('LoginForm', () => {
 - [ ] Tạo protected routes
 
 ### 7.3. Pages
+
 - [ ] Home page
 - [ ] Products page
 - [ ] Product detail page
@@ -538,6 +539,7 @@ describe('LoginForm', () => {
 - [ ] Admin pages
 
 ### 7.4. Components
+
 - [ ] UI components (shadcn/ui)
 - [ ] Auth components
 - [ ] Product components
@@ -545,6 +547,7 @@ describe('LoginForm', () => {
 - [ ] Admin components
 
 ### 7.5. Testing
+
 - [ ] Unit tests
 - [ ] Integration tests
 - [ ] E2E tests (optional)
@@ -579,4 +582,3 @@ describe('LoginForm', () => {
 - Kiểm tra token trong localStorage
 - Kiểm tra refresh token mechanism
 - Kiểm tra API response format
-

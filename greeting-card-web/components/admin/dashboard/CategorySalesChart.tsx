@@ -58,7 +58,7 @@ export function CategorySalesChart({ data }: CategorySalesChartProps) {
               axisLine={false}
               tickMargin={8}
               width={100}
-              tickFormatter={value => formatCurrency(value)}
+              tickFormatter={(value: number | string) => formatCurrency(Number(value))}
             />
             <ChartTooltip
               content={
@@ -79,7 +79,12 @@ export function CategorySalesChart({ data }: CategorySalesChartProps) {
               maxBarSize={80}
               label={{
                 position: 'top',
-                formatter: (value: number) => formatCurrency(value),
+                formatter: (value: number | string) => {
+                  if (typeof value === 'number') {
+                    return formatCurrency(value);
+                  }
+                  return String(value ?? '');
+                },
                 style: { fontSize: 11, fill: 'hsl(var(--foreground))' },
               }}
               onClick={(data, index) => {

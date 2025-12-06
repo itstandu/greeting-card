@@ -5,6 +5,7 @@
 ### 1.1. Server Components (Default)
 
 Sử dụng Server Components cho:
+
 - Data fetching
 - Static content
 - SEO optimization
@@ -25,6 +26,7 @@ export default async function ProductsPage() {
 ### 1.2. Client Components
 
 Chỉ sử dụng 'use client' khi cần:
+
 - Event handlers
 - React hooks (useState, useEffect, etc.)
 - Browser APIs
@@ -256,13 +258,13 @@ components/
 ### 6.3. Barrel Exports
 
 ```typescript
+// Usage
+import { ProductCard, ProductList } from '@/components/product';
+
 // components/product/index.ts
 export { ProductCard } from './ProductCard';
 export { ProductList } from './ProductList';
 export { ProductDetail } from './ProductDetail';
-
-// Usage
-import { ProductCard, ProductList } from '@/components/product';
 ```
 
 ## 7. Error Handling
@@ -322,8 +324,8 @@ describe('ProductCard', () => {
 ### 8.2. Page Testing
 
 ```typescript
-import { render } from '@testing-library/react';
 import ProductsPage from '@/app/products/page';
+import { render } from '@testing-library/react';
 
 describe('ProductsPage', () => {
   it('renders products page', async () => {
@@ -339,6 +341,7 @@ describe('ProductsPage', () => {
 ### 9.1. Hydration Mismatch
 
 **Problem:**
+
 ```typescript
 // ❌ Bad
 export default function Page() {
@@ -350,6 +353,7 @@ export default function Page() {
 ```
 
 **Solution:**
+
 ```typescript
 // ✅ Good
 'use client';
@@ -365,12 +369,14 @@ export default function Page() {
 ### 9.2. Unnecessary Re-renders
 
 **Problem:**
+
 ```typescript
 // ❌ Bad - Creates new object on every render
 <ProductCard product={{ id: 1, name: 'Product' }} />
 ```
 
 **Solution:**
+
 ```typescript
 // ✅ Good - Use useMemo or define outside component
 const product = { id: 1, name: 'Product' };
@@ -380,6 +386,7 @@ const product = { id: 1, name: 'Product' };
 ### 9.3. Missing Loading States
 
 **Problem:**
+
 ```typescript
 // ❌ Bad - No loading state
 export function ProductsList() {
@@ -392,6 +399,7 @@ export function ProductsList() {
 ```
 
 **Solution:**
+
 ```typescript
 // ✅ Good - With loading state
 export function ProductsList() {
@@ -445,4 +453,3 @@ export function ProductsList() {
 - [ ] Code được format với Prettier
 - [ ] ESLint rules được follow
 - [ ] Comments cho complex logic
-

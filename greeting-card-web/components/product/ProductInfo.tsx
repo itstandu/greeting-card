@@ -38,7 +38,7 @@ export function ProductInfo({ product, onAddToCart }: ProductInfoProps) {
         title: 'Thành công',
         description: `Đã thêm ${quantity} sản phẩm vào giỏ hàng`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Không thể thêm sản phẩm vào giỏ hàng',
@@ -57,9 +57,7 @@ export function ProductInfo({ product, onAddToCart }: ProductInfoProps) {
           text: product.description,
           url: window.location.href,
         });
-      } catch (error) {
-        // User cancelled share
-      }
+      } catch {}
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href);

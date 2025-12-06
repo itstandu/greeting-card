@@ -27,8 +27,9 @@ export const fetchWishlist = createAsyncThunk(
     try {
       const response = await getWishlist();
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch wishlist');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch wishlist';
+      return rejectWithValue(message);
     }
   },
 );
@@ -40,8 +41,9 @@ export const addWishlistItem = createAsyncThunk(
     try {
       const response = await addToWishlist({ productId });
       return { productId, data: response.data };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to add to wishlist');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to add to wishlist';
+      return rejectWithValue(message);
     }
   },
 );
@@ -53,8 +55,9 @@ export const removeWishlistItemAsync = createAsyncThunk(
     try {
       await removeWishlistItem(productId);
       return productId;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to remove from wishlist');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to remove from wishlist';
+      return rejectWithValue(message);
     }
   },
 );

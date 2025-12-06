@@ -52,19 +52,21 @@ export function AboutValues() {
       { threshold: 0.1 },
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    const sectionElement = sectionRef.current;
+
+    if (sectionElement) {
+      observer.observe(sectionElement);
     }
 
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
+      if (sectionElement) {
+        observer.unobserve(sectionElement);
       }
     };
   }, []);
 
   return (
-    <section ref={sectionRef} className="from-muted/30 to-background bg-gradient-to-b py-24">
+    <section ref={sectionRef} className="from-muted/30 to-background bg-linear-to-b py-24">
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-16 max-w-3xl text-center">
           <h2 className="text-foreground mb-4 text-3xl font-bold tracking-tight sm:text-4xl">

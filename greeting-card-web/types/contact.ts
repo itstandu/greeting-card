@@ -40,4 +40,3 @@ export type ContactFilters = PaginationParams & {
 export type ContactListResponse = ServiceResponse<ContactMessage[]> & {
   pagination?: ServiceResponse<ContactMessage[]>['pagination'];
 };
-

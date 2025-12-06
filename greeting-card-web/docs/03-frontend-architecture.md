@@ -202,6 +202,7 @@ hooks/
 ### 4.1. Server Components vs Client Components
 
 **Server Components (Default):**
+
 - Render trên server
 - Không có JavaScript bundle
 - Có thể truy cập database trực tiếp
@@ -209,6 +210,7 @@ hooks/
 - Sử dụng cho static content, data fetching
 
 **Client Components ('use client'):**
+
 - Render trên client
 - Có JavaScript bundle
 - Có thể sử dụng hooks, event handlers
@@ -322,8 +324,8 @@ lib/store/
 
 ```typescript
 // lib/store/slices/auth.slice.ts
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as authService from '@/services/auth.service';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 interface AuthState {
   user: User | null;
@@ -352,22 +354,22 @@ export const loginUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    logout: (state) => {
+    logout: state => {
       state.user = null;
       state.accessToken = null;
       state.isAuthenticated = false;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
-      .addCase(loginUser.pending, (state) => {
+      .addCase(loginUser.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
@@ -391,12 +393,14 @@ export default authSlice.reducer;
 ### 5.3. Local State vs Global State
 
 **Local State (useState):**
+
 - Component-specific state
 - Form inputs
 - UI toggles
 - Temporary data
 
 **Global State (Redux):**
+
 - User authentication
 - Cart (if needed globally)
 - Theme preferences
@@ -628,15 +632,15 @@ export default function Error({
 ```typescript
 // services/client.ts
 apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     if (error.response?.status === 401) {
       // Handle 401 - try refresh token
     }
 
     const errorMessage = error.response?.data?.message || 'Đã có lỗi xảy ra';
     return Promise.reject(new Error(errorMessage));
-  }
+  },
 );
 ```
 
@@ -707,4 +711,3 @@ export default function sitemap() {
   ];
 }
 ```
-

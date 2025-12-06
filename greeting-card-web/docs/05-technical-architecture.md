@@ -73,16 +73,19 @@ Dự án sử dụng **Next.js 16 App Router** kết hợp với **React 19** v�
 ### 3.1. Presentation Layer (Pages & Components)
 
 **Trách nhiệm:**
+
 - Render UI
 - Handle user interactions
 - Display data
 - Form handling
 
 **Pages (App Router):**
+
 - Server Components: Data fetching, SEO
 - Client Components: Interactivity, hooks
 
 **Components:**
+
 - UI Components: Reusable, generic components
 - Feature Components: Domain-specific components
 - Layout Components: Page structure
@@ -90,11 +93,13 @@ Dự án sử dụng **Next.js 16 App Router** kết hợp với **React 19** v�
 ### 3.2. Application Layer (State & Logic)
 
 **State Management:**
+
 - Redux Toolkit cho global state
 - React useState cho local state
 - Custom hooks cho reusable logic
 
 **Form Handling:**
+
 - React Hook Form cho form management
 - Zod cho schema validation
 - Type-safe form handling
@@ -102,11 +107,13 @@ Dự án sử dụng **Next.js 16 App Router** kết hợp với **React 19** v�
 ### 3.3. Service Layer (API Integration)
 
 **API Services:**
+
 - Domain-specific service functions
 - Type-safe API calls
 - Error handling
 
 **API Client:**
+
 - Axios instance với interceptors
 - Token management
 - Request/Response transformation
@@ -126,6 +133,7 @@ Dự án sử dụng **Next.js 16 App Router** kết hợp với **React 19** v�
 ### 4.2. Server Components vs Client Components
 
 **Server Components:**
+
 - Render trên server
 - Không có JavaScript bundle
 - Có thể fetch data trực tiếp
@@ -133,6 +141,7 @@ Dự án sử dụng **Next.js 16 App Router** kết hợp với **React 19** v�
 - Sử dụng cho static content, data fetching
 
 **Client Components:**
+
 - Render trên client
 - Có JavaScript bundle
 - Có thể sử dụng hooks, event handlers
@@ -141,6 +150,7 @@ Dự án sử dụng **Next.js 16 App Router** kết hợp với **React 19** v�
 ### 4.3. Data Fetching
 
 **Server Components:**
+
 ```typescript
 // app/products/page.tsx
 export default async function ProductsPage() {
@@ -150,6 +160,7 @@ export default async function ProductsPage() {
 ```
 
 **Client Components:**
+
 ```typescript
 'use client';
 
@@ -176,10 +187,11 @@ export function ProductsList() {
 ### 5.2. Redux Toolkit
 
 **Store Configuration:**
+
 ```typescript
 // lib/store/index.ts
-import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/auth.slice';
+import { configureStore } from '@reduxjs/toolkit';
 
 export const store = configureStore({
   reducer: {
@@ -192,10 +204,11 @@ export type AppDispatch = typeof store.dispatch;
 ```
 
 **Typed Hooks:**
+
 ```typescript
 // lib/store/hooks.ts
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from './index';
+import type { AppDispatch, RootState } from './index';
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -204,6 +217,7 @@ export const useAppSelector = useSelector.withTypes<RootState>();
 ### 5.3. React Hook Form + Zod
 
 **Form Schema:**
+
 ```typescript
 import { z } from 'zod';
 
@@ -216,6 +230,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 ```
 
 **Form Component:**
+
 ```typescript
 'use client';
 
@@ -366,4 +381,3 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api
 - Static export (nếu cần)
 - Server deployment với Node.js
 - Vercel deployment (recommended)
-

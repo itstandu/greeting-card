@@ -3,6 +3,7 @@
 ## 1. Tổng Quan
 
 Frontend application tích hợp với RESTful API backend thông qua **Axios** HTTP client với các tính năng:
+
 - Request/Response interceptors
 - Automatic token management
 - Refresh token mechanism
@@ -15,8 +16,8 @@ Frontend application tích hợp với RESTful API backend thông qua **Axios** 
 
 ```typescript
 // services/client.ts
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { getAccessToken, setAccessToken } from './token-manager';
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 
@@ -44,9 +45,9 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
+  error => {
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -57,7 +58,7 @@ Xử lý errors và refresh token:
 ```typescript
 // services/client.ts
 apiClient.interceptors.response.use(
-  (response) => response,
+  response => response,
   async (error: AxiosError<ApiResponse<unknown>>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
@@ -97,11 +98,10 @@ apiClient.interceptors.response.use(
 
     // Create Error instance
     const apiError = new Error(errorMessage);
-    (apiError as Error & { code?: string }).code =
-      error.response?.data?.error?.code;
+    (apiError as Error & { code?: string }).code = error.response?.data?.error?.code;
 
     return Promise.reject(apiError);
-  }
+  },
 );
 ```
 
@@ -142,7 +142,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
   if (!refreshRequest) {
     refreshRequest = apiClient
       .post<ApiResponse<TokenResponse>>('/auth/refresh')
-      .then((response) => {
+      .then(response => {
         const newToken = response.data.data?.accessToken ?? null;
         if (!newToken) {
           throw new Error('Không nhận được access token mới');
@@ -160,6 +160,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
 ```
 
 **Lưu ý:**
+
 - refreshToken được lưu trong HTTP-only cookie (tự động gửi với requests)
 - Chỉ refresh một lần nếu có nhiều requests cùng lúc (singleton pattern)
 - Nếu refresh thất bại, clear token và tiếp tục như guest
@@ -187,7 +188,7 @@ services/
 ```typescript
 // services/auth.service.ts
 import { apiClient } from './client';
-import type { ApiResponse, LoginRequest, RegisterRequest, User, TokenResponse } from '@/types';
+import type { ApiResponse, LoginRequest, RegisterRequest, TokenResponse, User } from '@/types';
 
 export const authService = {
   async register(request: RegisterRequest): Promise<ApiResponse<User>> {
@@ -220,7 +221,9 @@ export const authService = {
   },
 
   async resendVerification(email: string): Promise<ApiResponse<void>> {
-    const response = await apiClient.post<ApiResponse<void>>('/auth/resend-verification', { email });
+    const response = await apiClient.post<ApiResponse<void>>('/auth/resend-verification', {
+      email,
+    });
     return response.data;
   },
 };
@@ -263,7 +266,7 @@ export const productService = {
 ```typescript
 // services/cart.service.ts
 import { apiClient } from './client';
-import type { ApiResponse, Cart, AddToCartRequest, UpdateCartItemRequest } from '@/types';
+import type { AddToCartRequest, ApiResponse, Cart, UpdateCartItemRequest } from '@/types';
 
 export const cartService = {
   async getCart(): Promise<ApiResponse<Cart>> {
@@ -528,7 +531,7 @@ export function ProductsList() {
 export async function retryRequest<T>(
   fn: () => Promise<T>,
   maxRetries = 3,
-  delay = 1000
+  delay = 1000,
 ): Promise<T> {
   let lastError: Error;
 
@@ -538,7 +541,7 @@ export async function retryRequest<T>(
     } catch (error) {
       lastError = error as Error;
       if (i < maxRetries - 1) {
-        await new Promise((resolve) => setTimeout(resolve, delay * (i + 1)));
+        await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
       }
     }
   }
@@ -620,4 +623,3 @@ if (!products) {
 - Cancel pending requests khi component unmount
 - Cache responses khi có thể
 - Pagination cho large datasets
-

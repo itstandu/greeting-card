@@ -1,4 +1,4 @@
-import { Briefcase, Sparkles } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 
 export function CareersHero() {
   return (

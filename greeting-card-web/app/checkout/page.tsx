@@ -21,6 +21,7 @@ import { validateCoupon } from '@/services/coupon.service';
 import { createOrder } from '@/services/order.service';
 import { getPaymentMethods } from '@/services/payment-method.service';
 import { Cart, CartResponse, PaymentMethod, UserAddress } from '@/types';
+import { AxiosError } from 'axios';
 import {
   AlertCircle,
   ArrowLeft,
@@ -54,7 +55,7 @@ function convertCartResponseToCart(cartResponse: CartResponse): Cart {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
 
   // State
@@ -185,8 +186,12 @@ export default function CheckoutPage() {
       } else {
         setCouponError(response.data?.message || 'Mã giảm giá không hợp lệ');
       }
-    } catch (error: any) {
-      setCouponError(error.response?.data?.message || 'Mã giảm giá không hợp lệ hoặc đã hết hạn');
+    } catch (error: unknown) {
+      let errorMessage = 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      setCouponError(errorMessage);
     } finally {
       setCouponValidating(false);
     }
@@ -231,10 +236,14 @@ export default function CheckoutPage() {
           description: 'Đã thêm địa chỉ mới',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let errorMessage = 'Không thể thêm địa chỉ mới';
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
       toast({
         title: 'Lỗi',
-        description: error.response?.data?.message || 'Không thể thêm địa chỉ mới',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -284,10 +293,14 @@ export default function CheckoutPage() {
         // Redirect to payment processing page
         router.push(`/checkout/payment/${response.data.id}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let errorMessage = 'Không thể đặt hàng. Vui lòng thử lại.';
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
       toast({
         title: 'Lỗi đặt hàng',
-        description: error.response?.data?.message || 'Không thể đặt hàng. Vui lòng thử lại.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

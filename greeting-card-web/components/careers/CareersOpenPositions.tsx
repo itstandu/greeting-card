@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Briefcase, Clock, MapPin } from 'lucide-react';
+import { ArrowRight, Clock, MapPin } from 'lucide-react';
 
 type Position = {
   id: number;

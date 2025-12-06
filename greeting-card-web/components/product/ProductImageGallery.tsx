@@ -32,11 +32,11 @@ export function ProductImageGallery({
 
   useEffect(() => {
     if (!api) return;
-    onSelect();
     api.on('select', onSelect);
     api.on('reInit', onSelect);
     return () => {
       api.off('select', onSelect);
+      api.off('reInit', onSelect);
     };
   }, [api, onSelect]);
 

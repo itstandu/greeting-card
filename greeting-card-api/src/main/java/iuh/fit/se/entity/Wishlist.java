@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -46,6 +47,7 @@ public class Wishlist {
   private User user;
 
   @OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 50)
   private List<WishlistItem> items = new ArrayList<>();
 
   @Column(name = "created_at", nullable = false, updatable = false)

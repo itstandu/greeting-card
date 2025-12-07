@@ -15,20 +15,42 @@ import iuh.fit.se.entity.Wishlist;
 public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
   Optional<Wishlist> findByUserId(Long userId);
 
-  @Query("SELECT w FROM Wishlist w LEFT JOIN FETCH w.items WHERE w.user.id = :userId")
+  // Fetch wishlist with items and products (images loaded via @BatchSize on Product.images)
+  @Query(
+      "SELECT DISTINCT w FROM Wishlist w "
+          + "LEFT JOIN FETCH w.items wi "
+          + "LEFT JOIN FETCH wi.product "
+          + "WHERE w.user.id = :userId")
   Optional<Wishlist> findByUserIdWithItems(@Param("userId") Long userId);
 
   boolean existsByUserId(Long userId);
 
-  @Query("SELECT w FROM Wishlist w JOIN FETCH w.user LEFT JOIN FETCH w.items")
+  // Admin: Get all wishlists with user info (pagination optimized)
+  @Query(
+      value =
+          "SELECT DISTINCT w FROM Wishlist w " + "JOIN FETCH w.user " + "LEFT JOIN FETCH w.items",
+      countQuery = "SELECT COUNT(w) FROM Wishlist w")
   Page<Wishlist> findAllWithUserAndItems(Pageable pageable);
 
+  // Admin: Search wishlists by user email or name
   @Query(
-      "SELECT w FROM Wishlist w JOIN FETCH w.user u LEFT JOIN FETCH w.items WHERE "
-          + "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
-          + "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+      value =
+          "SELECT DISTINCT w FROM Wishlist w "
+              + "JOIN FETCH w.user u "
+              + "LEFT JOIN FETCH w.items "
+              + "WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+              + "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))",
+      countQuery =
+          "SELECT COUNT(w) FROM Wishlist w JOIN w.user u "
+              + "WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+              + "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
   Page<Wishlist> searchWishlists(@Param("keyword") String keyword, Pageable pageable);
 
-  @Query("SELECT w FROM Wishlist w LEFT JOIN FETCH w.items WHERE w.id = :wishlistId")
+  // Fetch wishlist by ID with items and product (images loaded via @BatchSize)
+  @Query(
+      "SELECT DISTINCT w FROM Wishlist w "
+          + "LEFT JOIN FETCH w.items wi "
+          + "LEFT JOIN FETCH wi.product "
+          + "WHERE w.id = :wishlistId")
   Optional<Wishlist> findByIdWithItems(@Param("wishlistId") Long wishlistId);
 }

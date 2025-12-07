@@ -33,4 +33,3 @@ public class CreateContactRequest {
   @Size(max = 5000, message = "Nội dung quá dài")
   private String message;
 }
-

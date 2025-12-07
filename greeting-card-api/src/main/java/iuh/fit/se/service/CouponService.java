@@ -40,6 +40,7 @@ public class CouponService {
     Pageable pageable = PageRequest.of(page, size, sort);
     return couponRepository.findAll(pageable).map(couponMapper::toResponse);
   }
+
   @Transactional(readOnly = true)
   @SuppressWarnings("null")
   public CouponResponse getCouponById(Long id) {

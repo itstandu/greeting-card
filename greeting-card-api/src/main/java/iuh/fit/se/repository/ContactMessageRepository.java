@@ -40,4 +40,3 @@ public interface ContactMessageRepository extends JpaRepository<ContactMessage, 
       @Param("search") String search,
       Pageable pageable);
 }
-

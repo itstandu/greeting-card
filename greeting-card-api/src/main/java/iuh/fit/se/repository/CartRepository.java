@@ -15,20 +15,41 @@ import iuh.fit.se.entity.Cart;
 public interface CartRepository extends JpaRepository<Cart, Long> {
   Optional<Cart> findByUserId(Long userId);
 
-  @Query("SELECT c FROM Cart c LEFT JOIN FETCH c.items WHERE c.user.id = :userId")
+  // Fetch cart with items and product (images loaded via @BatchSize on Product.images)
+  @Query(
+      "SELECT DISTINCT c FROM Cart c "
+          + "LEFT JOIN FETCH c.items ci "
+          + "LEFT JOIN FETCH ci.product "
+          + "WHERE c.user.id = :userId")
   Optional<Cart> findByUserIdWithItems(@Param("userId") Long userId);
 
   boolean existsByUserId(Long userId);
 
-  @Query("SELECT c FROM Cart c JOIN FETCH c.user LEFT JOIN FETCH c.items")
+  // Admin: Get all carts with user info (pagination optimized)
+  @Query(
+      value = "SELECT DISTINCT c FROM Cart c " + "JOIN FETCH c.user " + "LEFT JOIN FETCH c.items",
+      countQuery = "SELECT COUNT(c) FROM Cart c")
   Page<Cart> findAllWithUserAndItems(Pageable pageable);
 
+  // Admin: Search carts by user email or name
   @Query(
-      "SELECT c FROM Cart c JOIN FETCH c.user u LEFT JOIN FETCH c.items WHERE "
-          + "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
-          + "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+      value =
+          "SELECT DISTINCT c FROM Cart c "
+              + "JOIN FETCH c.user u "
+              + "LEFT JOIN FETCH c.items "
+              + "WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+              + "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))",
+      countQuery =
+          "SELECT COUNT(c) FROM Cart c JOIN c.user u "
+              + "WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+              + "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
   Page<Cart> searchCarts(@Param("keyword") String keyword, Pageable pageable);
 
-  @Query("SELECT c FROM Cart c LEFT JOIN FETCH c.items WHERE c.id = :cartId")
+  // Fetch cart by ID with items and product (images loaded via @BatchSize)
+  @Query(
+      "SELECT DISTINCT c FROM Cart c "
+          + "LEFT JOIN FETCH c.items ci "
+          + "LEFT JOIN FETCH ci.product "
+          + "WHERE c.id = :cartId")
   Optional<Cart> findByIdWithItems(@Param("cartId") Long cartId);
 }

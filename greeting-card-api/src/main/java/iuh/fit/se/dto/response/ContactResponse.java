@@ -26,4 +26,3 @@ public class ContactResponse {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 }
-

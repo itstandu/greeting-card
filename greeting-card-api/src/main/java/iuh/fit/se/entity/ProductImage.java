@@ -14,7 +14,13 @@ import lombok.Setter;
 @Entity
 @Table(
     name = "product_images",
-    indexes = @Index(name = "idx_product_images_product_id", columnList = "product_id"))
+    indexes = {
+      @Index(name = "idx_product_images_product_id", columnList = "product_id"),
+      // Composite index for efficient ordering and primary image lookup
+      @Index(
+          name = "idx_product_images_product_order",
+          columnList = "product_id, is_primary DESC, display_order ASC")
+    })
 @Getter
 @Setter
 @NoArgsConstructor

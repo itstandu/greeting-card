@@ -38,7 +38,16 @@ import lombok.Setter;
       @Index(name = "idx_products_slug", columnList = "slug"),
       @Index(name = "idx_products_sku", columnList = "sku"),
       @Index(name = "idx_products_deleted_at", columnList = "deleted_at"),
-      @Index(name = "idx_products_is_active", columnList = "is_active")
+      @Index(name = "idx_products_is_active", columnList = "is_active"),
+      @Index(name = "idx_products_is_featured", columnList = "is_featured"),
+      // Composite index for common product listing queries
+      @Index(
+          name = "idx_products_active_featured",
+          columnList = "deleted_at, is_active, is_featured, category_id"),
+      // Composite index for search by name with active filter
+      @Index(name = "idx_products_search", columnList = "deleted_at, is_active, name"),
+      // Composite index for low stock query
+      @Index(name = "idx_products_low_stock", columnList = "deleted_at, is_active, stock")
     })
 @SQLDelete(sql = "UPDATE products SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")

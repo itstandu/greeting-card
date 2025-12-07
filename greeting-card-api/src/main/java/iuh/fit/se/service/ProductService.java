@@ -107,9 +107,10 @@ public class ProductService {
 
   @Transactional(readOnly = true)
   public ProductResponse getProductBySlug(String slug, Long userId) {
+    // Use optimized query that fetches all related data in one query
     Product product =
         productRepository
-            .findBySlug(slug)
+            .findBySlugWithDetails(slug)
             .orElseThrow(
                 () -> new ResourceNotFoundException("Không tìm thấy sản phẩm với slug: " + slug));
     return toProductResponseWithUserFlags(product, userId);
@@ -123,9 +124,10 @@ public class ProductService {
   @Transactional(readOnly = true)
   @SuppressWarnings("null")
   public ProductResponse getProductById(Long id, Long userId) {
+    // Use optimized query that fetches all related data in one query
     Product product =
         productRepository
-            .findById(id)
+            .findByIdWithDetails(id)
             .orElseThrow(
                 () -> new ResourceNotFoundException("Không tìm thấy sản phẩm với ID: " + id));
     return toProductResponseWithUserFlags(product, userId);

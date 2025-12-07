@@ -17,10 +17,24 @@ import iuh.fit.se.entity.enumeration.OrderStatus;
 public interface OrderRepository extends JpaRepository<Order, Long> {
   boolean existsByUserId(Long userId);
 
-  // Lấy danh sách orders của một user cụ thể
-  Page<Order> findByUserIdOrderByOrderDateDesc(Long userId, Pageable pageable);
+  // Lấy danh sách orders của một user cụ thể với eager fetch
+  @Query(
+      value =
+          "SELECT DISTINCT o FROM Order o "
+              + "LEFT JOIN FETCH o.user "
+              + "LEFT JOIN FETCH o.paymentMethod "
+              + "WHERE o.user.id = :userId AND o.deletedAt IS NULL "
+              + "ORDER BY o.orderDate DESC",
+      countQuery = "SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.deletedAt IS NULL")
+  Page<Order> findByUserIdOrderByOrderDateDesc(@Param("userId") Long userId, Pageable pageable);
 
-  List<Order> findByUserIdOrderByOrderDateDesc(Long userId);
+  @Query(
+      "SELECT o FROM Order o "
+          + "LEFT JOIN FETCH o.user "
+          + "LEFT JOIN FETCH o.paymentMethod "
+          + "WHERE o.user.id = :userId AND o.deletedAt IS NULL "
+          + "ORDER BY o.orderDate DESC")
+  List<Order> findByUserIdOrderByOrderDateDesc(@Param("userId") Long userId);
 
   // Lấy order với details
   @Query(
@@ -35,13 +49,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   // Admin: Filter orders by status
   Page<Order> findByStatusOrderByOrderDateDesc(OrderStatus status, Pageable pageable);
 
-  // Admin: Search orders by order number or user email
+  // Admin: Search orders by order number or user email (optimized with JOIN FETCH)
   @Query(
-      "SELECT o FROM Order o "
-          + "JOIN o.user u "
-          + "WHERE LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) "
-          + "   OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
-          + "   OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+      value =
+          "SELECT DISTINCT o FROM Order o "
+              + "JOIN FETCH o.user u "
+              + "LEFT JOIN FETCH o.paymentMethod "
+              + "WHERE o.deletedAt IS NULL AND ("
+              + "   LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+              + "   OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+              + "   OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))",
+      countQuery =
+          "SELECT COUNT(DISTINCT o) FROM Order o JOIN o.user u "
+              + "WHERE o.deletedAt IS NULL AND ("
+              + "   LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+              + "   OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+              + "   OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
   Page<Order> searchOrders(@Param("keyword") String keyword, Pageable pageable);
 
   // Tìm order number gần nhất để generate order number mới
@@ -75,6 +98,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
   // Dashboard: Count orders by status
   long countByStatus(OrderStatus status);
+
+  // Dashboard: Get all order status counts in one query (optimized)
+  @Query("SELECT o.status, COUNT(o) FROM Order o WHERE o.deletedAt IS NULL GROUP BY o.status")
+  List<Object[]> countOrdersByAllStatuses();
 
   // Dashboard: Get today's orders count
   @Query(

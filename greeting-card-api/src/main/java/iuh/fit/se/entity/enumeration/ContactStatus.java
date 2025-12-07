@@ -7,4 +7,3 @@ public enum ContactStatus {
   RESOLVED,
   CLOSED
 }
-

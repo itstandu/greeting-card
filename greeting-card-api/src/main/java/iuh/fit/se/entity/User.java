@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -73,23 +74,30 @@ public class User extends BaseEntity {
   private Cart cart;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 20)
   private List<Order> orders = new ArrayList<>();
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 10)
   private List<RefreshToken> refreshTokens = new ArrayList<>();
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 10)
   private List<UserAddress> addresses = new ArrayList<>();
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 10)
   private List<Wishlist> wishlistItems = new ArrayList<>();
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 20)
   private List<ProductReview> reviews = new ArrayList<>();
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 50)
   private List<Notification> notifications = new ArrayList<>();
 
   @OneToMany(mappedBy = "changedBy", cascade = CascadeType.ALL)
+  @BatchSize(size = 50)
   private List<OrderStatusHistory> orderStatusHistories = new ArrayList<>();
 }

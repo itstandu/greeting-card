@@ -20,7 +20,12 @@ import lombok.Setter;
     indexes = {
       @Index(name = "idx_product_reviews_product_id", columnList = "product_id"),
       @Index(name = "idx_product_reviews_user_id", columnList = "user_id"),
-      @Index(name = "idx_product_reviews_rating", columnList = "rating")
+      @Index(name = "idx_product_reviews_rating", columnList = "rating"),
+      @Index(name = "idx_product_reviews_is_approved", columnList = "is_approved"),
+      // Composite index for approved reviews query
+      @Index(
+          name = "idx_product_reviews_product_approved",
+          columnList = "product_id, is_approved, rating")
     },
     uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "user_id"}))
 @Getter

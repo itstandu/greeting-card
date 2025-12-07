@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -43,7 +44,11 @@ import lombok.Setter;
       @Index(name = "idx_promotions_is_active", columnList = "is_active"),
       @Index(name = "idx_promotions_valid_from", columnList = "valid_from"),
       @Index(name = "idx_promotions_valid_until", columnList = "valid_until"),
-      @Index(name = "idx_promotions_category_id", columnList = "category_id")
+      @Index(name = "idx_promotions_category_id", columnList = "category_id"),
+      // Composite index for active promotions lookup
+      @Index(
+          name = "idx_promotions_active_lookup",
+          columnList = "is_active, valid_from, valid_until, scope")
     })
 @SQLDelete(sql = "UPDATE promotions SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
@@ -100,6 +105,7 @@ public class Promotion extends BaseEntity {
       name = "promotion_products",
       joinColumns = @JoinColumn(name = "promotion_id"),
       inverseJoinColumns = @JoinColumn(name = "product_id"))
+  @BatchSize(size = 50)
   private Set<Product> products = new HashSet<>();
 
   // Cho CATEGORY scope - many-to-one với category
@@ -123,6 +129,7 @@ public class Promotion extends BaseEntity {
   private Boolean isActive = true;
 
   @OneToMany(mappedBy = "promotion")
+  @BatchSize(size = 50)
   private List<Order> orders = new ArrayList<>();
 
   // Kiểm tra promotion có hợp lệ không

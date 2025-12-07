@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -37,7 +38,13 @@ import lombok.Setter;
       @Index(name = "idx_orders_order_date", columnList = "order_date"),
       @Index(name = "idx_orders_status", columnList = "status"),
       @Index(name = "idx_orders_order_number", columnList = "order_number"),
-      @Index(name = "idx_orders_payment_status", columnList = "payment_status")
+      @Index(name = "idx_orders_payment_status", columnList = "payment_status"),
+      // Composite index for user order history queries
+      @Index(name = "idx_orders_user_date", columnList = "user_id, order_date DESC"),
+      // Composite index for dashboard revenue queries
+      @Index(
+          name = "idx_orders_revenue",
+          columnList = "deleted_at, status, order_date, final_amount")
     })
 @SQLDelete(sql = "UPDATE orders SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
@@ -99,11 +106,14 @@ public class Order extends BaseEntity {
 
   // Relationships
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 50)
   private List<OrderItem> orderItems = new ArrayList<>();
 
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 50)
   private List<OrderStatusHistory> statusHistory = new ArrayList<>();
 
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 20)
   private List<Payment> payments = new ArrayList<>();
 }

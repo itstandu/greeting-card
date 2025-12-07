@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
@@ -50,12 +52,13 @@ public class DashboardService {
     Long todayOrders = orderRepository.countTodayOrders();
     BigDecimal todayRevenue = orderRepository.getTodayRevenue();
 
-    // Order status counts
-    Long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING);
-    Long confirmedOrders = orderRepository.countByStatus(OrderStatus.CONFIRMED);
-    Long shippedOrders = orderRepository.countByStatus(OrderStatus.SHIPPED);
-    Long deliveredOrders = orderRepository.countByStatus(OrderStatus.DELIVERED);
-    Long cancelledOrders = orderRepository.countByStatus(OrderStatus.CANCELLED);
+    // Order status counts - OPTIMIZED: single query instead of 5 separate queries
+    Map<OrderStatus, Long> statusCounts = getOrderStatusCounts();
+    Long pendingOrders = statusCounts.getOrDefault(OrderStatus.PENDING, 0L);
+    Long confirmedOrders = statusCounts.getOrDefault(OrderStatus.CONFIRMED, 0L);
+    Long shippedOrders = statusCounts.getOrDefault(OrderStatus.SHIPPED, 0L);
+    Long deliveredOrders = statusCounts.getOrDefault(OrderStatus.DELIVERED, 0L);
+    Long cancelledOrders = statusCounts.getOrDefault(OrderStatus.CANCELLED, 0L);
 
     // Additional metrics
     Long activeProducts = productRepository.countByIsActiveAndDeletedAtIsNull(true);
@@ -81,6 +84,21 @@ public class DashboardService {
                 ? averageOrderValue.setScale(2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO)
         .build();
+  }
+
+  /**
+   * Get all order status counts in a single query. This replaces 5 separate countByStatus() calls
+   * with 1 grouped query.
+   */
+  private Map<OrderStatus, Long> getOrderStatusCounts() {
+    List<Object[]> results = orderRepository.countOrdersByAllStatuses();
+    Map<OrderStatus, Long> counts = new EnumMap<>(OrderStatus.class);
+    for (Object[] result : results) {
+      OrderStatus status = (OrderStatus) result[0];
+      Long count = (Long) result[1];
+      counts.put(status, count);
+    }
+    return counts;
   }
 
   public List<RevenueSummaryResponse> getRevenueSummary(String period, int days) {
@@ -154,37 +172,39 @@ public class DashboardService {
         .collect(Collectors.toList());
   }
 
+  /** Get order status distribution - OPTIMIZED: uses single query instead of 5 separate queries. */
   public List<OrderStatusDistributionResponse> getOrderStatusDistribution() {
-    List<OrderStatusDistributionResponse> distribution = new java.util.ArrayList<>();
+    Map<OrderStatus, Long> statusCounts = getOrderStatusCounts();
+    List<OrderStatusDistributionResponse> distribution = new ArrayList<>();
 
     distribution.add(
         OrderStatusDistributionResponse.builder()
             .status("PENDING")
-            .count(orderRepository.countByStatus(OrderStatus.PENDING))
+            .count(statusCounts.getOrDefault(OrderStatus.PENDING, 0L))
             .label("Chờ xử lý")
             .build());
     distribution.add(
         OrderStatusDistributionResponse.builder()
             .status("CONFIRMED")
-            .count(orderRepository.countByStatus(OrderStatus.CONFIRMED))
+            .count(statusCounts.getOrDefault(OrderStatus.CONFIRMED, 0L))
             .label("Đã xác nhận")
             .build());
     distribution.add(
         OrderStatusDistributionResponse.builder()
             .status("SHIPPED")
-            .count(orderRepository.countByStatus(OrderStatus.SHIPPED))
+            .count(statusCounts.getOrDefault(OrderStatus.SHIPPED, 0L))
             .label("Đã giao hàng")
             .build());
     distribution.add(
         OrderStatusDistributionResponse.builder()
             .status("DELIVERED")
-            .count(orderRepository.countByStatus(OrderStatus.DELIVERED))
+            .count(statusCounts.getOrDefault(OrderStatus.DELIVERED, 0L))
             .label("Đã nhận hàng")
             .build());
     distribution.add(
         OrderStatusDistributionResponse.builder()
             .status("CANCELLED")
-            .count(orderRepository.countByStatus(OrderStatus.CANCELLED))
+            .count(statusCounts.getOrDefault(OrderStatus.CANCELLED, 0L))
             .label("Đã hủy")
             .build());
 

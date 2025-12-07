@@ -11,4 +11,3 @@ public class UpdateContactStatusRequest {
   @NotNull(message = "Trạng thái không được để trống")
   private ContactStatus status;
 }
-

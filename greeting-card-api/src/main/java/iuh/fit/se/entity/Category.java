@@ -3,6 +3,7 @@ package iuh.fit.se.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -51,6 +52,7 @@ public class Category extends BaseEntity {
   private Category parent;
 
   @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+  @BatchSize(size = 50)
   private List<Category> children = new ArrayList<>();
 
   @Column(name = "image_url", length = 500)
@@ -66,5 +68,6 @@ public class Category extends BaseEntity {
   private Boolean isFeatured = false;
 
   @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+  @BatchSize(size = 50)
   private List<Product> products = new ArrayList<>();
 }

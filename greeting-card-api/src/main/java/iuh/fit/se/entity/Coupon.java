@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -72,6 +73,7 @@ public class Coupon extends BaseEntity {
   private Boolean isActive = true;
 
   @OneToMany(mappedBy = "coupon")
+  @BatchSize(size = 50)
   private List<Order> orders = new ArrayList<>();
 
   // Kiểm tra coupon có hợp lệ không

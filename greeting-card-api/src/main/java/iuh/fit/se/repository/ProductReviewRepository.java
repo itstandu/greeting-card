@@ -16,24 +16,57 @@ import iuh.fit.se.entity.ProductReview;
 public interface ProductReviewRepository extends JpaRepository<ProductReview, Long> {
   Optional<ProductReview> findByProductIdAndUserId(Long productId, Long userId);
 
-  List<ProductReview> findByProductId(Long productId);
+  // Fetch reviews with user info (optimized)
+  @Query(
+      "SELECT r FROM ProductReview r "
+          + "LEFT JOIN FETCH r.user "
+          + "WHERE r.product.id = :productId")
+  List<ProductReview> findByProductId(@Param("productId") Long productId);
 
-  List<ProductReview> findByUserId(Long userId);
+  @Query(
+      "SELECT r FROM ProductReview r " + "LEFT JOIN FETCH r.product " + "WHERE r.user.id = :userId")
+  List<ProductReview> findByUserId(@Param("userId") Long userId);
 
-  // Customer: get approved reviews for a product
-  Page<ProductReview> findByProductIdAndIsApprovedTrue(Long productId, Pageable pageable);
+  // Customer: get approved reviews for a product with user info
+  @Query(
+      value =
+          "SELECT r FROM ProductReview r "
+              + "LEFT JOIN FETCH r.user "
+              + "WHERE r.product.id = :productId AND r.isApproved = true",
+      countQuery =
+          "SELECT COUNT(r) FROM ProductReview r "
+              + "WHERE r.product.id = :productId AND r.isApproved = true")
+  Page<ProductReview> findByProductIdAndIsApprovedTrue(
+      @Param("productId") Long productId, Pageable pageable);
 
   // Customer: get approved reviews with rating filter
-  Page<ProductReview> findByProductIdAndIsApprovedTrueAndRating(
-      Long productId, Integer rating, Pageable pageable);
-
-  // Admin: get all reviews with filters
   @Query(
-      "SELECT r FROM ProductReview r WHERE "
-          + "(:productId IS NULL OR r.product.id = :productId) AND "
-          + "(:isApproved IS NULL OR r.isApproved = :isApproved) AND "
-          + "(:rating IS NULL OR r.rating = :rating) AND "
-          + "(:search IS NULL OR r.comment LIKE %:search% OR r.user.fullName LIKE %:search%)")
+      value =
+          "SELECT r FROM ProductReview r "
+              + "LEFT JOIN FETCH r.user "
+              + "WHERE r.product.id = :productId AND r.isApproved = true AND r.rating = :rating",
+      countQuery =
+          "SELECT COUNT(r) FROM ProductReview r "
+              + "WHERE r.product.id = :productId AND r.isApproved = true AND r.rating = :rating")
+  Page<ProductReview> findByProductIdAndIsApprovedTrueAndRating(
+      @Param("productId") Long productId, @Param("rating") Integer rating, Pageable pageable);
+
+  // Admin: get all reviews with filters (optimized with JOIN FETCH)
+  @Query(
+      value =
+          "SELECT r FROM ProductReview r "
+              + "LEFT JOIN FETCH r.user "
+              + "LEFT JOIN FETCH r.product "
+              + "WHERE (:productId IS NULL OR r.product.id = :productId) "
+              + "AND (:isApproved IS NULL OR r.isApproved = :isApproved) "
+              + "AND (:rating IS NULL OR r.rating = :rating) "
+              + "AND (:search IS NULL OR r.comment LIKE %:search% OR r.user.fullName LIKE %:search%)",
+      countQuery =
+          "SELECT COUNT(r) FROM ProductReview r "
+              + "WHERE (:productId IS NULL OR r.product.id = :productId) "
+              + "AND (:isApproved IS NULL OR r.isApproved = :isApproved) "
+              + "AND (:rating IS NULL OR r.rating = :rating) "
+              + "AND (:search IS NULL OR r.comment LIKE %:search% OR r.user.fullName LIKE %:search%)")
   Page<ProductReview> findAllWithFilters(
       @Param("productId") Long productId,
       @Param("isApproved") Boolean isApproved,

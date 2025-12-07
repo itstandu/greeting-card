@@ -14,11 +14,32 @@ import iuh.fit.se.entity.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-  Optional<Product> findBySlug(String slug);
-
+  // Find product by slug with eager fetch of category
   @Query(
-      "SELECT p FROM Product p LEFT JOIN FETCH p.images WHERE p.id = :id AND p.deletedAt IS NULL")
+      "SELECT p FROM Product p LEFT JOIN FETCH p.category WHERE p.slug = :slug AND p.deletedAt IS NULL")
+  Optional<Product> findBySlug(@Param("slug") String slug);
+
+  // Find product by slug with category (images/tags loaded via @BatchSize)
+  @Query(
+      "SELECT p FROM Product p "
+          + "LEFT JOIN FETCH p.category "
+          + "WHERE p.slug = :slug AND p.deletedAt IS NULL")
+  Optional<Product> findBySlugWithDetails(@Param("slug") String slug);
+
+  // Find product by ID with category and images
+  @Query(
+      "SELECT p FROM Product p "
+          + "LEFT JOIN FETCH p.category "
+          + "LEFT JOIN FETCH p.images "
+          + "WHERE p.id = :id AND p.deletedAt IS NULL")
   Optional<Product> findByIdWithImages(@Param("id") Long id);
+
+  // Find product by ID with category (images/tags loaded via @BatchSize)
+  @Query(
+      "SELECT p FROM Product p "
+          + "LEFT JOIN FETCH p.category "
+          + "WHERE p.id = :id AND p.deletedAt IS NULL")
+  Optional<Product> findByIdWithDetails(@Param("id") Long id);
 
   boolean existsBySlug(String slug);
 

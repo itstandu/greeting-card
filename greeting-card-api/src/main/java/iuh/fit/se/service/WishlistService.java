@@ -77,6 +77,7 @@ public class WishlistService {
 
     return mapToWishlistResponse(wishlist);
   }
+
   // Xóa item khỏi wishlist
   @SuppressWarnings("null")
   public void removeWishlistItem(Long userId, Long productId) {

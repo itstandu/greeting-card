@@ -53,4 +53,3 @@ public class ContactMessage extends BaseEntity {
   @Column(nullable = false, length = 50)
   private ContactStatus status = ContactStatus.NEW;
 }
-

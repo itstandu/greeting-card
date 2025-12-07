@@ -341,59 +341,60 @@ export function AdminNotificationList() {
         </div>
 
         {/* Pagination */}
-        {!loading && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className="text-muted-foreground text-sm">{paginationSummary}</p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
-                disabled={pagination.page === 1}
-              >
-                Trước
-              </Button>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">Trang</span>
-                <Input
-                  type="number"
-                  min={1}
-                  max={pagination.totalPages}
-                  value={pagination.page}
-                  onChange={e => {
-                    const value = parseInt(e.target.value, 10);
-                    if (!isNaN(value) && value >= 1 && value <= pagination.totalPages) {
-                      setPagination(prev => ({ ...prev, page: value }));
-                    }
-                  }}
-                  onBlur={e => {
-                    const value = parseInt(e.target.value, 10);
-                    if (isNaN(value) || value < 1) {
-                      setPagination(prev => ({ ...prev, page: 1 }));
-                    } else if (value > pagination.totalPages) {
-                      setPagination(prev => ({ ...prev, page: pagination.totalPages }));
-                    }
-                  }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.currentTarget.blur();
-                    }
-                  }}
-                  className="h-8 w-16 text-center"
-                />
-                <span className="text-sm">/ {pagination.totalPages}</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
-                disabled={pagination.page >= pagination.totalPages}
-              >
-                Sau
-              </Button>
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground text-sm">{paginationSummary}</p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+              disabled={pagination.page === 1 || loading}
+            >
+              Trước
+            </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm">Trang</span>
+              <Input
+                type="number"
+                min={1}
+                max={Math.max(1, pagination.totalPages)}
+                value={pagination.page}
+                onChange={e => {
+                  const value = parseInt(e.target.value, 10);
+                  const maxPages = Math.max(1, pagination.totalPages);
+                  if (!isNaN(value) && value >= 1 && value <= maxPages) {
+                    setPagination(prev => ({ ...prev, page: value }));
+                  }
+                }}
+                onBlur={e => {
+                  const value = parseInt(e.target.value, 10);
+                  const maxPages = Math.max(1, pagination.totalPages);
+                  if (isNaN(value) || value < 1) {
+                    setPagination(prev => ({ ...prev, page: 1 }));
+                  } else if (value > maxPages) {
+                    setPagination(prev => ({ ...prev, page: maxPages }));
+                  }
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur();
+                  }
+                }}
+                className="h-8 w-16 text-center"
+                disabled={loading}
+              />
+              <span className="text-sm">/ {Math.max(1, pagination.totalPages)}</span>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+              disabled={pagination.page >= pagination.totalPages || loading}
+            >
+              Sau
+            </Button>
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );

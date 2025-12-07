@@ -20,6 +20,7 @@ import {
   Bell,
   CreditCard,
   FolderTree,
+  Gift,
   Heart,
   Home,
   LayoutDashboard,
@@ -75,9 +76,14 @@ export function AdminSidebar() {
       icon: FolderTree,
     },
     {
-      title: 'Khuyến mãi',
+      title: 'Giảm giá',
       url: '/admin/coupons',
       icon: Tag,
+    },
+    {
+      title: 'Khuyến mãi',
+      url: '/admin/promotions',
+      icon: Gift,
     },
     {
       title: 'Quản lý kho',

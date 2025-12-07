@@ -300,20 +300,22 @@ export function AdminUsersClient() {
               <Input
                 type="number"
                 min={1}
-                max={pagination.totalPages}
+                max={Math.max(1, pagination.totalPages)}
                 value={pagination.page}
                 onChange={e => {
                   const value = parseInt(e.target.value, 10);
-                  if (!isNaN(value) && value >= 1 && value <= pagination.totalPages) {
+                  const maxPages = Math.max(1, pagination.totalPages);
+                  if (!isNaN(value) && value >= 1 && value <= maxPages) {
                     setFilters(prev => ({ ...prev, page: value }));
                   }
                 }}
                 onBlur={e => {
                   const value = parseInt(e.target.value, 10);
+                  const maxPages = Math.max(1, pagination.totalPages);
                   if (isNaN(value) || value < 1) {
                     setFilters(prev => ({ ...prev, page: 1 }));
-                  } else if (value > pagination.totalPages) {
-                    setFilters(prev => ({ ...prev, page: pagination.totalPages }));
+                  } else if (value > maxPages) {
+                    setFilters(prev => ({ ...prev, page: maxPages }));
                   }
                 }}
                 onKeyDown={e => {
@@ -322,8 +324,9 @@ export function AdminUsersClient() {
                   }
                 }}
                 className="h-8 w-16 text-center"
+                disabled={isLoading}
               />
-              <span className="text-sm">/ {pagination.totalPages}</span>
+              <span className="text-sm">/ {Math.max(1, pagination.totalPages)}</span>
             </div>
             <Button
               size="sm"

@@ -263,59 +263,60 @@ export function StockTransactionList() {
             </Table>
           </div>
         </CardContent>
-        {totalPages > 1 && (
-          <CardFooter className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <p className="text-muted-foreground text-sm">Hiển thị {paginationSummary}</p>
+        <CardFooter className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p className="text-muted-foreground text-sm">Hiển thị {paginationSummary}</p>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1 || loading}
+            >
+              Trước
+            </Button>
             <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                Trước
-              </Button>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">Trang</span>
-                <Input
-                  type="number"
-                  min={1}
-                  max={totalPages}
-                  value={currentPage}
-                  onChange={e => {
-                    const value = parseInt(e.target.value, 10);
-                    if (!isNaN(value) && value >= 1 && value <= totalPages) {
-                      setCurrentPage(value);
-                    }
-                  }}
-                  onBlur={e => {
-                    const value = parseInt(e.target.value, 10);
-                    if (isNaN(value) || value < 1) {
-                      setCurrentPage(1);
-                    } else if (value > totalPages) {
-                      setCurrentPage(totalPages);
-                    }
-                  }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.currentTarget.blur();
-                    }
-                  }}
-                  className="h-8 w-16 text-center"
-                />
-                <span className="text-sm">/ {totalPages}</span>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage >= totalPages}
-              >
-                Sau
-              </Button>
+              <span className="text-sm">Trang</span>
+              <Input
+                type="number"
+                min={1}
+                max={Math.max(1, totalPages)}
+                value={currentPage}
+                onChange={e => {
+                  const value = parseInt(e.target.value, 10);
+                  const maxPages = Math.max(1, totalPages);
+                  if (!isNaN(value) && value >= 1 && value <= maxPages) {
+                    setCurrentPage(value);
+                  }
+                }}
+                onBlur={e => {
+                  const value = parseInt(e.target.value, 10);
+                  const maxPages = Math.max(1, totalPages);
+                  if (isNaN(value) || value < 1) {
+                    setCurrentPage(1);
+                  } else if (value > maxPages) {
+                    setCurrentPage(maxPages);
+                  }
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur();
+                  }
+                }}
+                className="h-8 w-16 text-center"
+                disabled={loading}
+              />
+              <span className="text-sm">/ {Math.max(1, totalPages)}</span>
             </div>
-          </CardFooter>
-        )}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages || loading}
+            >
+              Sau
+            </Button>
+          </div>
+        </CardFooter>
       </Card>
 
       <StockTransactionSheet

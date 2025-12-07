@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -49,7 +50,7 @@ import type {
 import { DragDropContext, Draggable, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { GripVertical, Pencil, Plus, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import { GripVertical, Pencil, Plus, RefreshCw, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 
 export default function AdminPaymentMethodsPage() {
   const { toast } = useToast();
@@ -82,6 +83,12 @@ export default function AdminPaymentMethodsPage() {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const paginationSummary = useMemo(() => {
+    const start = (pagination.page - 1) * pagination.size + 1;
+    const end = Math.min(pagination.page * pagination.size, pagination.total);
+    return pagination.total > 0 ? `${start} - ${end} / ${pagination.total}` : 'Không có dữ liệu';
+  }, [pagination]);
 
   useEffect(() => {
     const loadMethods = async () => {
@@ -256,7 +263,7 @@ export default function AdminPaymentMethodsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <div className="relative min-w-[200px] flex-1">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
@@ -286,6 +293,16 @@ export default function AdminPaymentMethodsPage() {
             <SelectItem value="false">Đã vô hiệu</SelectItem>
           </SelectContent>
         </Select>
+
+        <Button
+          variant="outline"
+          onClick={() => setRefreshKey(prev => prev + 1)}
+          disabled={loading}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <span className="hidden sm:inline">Làm mới</span>
+        </Button>
       </div>
 
       {/* Table */}
@@ -307,11 +324,35 @@ export default function AdminPaymentMethodsPage() {
               {provided => (
                 <TableBody {...provided.droppableProps} ref={provided.innerRef}>
                   {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="py-8 text-center">
-                        Đang tải...
-                      </TableCell>
-                    </TableRow>
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <TableRow key={`loading-${index}`}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-10" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-48" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
                   ) : methods.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="py-8 text-center">
@@ -417,31 +458,60 @@ export default function AdminPaymentMethodsPage() {
       </div>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-muted-foreground text-sm">
-            Hiển thị {methods.length} / {pagination.total} phương thức
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.page <= 1}
-              onClick={() => setFilters({ ...filters, page: pagination.page - 1 })}
-            >
-              Trước
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.page >= pagination.totalPages}
-              onClick={() => setFilters({ ...filters, page: pagination.page + 1 })}
-            >
-              Sau
-            </Button>
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">Hiển thị {paginationSummary}</p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={pagination.page <= 1 || loading}
+            onClick={() => setFilters({ ...filters, page: pagination.page - 1 })}
+          >
+            Trước
+          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Trang</span>
+            <Input
+              type="number"
+              min={1}
+              max={Math.max(1, pagination.totalPages)}
+              value={pagination.page}
+              onChange={e => {
+                const value = parseInt(e.target.value, 10);
+                const maxPages = Math.max(1, pagination.totalPages);
+                if (!isNaN(value) && value >= 1 && value <= maxPages) {
+                  setFilters({ ...filters, page: value });
+                }
+              }}
+              onBlur={e => {
+                const value = parseInt(e.target.value, 10);
+                const maxPages = Math.max(1, pagination.totalPages);
+                if (isNaN(value) || value < 1) {
+                  setFilters({ ...filters, page: 1 });
+                } else if (value > maxPages) {
+                  setFilters({ ...filters, page: maxPages });
+                }
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                }
+              }}
+              className="h-8 w-16 text-center"
+              disabled={loading}
+            />
+            <span className="text-sm">/ {Math.max(1, pagination.totalPages)}</span>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={pagination.page >= pagination.totalPages || loading}
+            onClick={() => setFilters({ ...filters, page: pagination.page + 1 })}
+          >
+            Sau
+          </Button>
         </div>
-      )}
+      </div>
 
       {/* Form Dialog */}
       <Dialog open={formDialogOpen} onOpenChange={setFormDialogOpen}>

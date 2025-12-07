@@ -1,11 +1,11 @@
+import { Metadata } from 'next';
 import { CouponList } from '@/components/admin/coupons';
-import { PromotionList } from '@/components/admin/promotions';
 
-export default function CouponsPage() {
-  return (
-    <div className="space-y-6">
-      <CouponList />
-      <PromotionList />
-    </div>
-  );
+export const metadata: Metadata = {
+  title: 'Quản lý giảm giá | Admin',
+  description: 'Quản lý mã giảm giá (coupons)',
+};
+
+export default function AdminCouponsPage() {
+  return <CouponList />;
 }

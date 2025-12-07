@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -44,7 +45,7 @@ import {
   updateAdminContactStatus,
 } from '@/services/contact.service';
 import type { ContactMessage, ContactStatus } from '@/types';
-import { AlertTriangle, Eye, Loader2, Mail, Phone, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertTriangle, Eye, Mail, Phone, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ContactFiltersState = {
@@ -156,22 +157,11 @@ export function AdminContactList() {
   return (
     <Card className="py-6">
       <CardHeader>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle>Quản lý liên hệ</CardTitle>
-            <CardDescription>
-              Theo dõi và xử lý các yêu cầu người dùng gửi từ trang liên hệ.
-            </CardDescription>
-          </div>
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setRefreshKey(key => key + 1)}
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Làm mới
-          </Button>
+        <div className="flex flex-col gap-2">
+          <CardTitle>Quản lý liên hệ</CardTitle>
+          <CardDescription>
+            Theo dõi và xử lý các yêu cầu người dùng gửi từ trang liên hệ.
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -194,7 +184,7 @@ export function AdminContactList() {
                 }))
               }
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-40">
                 <SelectValue placeholder="Trạng thái" />
               </SelectTrigger>
               <SelectContent>
@@ -222,6 +212,16 @@ export function AdminContactList() {
                 ))}
               </SelectContent>
             </Select>
+
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => setRefreshKey(key => key + 1)}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Làm mới</span>
+            </Button>
           </div>
         </div>
 
@@ -229,24 +229,41 @@ export function AdminContactList() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[160px]">Người gửi</TableHead>
-                <TableHead className="min-w-[200px]">Tiêu đề</TableHead>
-                <TableHead className="min-w-[140px]">Chủ đề</TableHead>
-                <TableHead className="min-w-[120px]">Trạng thái</TableHead>
-                <TableHead className="min-w-[160px]">Ngày gửi</TableHead>
+                <TableHead className="min-w-40">Người gửi</TableHead>
+                <TableHead className="min-w-50">Tiêu đề</TableHead>
+                <TableHead className="min-w-35">Chủ đề</TableHead>
+                <TableHead className="min-w-30">Trạng thái</TableHead>
+                <TableHead className="min-w-40">Ngày gửi</TableHead>
                 <TableHead className="w-[110px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center">
-                    <div className="text-muted-foreground flex items-center justify-center gap-2">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Đang tải...</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={`loading-${index}`}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-48" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               ) : contacts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-muted-foreground py-10 text-center">
@@ -332,42 +349,73 @@ export function AdminContactList() {
           </Table>
         </div>
 
-        {!loading && pagination.totalPages > 1 && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-muted-foreground text-sm">{paginationSummary}</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-muted-foreground text-sm">{paginationSummary}</p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pagination.page <= 1 || loading}
+              onClick={() =>
+                setFilters(prev => ({
+                  ...prev,
+                  page: Math.max(1, prev.page - 1),
+                }))
+              }
+            >
+              Trước
+            </Button>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page <= 1}
-                onClick={() =>
-                  setFilters(prev => ({
-                    ...prev,
-                    page: Math.max(1, prev.page - 1),
-                  }))
-                }
-              >
-                Trước
-              </Button>
-              <span className="text-sm">
-                Trang {pagination.page} / {pagination.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() =>
-                  setFilters(prev => ({
-                    ...prev,
-                    page: Math.min(pagination.totalPages, prev.page + 1),
-                  }))
-                }
-              >
-                Sau
-              </Button>
+              <span className="text-sm">Trang</span>
+              <Input
+                type="number"
+                min={1}
+                max={Math.max(1, pagination.totalPages)}
+                value={pagination.page}
+                onChange={e => {
+                  const value = parseInt(e.target.value, 10);
+                  const maxPages = Math.max(1, pagination.totalPages);
+                  if (!isNaN(value) && value >= 1 && value <= maxPages) {
+                    setFilters(prev => ({
+                      ...prev,
+                      page: value,
+                    }));
+                  }
+                }}
+                onBlur={e => {
+                  const value = parseInt(e.target.value, 10);
+                  const maxPages = Math.max(1, pagination.totalPages);
+                  if (isNaN(value) || value < 1) {
+                    setFilters(prev => ({ ...prev, page: 1 }));
+                  } else if (value > maxPages) {
+                    setFilters(prev => ({ ...prev, page: maxPages }));
+                  }
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur();
+                  }
+                }}
+                className="h-8 w-16 text-center"
+                disabled={loading}
+              />
+              <span className="text-sm">/ {Math.max(1, pagination.totalPages)}</span>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pagination.page >= pagination.totalPages || loading}
+              onClick={() =>
+                setFilters(prev => ({
+                  ...prev,
+                  page: Math.min(pagination.totalPages, prev.page + 1),
+                }))
+              }
+            >
+              Sau
+            </Button>
           </div>
-        )}
+        </div>
       </CardContent>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>

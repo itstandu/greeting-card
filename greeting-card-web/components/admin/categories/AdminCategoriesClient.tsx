@@ -330,18 +330,18 @@ export function AdminCategoriesClient() {
               <Input
                 type="number"
                 min={1}
-                max={pagination?.totalPages || 1}
+                max={Math.max(1, pagination?.totalPages || 1)}
                 value={pagination?.page || 1}
                 onChange={e => {
                   const value = parseInt(e.target.value, 10);
-                  const maxPages = pagination?.totalPages || 1;
+                  const maxPages = Math.max(1, pagination?.totalPages || 1);
                   if (!isNaN(value) && value >= 1 && value <= maxPages) {
                     setFilters(prev => ({ ...prev, page: value }));
                   }
                 }}
                 onBlur={e => {
                   const value = parseInt(e.target.value, 10);
-                  const maxPages = pagination?.totalPages || 1;
+                  const maxPages = Math.max(1, pagination?.totalPages || 1);
                   if (isNaN(value) || value < 1) {
                     setFilters(prev => ({ ...prev, page: 1 }));
                   } else if (value > maxPages) {
@@ -354,8 +354,9 @@ export function AdminCategoriesClient() {
                   }
                 }}
                 className="h-8 w-16 text-center"
+                disabled={isLoading}
               />
-              <span className="text-sm">/ {pagination?.totalPages || 1}</span>
+              <span className="text-sm">/ {Math.max(1, pagination?.totalPages || 1)}</span>
             </div>
             <Button
               size="sm"

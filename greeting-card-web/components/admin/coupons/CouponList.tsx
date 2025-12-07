@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -191,11 +192,31 @@ export function CouponList() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center">
-                    Đang tải...
-                  </TableCell>
-                </TableRow>
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={`loading-${index}`}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-40" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="ml-auto h-8 w-8" />
+                    </TableCell>
+                  </TableRow>
+                ))
               ) : coupons.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center">
@@ -244,59 +265,60 @@ export function CouponList() {
           </Table>
         </div>
       </CardContent>
-      {totalPages > 1 && (
-        <CardFooter className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <p className="text-muted-foreground text-sm">Hiển thị {paginationSummary}</p>
+      <CardFooter className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <p className="text-muted-foreground text-sm">Hiển thị {paginationSummary}</p>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1 || loading}
+          >
+            Trước
+          </Button>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-            >
-              Trước
-            </Button>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Trang</span>
-              <Input
-                type="number"
-                min={1}
-                max={totalPages}
-                value={currentPage}
-                onChange={e => {
-                  const value = parseInt(e.target.value, 10);
-                  if (!isNaN(value) && value >= 1 && value <= totalPages) {
-                    setCurrentPage(value);
-                  }
-                }}
-                onBlur={e => {
-                  const value = parseInt(e.target.value, 10);
-                  if (isNaN(value) || value < 1) {
-                    setCurrentPage(1);
-                  } else if (value > totalPages) {
-                    setCurrentPage(totalPages);
-                  }
-                }}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    e.currentTarget.blur();
-                  }
-                }}
-                className="h-8 w-16 text-center"
-              />
-              <span className="text-sm">/ {totalPages}</span>
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage >= totalPages}
-            >
-              Sau
-            </Button>
+            <span className="text-sm">Trang</span>
+            <Input
+              type="number"
+              min={1}
+              max={Math.max(1, totalPages)}
+              value={currentPage}
+              onChange={e => {
+                const value = parseInt(e.target.value, 10);
+                const maxPages = Math.max(1, totalPages);
+                if (!isNaN(value) && value >= 1 && value <= maxPages) {
+                  setCurrentPage(value);
+                }
+              }}
+              onBlur={e => {
+                const value = parseInt(e.target.value, 10);
+                const maxPages = Math.max(1, totalPages);
+                if (isNaN(value) || value < 1) {
+                  setCurrentPage(1);
+                } else if (value > maxPages) {
+                  setCurrentPage(maxPages);
+                }
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                }
+              }}
+              className="h-8 w-16 text-center"
+              disabled={loading}
+            />
+            <span className="text-sm">/ {Math.max(1, totalPages)}</span>
           </div>
-        </CardFooter>
-      )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage >= totalPages || loading}
+          >
+            Sau
+          </Button>
+        </div>
+      </CardFooter>
 
       <CouponSheet
         open={sheetOpen}

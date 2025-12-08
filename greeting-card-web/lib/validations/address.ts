@@ -37,11 +37,15 @@ export const addressSchema = z.object({
 
   district: z
     .string()
+    .min(1, 'Quận/Huyện không được để trống')
     .max(100, 'Quận/Huyện không được vượt quá 100 ký tự')
-    .optional()
-    .or(z.literal('')),
+    .trim(),
 
-  ward: z.string().max(100, 'Phường/Xã không được vượt quá 100 ký tự').optional().or(z.literal('')),
+  ward: z
+    .string()
+    .min(1, 'Phường/Xã không được để trống')
+    .max(100, 'Phường/Xã không được vượt quá 100 ký tự')
+    .trim(),
 
   postalCode: z
     .string()

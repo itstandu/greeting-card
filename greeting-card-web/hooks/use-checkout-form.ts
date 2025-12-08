@@ -1,5 +1,5 @@
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from './use-toast';
 import { cartStorage } from '@/lib/store/cart/cart-storage';
 import { createAddress, type CreateAddressRequest } from '@/services/address.service';
@@ -77,6 +77,17 @@ export function useCheckoutForm({
     isDefault: false,
   });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setAddresses(initialAddresses);
+
+    setSelectedAddressId(prevSelected => {
+      if (prevSelected) return prevSelected;
+      const defaultAddress = initialAddresses.find(address => address.isDefault);
+      const fallbackAddress = defaultAddress ?? initialAddresses[0];
+      return fallbackAddress ? fallbackAddress.id : null;
+    });
+  }, [initialAddresses]);
 
   const handleValidateCoupon = async () => {
     if (!couponCode.trim()) return;

@@ -59,9 +59,6 @@ export function CheckoutOrderSummary({
                     className="h-full w-full object-cover"
                   />
                 )}
-                <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs">
-                  {item.quantity}
-                </span>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-sm font-medium">{item.productName}</p>

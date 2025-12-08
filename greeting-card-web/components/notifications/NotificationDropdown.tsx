@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -81,13 +82,16 @@ export function NotificationDropdown() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full p-0 px-1 text-[10px] font-bold"
+            >
               {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
+            </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-80 md:w-96">
         <div className="flex items-center justify-between px-2 py-1.5">
           <DropdownMenuLabel>Thông báo</DropdownMenuLabel>
           {unreadCount > 0 && (

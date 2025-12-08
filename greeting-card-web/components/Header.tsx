@@ -281,7 +281,9 @@ export function Header() {
           {/* Auth controls - chỉ hiển thị trên desktop (>= 1024px) */}
           <div className="hidden lg:flex lg:items-center lg:gap-2">
             {isLoading || !hasCheckedAuth ? (
-              <div className="bg-muted size-8 animate-pulse rounded-full" />
+              <Button variant="ghost" size="icon" className="size-9" disabled>
+                <User className="size-5 opacity-50" />
+              </Button>
             ) : (
               <>
                 {isAuthenticated && user && <NotificationDropdown />}
@@ -405,8 +407,8 @@ export function Header() {
               {/* Auth section in mobile menu */}
               {isLoading || !hasCheckedAuth ? (
                 <li>
-                  <div className="bg-muted flex h-10 items-center justify-center rounded-lg">
-                    <div className="bg-muted size-6 animate-pulse rounded-full" />
+                  <div className="flex h-10 items-center justify-center rounded-lg">
+                    <User className="size-5 opacity-50" />
                   </div>
                 </li>
               ) : isAuthenticated && user ? (

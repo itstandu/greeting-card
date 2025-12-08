@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ProductCard, ProductCardSkeleton } from '@/components/product';
+import { ProductCard, ProductCardSkeleton } from '@/components/products';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { cartStorage } from '@/lib/store/cart/cart-storage';

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ProductReviews } from '@/components/product/ProductReviews';
+import { ProductReviews } from '@/components/products/ProductReviews';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';

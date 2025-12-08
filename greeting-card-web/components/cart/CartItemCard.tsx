@@ -112,7 +112,7 @@ export function CartItemCard({ item, onUpdate }: CartItemCardProps) {
       <CardContent className="p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           {/* Product Image */}
-          <Link href={`/product/${item.productSlug}`} className="shrink-0">
+          <Link href={`/products/${item.productSlug}`} className="shrink-0">
             <div className="bg-muted relative h-36 w-36 overflow-hidden rounded-lg sm:h-48 sm:w-48">
               <SafeImage
                 src={item.productImage}
@@ -124,7 +124,7 @@ export function CartItemCard({ item, onUpdate }: CartItemCardProps) {
 
           {/* Product Info */}
           <div className="flex flex-1 flex-col gap-2">
-            <Link href={`/product/${item.productSlug}`} className="hover:underline">
+            <Link href={`/products/${item.productSlug}`} className="hover:underline">
               <h3 className="font-semibold">{item.productName}</h3>
             </Link>
             <div className="text-primary text-lg font-bold">

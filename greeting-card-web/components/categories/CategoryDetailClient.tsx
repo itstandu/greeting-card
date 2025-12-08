@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
-import { ProductCard, ProductCardSkeleton } from '@/components/product';
-import { ProductListItem } from '@/components/product/ProductListItem';
+import { ProductCard, ProductCardSkeleton, ProductListItem } from '@/components/products';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

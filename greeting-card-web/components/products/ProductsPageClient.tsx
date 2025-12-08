@@ -3,8 +3,12 @@
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ProductCard, ProductCardSkeleton } from '@/components/product';
-import { ProductListItem, ProductListItemSkeleton } from '@/components/product/ProductListItem';
+import {
+  ProductCard,
+  ProductCardSkeleton,
+  ProductListItem,
+  ProductListItemSkeleton,
+} from '@/components/products';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

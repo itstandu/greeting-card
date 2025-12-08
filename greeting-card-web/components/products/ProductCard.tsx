@@ -51,7 +51,7 @@ export function ProductCard({
   // Compact variant - minimal information with padding
   if (variant === 'compact') {
     return (
-      <Link href={`/product/${product.slug}`} className="block">
+      <Link href={`/products/${product.slug}`} className="block">
         <Card
           className={cn(
             'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-lg',
@@ -117,7 +117,7 @@ export function ProductCard({
   // Featured variant - highlighted display with padding
   if (variant === 'featured') {
     return (
-      <Link href={`/product/${product.slug}`} className="block">
+      <Link href={`/products/${product.slug}`} className="block">
         <Card
           className={cn(
             'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-xl',

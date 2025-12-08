@@ -1,6 +1,6 @@
 'use client';
 
-import { ProductInfo } from '@/components/product';
+import { ProductInfo } from '@/components/products';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { cartStorage } from '@/lib/store/cart/cart-storage';

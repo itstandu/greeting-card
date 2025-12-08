@@ -135,7 +135,7 @@ export function WishlistItemCard({ item, onRemove }: WishlistItemCardProps) {
         <div className="mt-4 flex flex-1 flex-col space-y-3">
           {/* Title */}
           <h3 className="group-hover:text-primary line-clamp-2 text-base font-semibold transition-colors">
-            <Link href={`/product/${item.productSlug}`} className="hover:underline">
+            <Link href={`/products/${item.productSlug}`} className="hover:underline">
               {item.productName}
             </Link>
           </h3>

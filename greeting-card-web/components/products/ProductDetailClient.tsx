@@ -6,7 +6,7 @@ import {
   ProductImageGallery,
   ProductInfoClient,
   RelatedProducts,
-} from '@/components/product';
+} from '@/components/products';
 import { Card, CardContent } from '@/components/ui/card';
 import { PromoBanner, TrustBadges } from '@/components/ui/decorative-elements';
 import { PageHeader } from '@/components/ui/page-header';

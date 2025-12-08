@@ -43,7 +43,7 @@ export function ProductListItem({
   const isAvailable = product.isActive && product.stock > 0;
 
   return (
-    <Link href={`/product/${product.slug}`}>
+    <Link href={`/products/${product.slug}`}>
       <Card
         className={cn(
           'group hover:border-primary/50 overflow-hidden transition-all hover:shadow-lg',

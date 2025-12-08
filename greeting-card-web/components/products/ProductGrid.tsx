@@ -1,6 +1,6 @@
 'use client';
 
-import { ProductCard, ProductCardSkeleton } from '@/components/product';
+import { ProductCard, ProductCardSkeleton } from '@/components/products';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types';
 

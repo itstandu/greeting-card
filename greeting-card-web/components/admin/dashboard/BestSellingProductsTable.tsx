@@ -55,7 +55,7 @@ export function BestSellingProductsTable({ products }: BestSellingProductsTableP
                   <TableRow key={product.productId}>
                     <TableCell className="w-[280px] max-w-[300px] min-w-[200px]">
                       <Link
-                        href={`/product/${product.productSlug}`}
+                        href={`/products/${product.productSlug}`}
                         className="flex items-center gap-3 hover:underline"
                         target="_blank"
                         rel="noopener noreferrer"

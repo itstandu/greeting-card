@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { ProductDetailClient } from '@/components/product/ProductDetailClient';
+import { ProductDetailClient } from '@/components/products/ProductDetailClient';
 import { useProductDetail } from '@/hooks/use-product-detail';
 
 export default function ProductDetailPage() {

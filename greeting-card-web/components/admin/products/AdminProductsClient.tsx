@@ -318,7 +318,7 @@ export function AdminProductsClient() {
                         <TableCell className="text-right whitespace-nowrap">
                           <div className="flex justify-end gap-2">
                             <Button size="icon" variant="ghost" asChild title="Xem chi tiết">
-                              <Link href={`/product/${product.slug}`} target="_blank">
+                              <Link href={`/products/${product.slug}`} target="_blank">
                                 <ExternalLink className="size-4" />
                               </Link>
                             </Button>

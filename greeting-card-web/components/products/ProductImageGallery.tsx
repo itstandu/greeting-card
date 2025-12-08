@@ -259,7 +259,7 @@ export function ProductImageGallery({
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="absolute top-1/2 left-3 h-10 w-10 -translate-y-1/2 rounded-full border border-white/20 bg-white/10 text-white shadow-lg backdrop-blur transition hover:bg-white/20"
+                  className="absolute top-1/2 left-3 h-10 w-10 -translate-y-1/2 rounded-full border border-white/20 bg-white/10 text-black shadow-lg backdrop-blur transition hover:bg-white/20"
                   onClick={modalScrollPrev}
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -267,7 +267,7 @@ export function ProductImageGallery({
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="absolute top-1/2 right-3 h-10 w-10 -translate-y-1/2 rounded-full border border-white/20 bg-white/10 text-white shadow-lg backdrop-blur transition hover:bg-white/20"
+                  className="absolute top-1/2 right-3 h-10 w-10 -translate-y-1/2 rounded-full border border-white/20 bg-white/10 text-black shadow-lg backdrop-blur transition hover:bg-white/20"
                   onClick={modalScrollNext}
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -283,7 +283,7 @@ export function ProductImageGallery({
                     onClick={() => modalApi?.scrollTo(index)}
                     className={cn(
                       'h-2 w-2 rounded-full transition-all',
-                      modalCurrent === index ? 'w-4 bg-white' : 'bg-white/60 hover:bg-white/90',
+                      modalCurrent === index ? 'w-4 bg-black' : 'bg-black/60 hover:bg-black/90',
                     )}
                   />
                 ))}

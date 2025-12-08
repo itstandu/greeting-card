@@ -120,3 +120,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+a,
+button,
+[type='button'],
+[type='reset'],
+[type='submit'] {
+  @apply cursor-pointer;
+}

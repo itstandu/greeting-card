@@ -29,22 +29,14 @@ import {
 } from '@/components/ui/select';
 import { updateAdminUser } from '@/services';
 import type { AdminUpdateUserRequest, User, UserRole } from '@/types';
+import { editUserSchema, type EditUserFormValues } from '@/lib/validations/admin';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { z } from 'zod';
 
 const roleLabels: Record<UserRole, string> = {
   ADMIN: 'Admin',
   CUSTOMER: 'Customer',
 };
-
-const editUserSchema = z.object({
-  fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự').max(255, 'Họ tên quá dài'),
-  phone: z.string().max(20, 'Số điện thoại quá dài').optional().or(z.literal('')),
-  role: z.enum(['ADMIN', 'CUSTOMER']),
-});
-
-type EditUserFormValues = z.infer<typeof editUserSchema>;
 
 type EditUserDialogProps = {
   open: boolean;

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class CreateContactRequest {
   @NotBlank(message = "Họ và tên không được để trống")
-  @Size(max = 255)
+  @Size(min = 1, max = 255, message = "Họ và tên không được vượt quá 255 ký tự")
   private String fullName;
 
   @NotBlank(message = "Email không được để trống")

@@ -35,28 +35,9 @@ import * as categoryService from '@/services/category.service';
 import * as productService from '@/services/product.service';
 import * as uploadService from '@/services/upload.service';
 import type { Category, CreateProductRequest, Product, ProductImageRequest } from '@/types';
+import { productSchema, type ProductFormValues } from '@/lib/validations/product';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const productImageSchema = z.object({
-  imageUrl: z.string(),
-  altText: z.string().optional(),
-});
-
-const productSchema = z.object({
-  name: z.string().min(2, 'Tên sản phẩm phải có ít nhất 2 ký tự'),
-  description: z.string().optional(),
-  price: z.coerce.number().min(1000, 'Giá phải lớn hơn 1.000đ'),
-  stock: z.coerce.number().min(0, 'Số lượng tồn kho phải >= 0'),
-  sku: z.string().optional(),
-  categoryId: z.string().min(1, 'Vui lòng chọn danh mục'),
-  isActive: z.boolean(),
-  isFeatured: z.boolean(),
-  images: z.array(productImageSchema),
-});
-
-type ProductFormValues = z.infer<typeof productSchema>;
 
 type ProductSheetProps = {
   open: boolean;

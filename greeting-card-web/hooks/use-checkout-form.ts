@@ -112,20 +112,6 @@ export function useCheckoutForm({
   };
 
   const handleCreateAddress = async () => {
-    if (
-      !newAddress.recipientName.trim() ||
-      !newAddress.phone.trim() ||
-      !newAddress.addressLine1.trim() ||
-      !newAddress.city.trim()
-    ) {
-      toast({
-        title: 'Lỗi',
-        description: 'Vui lòng điền đầy đủ thông tin bắt buộc',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setNewAddressLoading(true);
     try {
       const response = await createAddress(newAddress);

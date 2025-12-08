@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { addressSchema, type AddressFormValues } from '@/lib/validations/address';
 import {
   createAddress,
   deleteAddress,
@@ -35,21 +36,6 @@ import {
 import type { UserAddress } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit2, MapPin, Plus, Trash2 } from 'lucide-react';
-import { z } from 'zod';
-
-const addressSchema = z.object({
-  recipientName: z.string().min(1, 'Tên người nhận không được để trống'),
-  phone: z.string().min(1, 'Số điện thoại không được để trống'),
-  addressLine1: z.string().min(1, 'Địa chỉ không được để trống'),
-  addressLine2: z.string().optional(),
-  city: z.string().min(1, 'Thành phố không được để trống'),
-  district: z.string().optional(),
-  ward: z.string().optional(),
-  postalCode: z.string().optional(),
-  isDefault: z.boolean().optional(),
-});
-
-type AddressFormValues = z.infer<typeof addressSchema>;
 
 export function AddressManagement() {
   const { toast } = useToast();

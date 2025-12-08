@@ -16,24 +16,9 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { registerUser } from '@/lib/store/auth/auth.slice';
 import { useAppDispatch } from '@/lib/store/hooks';
+import { registerSchema, type RegisterFormValues } from '@/lib/validations/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const registerSchema = z
-  .object({
-    email: z.string().email('Email không hợp lệ').min(1, 'Email không được để trống'),
-    password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-    confirmPassword: z.string().min(1, 'Xác nhận mật khẩu không được để trống'),
-    fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự').max(255, 'Họ tên quá dài'),
-    phone: z.string().max(20, 'Số điện thoại quá dài').optional().or(z.literal('')),
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: 'Mật khẩu và xác nhận mật khẩu không khớp',
-    path: ['confirmPassword'],
-  });
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
 
 interface RegisterFormProps {
   onSuccess?: () => void;

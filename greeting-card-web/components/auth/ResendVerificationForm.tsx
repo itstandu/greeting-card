@@ -15,15 +15,12 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { resendVerification } from '@/services/auth.service';
+import {
+  resendVerificationSchema,
+  type ResendVerificationFormValues,
+} from '@/lib/validations/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const resendVerificationSchema = z.object({
-  email: z.string().email('Email không hợp lệ').min(1, 'Email không được để trống'),
-});
-
-type ResendVerificationFormValues = z.infer<typeof resendVerificationSchema>;
 
 interface ResendVerificationFormProps {
   onSuccess?: () => void;

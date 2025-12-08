@@ -1,10 +1,17 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -14,76 +21,44 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { CONTACT_CATEGORIES } from '@/lib/constants';
+import { contactSchema, type ContactFormValues } from '@/lib/validations/contact';
 import { submitContact } from '@/services/contact.service';
-import type { CreateContactRequest } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ContactForm() {
-  const initialFormData: CreateContactRequest = useMemo(
-    () => ({
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
       fullName: '',
       email: '',
       phone: '',
       subject: '',
       category: '',
       message: '',
-    }),
-    [],
-  );
-
-  const [formData, setFormData] = useState<CreateContactRequest>({
-    fullName: '',
-    email: '',
-    phone: '',
-    subject: '',
-    category: '',
-    message: '',
+    },
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.category) {
-      toast.error('Vui lòng chọn chủ đề liên hệ');
-      return;
-    }
-    setIsSubmitting(true);
-
+  const onSubmit = async (values: ContactFormValues) => {
     try {
       await submitContact({
-        ...formData,
-        fullName: formData.fullName.trim(),
-        subject: formData.subject.trim(),
-        category: formData.category,
-        message: formData.message.trim(),
-        phone: formData.phone?.trim() || undefined,
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone || undefined,
+        subject: values.subject,
+        category: values.category,
+        message: values.message,
       });
 
       toast.success('Đã gửi thành công', {
         description: 'Chúng tôi sẽ phản hồi bạn trong thời gian sớm nhất.',
       });
-      setFormData(initialFormData);
+      form.reset();
     } catch (error) {
       const message = (error as Error)?.message || 'Gửi liên hệ thất bại. Vui lòng thử lại.';
       toast.error(message);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleSelectChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      category: value,
-    }));
   };
 
   return (
@@ -107,108 +82,132 @@ export function ContactForm() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">
-                      Họ và tên <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="fullName"
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
                       name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      required
-                      placeholder="Nhập họ và tên"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Họ và tên <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nhập họ và tên" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">
-                      Email <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="email"
+                    <FormField
+                      control={form.control}
                       name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      placeholder="your@email.com"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Email <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="your@email.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Số điện thoại</Label>
-                    <Input
-                      id="phone"
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
                       name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="0123 456 789"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Số điện thoại</FormLabel>
+                          <FormControl>
+                            <Input type="tel" placeholder="0123 456 789" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Chủ đề <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Chọn chủ đề" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {CONTACT_CATEGORIES.map(option => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="category">
-                      Chủ đề <span className="text-destructive">*</span>
-                    </Label>
-                    <Select value={formData.category} onValueChange={handleSelectChange} required>
-                      <SelectTrigger id="category">
-                        <SelectValue placeholder="Chọn chủ đề" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CONTACT_CATEGORIES.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="subject">
-                    Tiêu đề <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="subject"
+                  <FormField
+                    control={form.control}
                     name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    required
-                    placeholder="Nhập tiêu đề"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Tiêu đề <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nhập tiêu đề" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message">
-                    Tin nhắn <span className="text-destructive">*</span>
-                  </Label>
-                  <Textarea
-                    id="message"
+                  <FormField
+                    control={form.control}
                     name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    required
-                    rows={6}
-                    placeholder="Nhập tin nhắn của bạn..."
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Tin nhắn <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea rows={6} placeholder="Nhập tin nhắn của bạn..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    'Đang gửi...'
-                  ) : (
-                    <>
-                      <Send className="mr-2 h-5 w-5" />
-                      Gửi tin nhắn
-                    </>
-                  )}
-                </Button>
-              </form>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? (
+                      'Đang gửi...'
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-5 w-5" />
+                        Gửi tin nhắn
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>

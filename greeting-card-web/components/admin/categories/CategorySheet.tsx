@@ -33,21 +33,9 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import * as categoryService from '@/services/category.service';
 import type { Category, CreateCategoryRequest } from '@/types';
+import { categorySchema, type CategoryFormValues } from '@/lib/validations/category';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const categorySchema = z.object({
-  name: z.string().min(2, 'Tên danh mục phải có ít nhất 2 ký tự'),
-  description: z.string().optional(),
-  parentId: z.string().optional().nullable(),
-  imageUrl: z.string().optional(),
-  displayOrder: z.coerce.number().min(0, 'Thứ tự hiển thị phải >= 0').optional(),
-  isActive: z.boolean(),
-  isFeatured: z.boolean(),
-});
-
-type CategoryFormValues = z.infer<typeof categorySchema>;
 
 type CategorySheetProps = {
   open: boolean;

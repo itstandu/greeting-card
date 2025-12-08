@@ -19,16 +19,9 @@ import { loginUser } from '@/lib/store/auth/auth.slice';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { getLocalCartItemCount } from '@/lib/utils/cart-sync';
 import { getLocalWishlistItemCount } from '@/lib/utils/wishlist-sync';
+import { loginSchema, type LoginFormValues } from '@/lib/validations/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const loginSchema = z.object({
-  email: z.string().email('Email không hợp lệ').min(1, 'Email không được để trống'),
-  password: z.string().min(1, 'Mật khẩu không được để trống'),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
   onSuccess?: () => void;

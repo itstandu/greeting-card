@@ -17,17 +17,13 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { updateUserProfile } from '@/lib/store/users/users.slice';
 import { getInitials } from '@/lib/utils';
 import { uploadUserAvatar } from '@/services/upload.service';
+import {
+  updateProfileSchema,
+  type UpdateProfileFormValues,
+} from '@/lib/validations/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Camera, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const updateProfileSchema = z.object({
-  fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự').max(255, 'Họ tên quá dài'),
-  phone: z.string().max(20, 'Số điện thoại quá dài').optional().or(z.literal('')),
-});
-
-type UpdateProfileFormValues = z.infer<typeof updateProfileSchema>;
 
 interface UpdateProfileFormProps {
   onSuccess?: () => void;

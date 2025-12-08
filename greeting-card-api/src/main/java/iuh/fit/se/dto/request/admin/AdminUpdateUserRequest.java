@@ -10,7 +10,10 @@ import lombok.Data;
 @Data
 public class AdminUpdateUserRequest {
   @NotBlank(message = "Họ tên không được để trống")
-  @Size(max = 255, message = "Họ tên không được vượt quá 255 ký tự")
+  @Size(
+      min = 2,
+      max = 255,
+      message = "Họ tên phải có ít nhất 2 ký tự và không được vượt quá 255 ký tự")
   private String fullName;
 
   @Size(max = 20, message = "Số điện thoại không được vượt quá 20 ký tự")

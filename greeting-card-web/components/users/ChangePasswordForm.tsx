@@ -13,22 +13,12 @@ import {
 import { PasswordInput } from '@/components/ui/password-input';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { changeUserPassword } from '@/lib/store/users/users.slice';
+import {
+  changePasswordSchema,
+  type ChangePasswordFormValues,
+} from '@/lib/validations/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const changePasswordSchema = z
-  .object({
-    oldPassword: z.string().min(1, 'Mật khẩu cũ không được để trống'),
-    newPassword: z.string().min(6, 'Mật khẩu mới phải có ít nhất 6 ký tự'),
-    confirmPassword: z.string().min(1, 'Xác nhận mật khẩu không được để trống'),
-  })
-  .refine(data => data.newPassword === data.confirmPassword, {
-    message: 'Mật khẩu mới và xác nhận mật khẩu không khớp',
-    path: ['confirmPassword'],
-  });
-
-type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 interface ChangePasswordFormProps {
   onSuccess?: () => void;

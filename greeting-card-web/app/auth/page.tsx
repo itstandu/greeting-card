@@ -1,5 +1,6 @@
 'use client';
 
+import { Spinner } from '@/components/ui/spinner';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
@@ -15,9 +16,5 @@ export default function AuthPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">Đang chuyển hướng...</p>
-    </div>
-  );
+  return <Spinner message="Đang chuyển hướng..." />;
 }

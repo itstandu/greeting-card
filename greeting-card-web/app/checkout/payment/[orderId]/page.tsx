@@ -5,12 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 import { useToast } from '@/hooks/use-toast';
 import { getOrderDetail } from '@/services/order.service';
 import { processPayment } from '@/services/payment.service';
 import type { Order } from '@/types';
 import { AxiosError } from 'axios';
-import { ArrowLeft, CheckCircle2, CreditCard, Loader2, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CreditCard, LoaderIcon, XCircle } from 'lucide-react';
 
 type PaymentStatus = 'processing' | 'success' | 'failed';
 
@@ -119,18 +120,7 @@ export default function PaymentProcessingPage() {
   };
 
   if (loading && !order) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-2xl">
-          <Card className="py-6">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <Loader2 className="text-primary mb-4 h-12 w-12 animate-spin" />
-              <p className="text-muted-foreground">Đang tải thông tin đơn hàng...</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <Spinner message="Đang tải thông tin đơn hàng..." />;
   }
 
   if (error && !order) {
@@ -165,7 +155,7 @@ export default function PaymentProcessingPage() {
           <Card className="py-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Loader2 className="text-primary h-6 w-6 animate-spin" />
+                <LoaderIcon className="text-primary h-6 w-6 animate-spin" />
                 Đang xử lý thanh toán
               </CardTitle>
               <CardDescription>

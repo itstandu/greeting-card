@@ -27,7 +27,7 @@ import {
   ArrowLeft,
   Check,
   CreditCard,
-  Loader2,
+  LoaderIcon,
   MapPin,
   Package,
   Plus,
@@ -518,7 +518,7 @@ export default function CheckoutPage() {
                     >
                       {newAddressLoading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
                           Đang lưu...
                         </>
                       ) : (
@@ -664,7 +664,7 @@ export default function CheckoutPage() {
                     disabled={couponValidating || couponDiscount > 0 || !couponCode.trim()}
                   >
                     {couponValidating ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <LoaderIcon className="h-4 w-4 animate-spin" />
                     ) : couponDiscount > 0 ? (
                       <Check className="h-4 w-4 text-green-500" />
                     ) : (
@@ -739,7 +739,7 @@ export default function CheckoutPage() {
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
                     Đang xử lý...
                   </>
                 ) : (

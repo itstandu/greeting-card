@@ -93,14 +93,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   const breadcrumbs = generateBreadcrumbs(pathname);
 
   if (isLoading || !hasCheckedAuth) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-muted-foreground flex items-center gap-2">
-          <Spinner />
-          <span>Đang kiểm tra quyền truy cập...</span>
-        </div>
-      </div>
-    );
+    return <Spinner message="Đang kiểm tra quyền truy cập..." />;
   }
 
   if (!isAuthenticated || !user) {
@@ -176,7 +169,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 max-w-full min-w-0 overflow-x-hidden">
+        <div className="flex max-w-full min-w-0 flex-1 flex-col gap-4 overflow-x-hidden p-4">
           {children}
         </div>
       </SidebarInset>

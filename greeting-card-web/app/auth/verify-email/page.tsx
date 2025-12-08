@@ -1,14 +1,13 @@
 'use client';
 
+import { Spinner } from '@/components/ui/spinner';
 import { Suspense } from 'react';
 import { GuestRoute } from '@/components/auth/GuestRoute';
 import { VerifyEmailPage } from '@/components/auth/VerifyEmailPage';
 
 function VerifyEmailContent() {
   return (
-    <Suspense
-      fallback={<div className="flex min-h-screen items-center justify-center">Đang tải...</div>}
-    >
+    <Suspense fallback={<Spinner message="Đang tải..." />}>
       <VerifyEmailPage />
     </Suspense>
   );

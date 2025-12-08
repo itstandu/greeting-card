@@ -1,5 +1,6 @@
 'use client';
 
+import { Spinner } from '@/components/ui/spinner';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
@@ -20,20 +21,12 @@ export function GuestRoute({ children, redirectTo = '/' }: GuestRouteProps) {
   }, [isAuthenticated, isLoading, router, redirectTo]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Đang tải...</p>
-      </div>
-    );
+    return <Spinner message="Đang tải..." />;
   }
 
   // If authenticated, don't render children (will redirect)
   if (isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Đang chuyển hướng...</p>
-      </div>
-    );
+    return <Spinner message="Đang chuyển hướng..." />;
   }
 
   // Only render children for guests

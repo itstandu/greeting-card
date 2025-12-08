@@ -1,5 +1,8 @@
 export { ProductCard, ProductCardSkeleton } from './ProductCard';
+export { ProductDetailClient } from './ProductDetailClient';
+export { ProductDetailsTabs } from './ProductDetailsTabs';
 export { ProductGrid } from './ProductGrid';
+export { ProductHighlights } from './ProductHighlights';
 export { ProductImageGallery } from './ProductImageGallery';
 export { ProductInfo } from './ProductInfo';
 export { ProductInfoClient } from './ProductInfoClient';

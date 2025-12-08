@@ -1,4 +1,4 @@
-import { CategoriesPageClient } from './CategoriesPageClient';
+import { CategoriesPageClient } from '@/components/categories/CategoriesPageClient';
 import { getAllCategories } from '@/services';
 import type { Category } from '@/types';
 

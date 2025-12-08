@@ -1,9 +1,9 @@
 'use client';
 
-import { Spinner } from '@/components/ui/spinner';
 import { Suspense } from 'react';
 import { GuestRoute } from '@/components/auth/GuestRoute';
 import { VerifyEmailPage } from '@/components/auth/VerifyEmailPage';
+import { Spinner } from '@/components/ui/spinner';
 
 function VerifyEmailContent() {
   return (

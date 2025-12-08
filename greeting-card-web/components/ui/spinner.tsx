@@ -1,7 +1,5 @@
-import type { LucideProps } from 'lucide-react';
-import { LoaderIcon } from 'lucide-react';
-
 import { cn } from '@/lib/utils';
+import { LoaderIcon, type LucideProps } from 'lucide-react';
 
 interface SpinnerProps extends Omit<LucideProps, 'ref'> {
   message?: string;
@@ -11,15 +9,15 @@ function Spinner({ className, message, ...props }: SpinnerProps) {
   // If message is provided, show full-screen loading with message
   if (message) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
         <div className="flex flex-col items-center gap-4">
           <LoaderIcon
             role="status"
             aria-label={message}
-            className={cn('size-8 animate-spin text-primary', className)}
+            className={cn('text-primary size-8 animate-spin', className)}
             {...props}
           />
-          <p className="text-sm text-muted-foreground">{message}</p>
+          <p className="text-muted-foreground text-sm">{message}</p>
         </div>
       </div>
     );

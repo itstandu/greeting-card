@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { ProductsPageClient } from './ProductsPageClient';
+import { ProductsPageClient } from '@/components/products/ProductsPageClient';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function ProductsPageFallback() {

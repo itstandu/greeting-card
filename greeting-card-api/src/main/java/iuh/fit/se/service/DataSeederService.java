@@ -218,37 +218,43 @@ public class DataSeederService {
     // 4. Xóa user_addresses (có FK đến users)
     entityManager.createNativeQuery("DELETE FROM user_addresses").executeUpdate();
 
-    // 5. Xóa product_images (có FK đến products)
+    // 5. Xóa cart_items (có FK đến carts và products)
+    entityManager.createNativeQuery("DELETE FROM cart_items").executeUpdate();
+
+    // 6. Xóa carts (có FK đến users)
+    entityManager.createNativeQuery("DELETE FROM carts").executeUpdate();
+
+    // 7. Xóa product_images (có FK đến products)
     entityManager.createNativeQuery("DELETE FROM product_images").executeUpdate();
 
-    // 6. Xóa product_tag_map (bảng trung gian)
+    // 8. Xóa product_tag_map (bảng trung gian)
     entityManager.createNativeQuery("DELETE FROM product_tag_map").executeUpdate();
 
-    // 7. Xóa promotion_products (bảng trung gian cho promotions và products)
+    // 9. Xóa promotion_products (bảng trung gian cho promotions và products)
     entityManager.createNativeQuery("DELETE FROM promotion_products").executeUpdate();
 
-    // 8. Xóa products (có FK đến categories)
+    // 10. Xóa products (có FK đến categories)
     entityManager.createNativeQuery("DELETE FROM products").executeUpdate();
 
-    // 9. Xóa categories (có self-reference)
+    // 11. Xóa categories (có self-reference)
     entityManager.createNativeQuery("DELETE FROM categories").executeUpdate();
 
-    // 10. Xóa product_tags
+    // 12. Xóa product_tags
     entityManager.createNativeQuery("DELETE FROM product_tags").executeUpdate();
 
-    // 11. Xóa promotions (có thể có FK từ orders nhưng đã xóa orders rồi)
+    // 13. Xóa promotions (có thể có FK từ orders nhưng đã xóa orders rồi)
     entityManager.createNativeQuery("DELETE FROM promotions").executeUpdate();
 
-    // 12. Xóa coupons (có thể có FK từ orders nhưng đã xóa orders rồi)
+    // 14. Xóa coupons (có thể có FK từ orders nhưng đã xóa orders rồi)
     entityManager.createNativeQuery("DELETE FROM coupons").executeUpdate();
 
-    // 13. Xóa payment_methods (sau khi đã xóa orders và payments)
+    // 15. Xóa payment_methods (sau khi đã xóa orders và payments)
     entityManager.createNativeQuery("DELETE FROM payment_methods").executeUpdate();
 
-    // 14. Xóa refresh_tokens (có FK đến users)
+    // 16. Xóa refresh_tokens (có FK đến users)
     entityManager.createNativeQuery("DELETE FROM refresh_tokens").executeUpdate();
 
-    // 15. Xóa users (cuối cùng)
+    // 17. Xóa users (cuối cùng)
     entityManager.createNativeQuery("DELETE FROM users").executeUpdate();
 
     entityManager.flush();

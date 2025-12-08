@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LogoutDialog } from '@/components/auth/LogoutDialog';
 import { NotificationDropdown } from '@/components/notifications';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -131,15 +130,6 @@ export function Header() {
     };
   }, [isAuthenticated, user, wishlistProductIds]);
 
-  const getInitials = (name?: string) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -292,67 +282,74 @@ export function Header() {
           <div className="hidden lg:flex lg:items-center lg:gap-2">
             {isLoading || !hasCheckedAuth ? (
               <div className="bg-muted size-8 animate-pulse rounded-full" />
-            ) : isAuthenticated && user ? (
+            ) : (
               <>
-                <NotificationDropdown />
+                {isAuthenticated && user && <NotificationDropdown />}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative size-10 rounded-full">
-                      <Avatar className="size-10">
-                        <AvatarImage src={user.avatarUrl} alt={user.fullName} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                          {getInitials(user.fullName)}
-                        </AvatarFallback>
-                      </Avatar>
+                    <Button variant="ghost" size="icon" className="size-9">
+                      <User className="size-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm leading-none font-medium">
-                          {user.fullName || 'Người dùng'}
-                        </p>
-                        <p className="text-muted-foreground text-xs leading-none">{user.email}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile" className="flex cursor-pointer items-center">
-                        <User className="mr-2 size-4" />
-                        <span>Hồ sơ</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    {user.role === 'ADMIN' && (
+                    {isAuthenticated && user ? (
                       <>
+                        <DropdownMenuLabel className="font-normal">
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm leading-none font-medium">
+                              {user.fullName || 'Người dùng'}
+                            </p>
+                            <p className="text-muted-foreground text-xs leading-none">
+                              {user.email}
+                            </p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link href="/admin" className="flex cursor-pointer items-center">
-                            <Shield className="mr-2 size-4" />
-                            <span>Trang quản trị</span>
+                          <Link href="/profile" className="flex cursor-pointer items-center">
+                            <User className="mr-2 size-4" />
+                            <span>Hồ sơ</span>
                           </Link>
                         </DropdownMenuItem>
+                        {user.role === 'ADMIN' && (
+                          <>
+                            <DropdownMenuItem asChild>
+                              <Link href="/admin" className="flex cursor-pointer items-center">
+                                <Shield className="mr-2 size-4" />
+                                <span>Trang quản trị</span>
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setLogoutDialogOpen(true)}
+                          className="cursor-pointer"
+                        >
+                          <LogOut className="mr-2 size-4" />
+                          <span>Đăng xuất</span>
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/auth/login" className="flex cursor-pointer items-center">
+                            <User className="mr-2 size-4" />
+                            <span>Đăng nhập</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/auth/register" className="flex cursor-pointer items-center">
+                            <User className="mr-2 size-4" />
+                            <span>Đăng ký</span>
+                          </Link>
+                        </DropdownMenuItem>
                       </>
                     )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => setLogoutDialogOpen(true)}
-                      className="cursor-pointer"
-                    >
-                      <LogOut className="mr-2 size-4" />
-                      <span>Đăng xuất</span>
-                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/auth/login">Đăng nhập</Link>
-                </Button>
-                <Button size="sm" asChild>
-                  <Link href="/auth/register">Đăng ký</Link>
-                </Button>
-              </div>
             )}
           </div>
         </div>
@@ -417,12 +414,7 @@ export function Header() {
                   {/* User info */}
                   <li className="px-3 py-2">
                     <div className="flex items-center gap-3">
-                      <Avatar className="size-10">
-                        <AvatarImage src={user.avatarUrl} alt={user.fullName} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                          {getInitials(user.fullName)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <User className="size-5 shrink-0" />
                       <div className="flex flex-col">
                         <p className="text-sm font-medium">{user.fullName || 'Người dùng'}</p>
                         <p className="text-muted-foreground text-xs">{user.email}</p>
@@ -470,18 +462,20 @@ export function Header() {
                   <li>
                     <Link
                       href="/auth/login"
-                      className="hover:bg-accent flex items-center justify-center gap-2 rounded-lg border px-3 py-2"
+                      className="hover:bg-accent flex items-center gap-2 rounded-lg px-3 py-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >
+                      <User className="h-4 w-4" />
                       Đăng nhập
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/auth/register"
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 rounded-lg px-3 py-2 font-medium"
+                      className="hover:bg-accent flex items-center gap-2 rounded-lg px-3 py-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >
+                      <User className="h-4 w-4" />
                       Đăng ký
                     </Link>
                   </li>

@@ -130,7 +130,6 @@ export function Header() {
     };
   }, [isAuthenticated, user, wishlistProductIds]);
 
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -313,6 +312,16 @@ export function Header() {
                             <span>Hồ sơ</span>
                           </Link>
                         </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href="/orders"
+                            className="flex cursor-pointer items-center"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            <Package className="mr-2 size-4" />
+                            <span>Đơn hàng</span>
+                          </Link>
+                        </DropdownMenuItem>
                         {user.role === 'ADMIN' && (
                           <>
                             <DropdownMenuItem asChild>
@@ -431,6 +440,16 @@ export function Header() {
                     >
                       <User className="h-4 w-4" />
                       Hồ sơ
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/orders"
+                      className="hover:bg-accent flex items-center gap-2 rounded-lg px-3 py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Package className="h-4 w-4" />
+                      Đơn hàng
                     </Link>
                   </li>
                   {user.role === 'ADMIN' && (

@@ -148,7 +148,7 @@ export function WishlistsTable() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
+                  Array.from({ length: 10 }).map((_, index) => (
                     <TableRow key={`loading-${index}`}>
                       <TableCell>
                         <Skeleton className="h-4 w-16" />

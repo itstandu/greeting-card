@@ -50,7 +50,16 @@ import type {
 import { DragDropContext, Draggable, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { GripVertical, Pencil, Plus, RefreshCw, Search, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import {
+  GripVertical,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  ToggleLeft,
+  ToggleRight,
+  Trash2,
+} from 'lucide-react';
 
 export default function AdminPaymentMethodsPage() {
   const { toast } = useToast();
@@ -324,7 +333,7 @@ export default function AdminPaymentMethodsPage() {
               {provided => (
                 <TableBody {...provided.droppableProps} ref={provided.innerRef}>
                   {loading ? (
-                    Array.from({ length: 5 }).map((_, index) => (
+                    Array.from({ length: 10 }).map((_, index) => (
                       <TableRow key={`loading-${index}`}>
                         <TableCell>
                           <Skeleton className="h-4 w-10" />

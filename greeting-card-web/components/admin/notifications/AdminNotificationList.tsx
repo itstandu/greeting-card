@@ -230,7 +230,7 @@ export function AdminNotificationList() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
+                Array.from({ length: 10 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell>
                       <Skeleton className="h-4 w-16" />
@@ -247,8 +247,11 @@ export function AdminNotificationList() {
                     <TableCell>
                       <Skeleton className="h-4 w-24" />
                     </TableCell>
-                    <TableCell>
-                      <Skeleton className="ml-auto h-4 w-16" />
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

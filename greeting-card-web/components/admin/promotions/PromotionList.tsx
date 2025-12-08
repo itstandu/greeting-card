@@ -196,7 +196,7 @@ export function PromotionList() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
+                Array.from({ length: 10 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell>
                       <Skeleton className="h-4 w-32" />
@@ -219,8 +219,8 @@ export function PromotionList() {
                     <TableCell>
                       <Skeleton className="h-4 w-20" />
                     </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-8" />
+                    <TableCell className="text-right">
+                      <Skeleton className="ml-auto h-8 w-8" />
                     </TableCell>
                   </TableRow>
                 ))

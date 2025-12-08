@@ -5,10 +5,18 @@ import { cn } from '@/lib/utils';
 
 function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    <div
+      data-slot="table-container"
+      className="relative w-full max-w-full min-w-0 overflow-x-auto"
+    >
       <table
         data-slot="table"
-        className={cn('w-full caption-bottom text-sm', className)}
+        className={cn(
+          'min-w-full caption-bottom text-sm',
+          '[&_th:first-child]:pl-4 [&_th:last-child]:pr-4',
+          '[&_td:first-child]:pl-4 [&_td:last-child]:pr-4',
+          className,
+        )}
         {...props}
       />
     </div>

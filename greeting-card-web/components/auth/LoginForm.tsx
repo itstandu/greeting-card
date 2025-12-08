@@ -18,6 +18,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { loginUser } from '@/lib/store/auth/auth.slice';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { getLocalCartItemCount } from '@/lib/utils/cart-sync';
+import { getLocalWishlistItemCount } from '@/lib/utils/wishlist-sync';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -49,8 +50,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const onSubmit = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     try {
-      // Kiểm tra số lượng items trong localStorage cart trước khi login
+      // Kiểm tra số lượng items trong localStorage cart và wishlist trước khi login
       const localCartItemCount = getLocalCartItemCount();
+      const localWishlistItemCount = getLocalWishlistItemCount();
 
       const result = await dispatch(loginUser(values)).unwrap();
 
@@ -60,6 +62,14 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       // Thêm thông báo nếu có cart được sync
       if (localCartItemCount > 0) {
         message = `${message}. Giỏ hàng của bạn (${localCartItemCount} sản phẩm) đã được đồng bộ.`;
+      }
+
+      // Thêm thông báo nếu có wishlist được sync
+      if (localWishlistItemCount > 0) {
+        const wishlistMessage = `Danh sách yêu thích của bạn (${localWishlistItemCount} sản phẩm) đã được đồng bộ.`;
+        message = localCartItemCount > 0
+          ? `${message} ${wishlistMessage}`
+          : `${message}. ${wishlistMessage}`;
       }
 
       toast.success('Đăng nhập thành công', {

@@ -223,7 +223,7 @@ export function ProductCard({
 
   // Default variant - standard card with padding
   return (
-    <Link href={`/product/${product.slug}`} className="block">
+    <Link href={`/products/${product.slug}`} className="block">
       <Card
         className={cn(
           'group hover:border-primary/30 flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg',

@@ -463,7 +463,7 @@ export const productService = {
 ```typescript
 // app/products/page.tsx
 import { productService } from '@/services/product.service';
-import { ProductsList } from '@/components/product/ProductsList';
+import { ProductsList } from '@/components/products/ProductsList';
 
 export default async function ProductsPage() {
   const response = await productService.getAllProducts();

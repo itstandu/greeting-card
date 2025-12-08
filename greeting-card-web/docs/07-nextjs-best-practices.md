@@ -261,7 +261,7 @@ components/
 // Usage
 import { ProductCard, ProductList } from '@/components/product';
 
-// components/product/index.ts
+// components/products/index.ts
 export { ProductCard } from './ProductCard';
 export { ProductList } from './ProductList';
 export { ProductDetail } from './ProductDetail';
@@ -310,7 +310,7 @@ export default async function ProductsPage() {
 
 ```typescript
 import { render, screen } from '@testing-library/react';
-import { ProductCard } from '@/components/product/ProductCard';
+import { ProductCard } from '@/components/products/ProductCard';
 
 describe('ProductCard', () => {
   it('renders product name', () => {

@@ -435,7 +435,7 @@ export default function CheckoutPage() {
 ### 6.3. Dynamic Routes
 
 ```typescript
-// app/product/[slug]/page.tsx
+// app/products/[slug]/page.tsx
 interface ProductPageProps {
   params: { slug: string };
 }

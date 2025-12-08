@@ -22,7 +22,7 @@ Hệ thống hỗ trợ 3 loại người dùng với các quyền hạn khác n
 
 #### Xem Chi Tiết Sản Phẩm
 
-- Truy cập trang `/product/[slug]`
+- Truy cập trang `/products/[slug]`
 - Xem thông tin chi tiết: tên, mô tả, giá, hình ảnh, loại sản phẩm, số lượng tồn kho
 - Xem đánh giá và xếp hạng (chỉ đánh giá đã được duyệt)
 - Xem điểm đánh giá trung bình và số lượng đánh giá
@@ -79,7 +79,7 @@ Hệ thống hỗ trợ 3 loại người dùng với các quyền hạn khác n
 ```
 /                           # Trang chủ
 /products                   # Danh sách sản phẩm
-/product/[slug]             # Chi tiết sản phẩm
+/products/[slug]             # Chi tiết sản phẩm
 /categories                  # Danh sách loại sản phẩm
 /categories/[slug]          # Sản phẩm theo loại
 /cart                       # Giỏ hàng

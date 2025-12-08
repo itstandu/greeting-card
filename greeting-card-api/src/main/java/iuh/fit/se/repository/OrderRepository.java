@@ -23,6 +23,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
           "SELECT DISTINCT o FROM Order o "
               + "LEFT JOIN FETCH o.user "
               + "LEFT JOIN FETCH o.paymentMethod "
+              + "LEFT JOIN FETCH o.orderItems "
               + "WHERE o.user.id = :userId AND o.deletedAt IS NULL "
               + "ORDER BY o.orderDate DESC",
       countQuery = "SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.deletedAt IS NULL")

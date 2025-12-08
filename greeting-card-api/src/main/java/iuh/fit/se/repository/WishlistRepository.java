@@ -28,8 +28,10 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
   // Admin: Get all wishlists with user info (pagination optimized)
   @Query(
       value =
-          "SELECT DISTINCT w FROM Wishlist w " + "JOIN FETCH w.user " + "LEFT JOIN FETCH w.items",
-      countQuery = "SELECT COUNT(w) FROM Wishlist w")
+          "SELECT DISTINCT w FROM Wishlist w "
+              + "JOIN FETCH w.user "
+              + "JOIN FETCH w.items",
+      countQuery = "SELECT COUNT(DISTINCT w) FROM Wishlist w JOIN w.items")
   Page<Wishlist> findAllWithUserAndItems(Pageable pageable);
 
   // Admin: Search wishlists by user email or name
@@ -37,11 +39,11 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
       value =
           "SELECT DISTINCT w FROM Wishlist w "
               + "JOIN FETCH w.user u "
-              + "LEFT JOIN FETCH w.items "
+              + "JOIN FETCH w.items "
               + "WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
               + "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))",
       countQuery =
-          "SELECT COUNT(w) FROM Wishlist w JOIN w.user u "
+          "SELECT COUNT(DISTINCT w) FROM Wishlist w JOIN w.user u JOIN w.items "
               + "WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
               + "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
   Page<Wishlist> searchWishlists(@Param("keyword") String keyword, Pageable pageable);

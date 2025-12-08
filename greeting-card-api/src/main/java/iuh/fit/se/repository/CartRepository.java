@@ -27,8 +27,11 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
   // Admin: Get all carts with user info (pagination optimized)
   @Query(
-      value = "SELECT DISTINCT c FROM Cart c " + "JOIN FETCH c.user " + "LEFT JOIN FETCH c.items",
-      countQuery = "SELECT COUNT(c) FROM Cart c")
+      value =
+          "SELECT DISTINCT c FROM Cart c "
+              + "JOIN FETCH c.user "
+              + "JOIN FETCH c.items",
+      countQuery = "SELECT COUNT(DISTINCT c) FROM Cart c JOIN c.items")
   Page<Cart> findAllWithUserAndItems(Pageable pageable);
 
   // Admin: Search carts by user email or name
@@ -36,11 +39,11 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
       value =
           "SELECT DISTINCT c FROM Cart c "
               + "JOIN FETCH c.user u "
-              + "LEFT JOIN FETCH c.items "
+              + "JOIN FETCH c.items "
               + "WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
               + "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))",
       countQuery =
-          "SELECT COUNT(c) FROM Cart c JOIN c.user u "
+          "SELECT COUNT(DISTINCT c) FROM Cart c JOIN c.user u JOIN c.items "
               + "WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
               + "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
   Page<Cart> searchCarts(@Param("keyword") String keyword, Pageable pageable);

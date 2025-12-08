@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { useAuth } from '@/hooks/use-auth';
 import { getNotificationTypeLabel } from '@/lib/constants';
 import { formatDate } from '@/lib/utils';
 import { getUnreadCount, getUserNotifications, markAllAsRead } from '@/services';
@@ -28,12 +29,24 @@ const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export function NotificationDropdown() {
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const fetchNotifications = async () => {
+  // Fetch unread count only (lightweight)
+  const fetchUnreadCount = useCallback(async (): Promise<void> => {
+    try {
+      const countRes = await getUnreadCount();
+      setUnreadCount(countRes.data.count);
+    } catch {
+      // Silently fail - don't show error for background count fetch
+    }
+  }, []);
+
+  // Fetch full notifications list (only when dropdown opens)
+  const fetchNotifications = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       const [notificationsRes, countRes] = await Promise.all([
@@ -47,24 +60,45 @@ export function NotificationDropdown() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
+  // Load unread count on mount when authenticated
   useEffect(() => {
-    if (open) {
-      fetchNotifications();
+    if (isAuthenticated) {
+      fetchUnreadCount();
+    } else {
+      setUnreadCount(0);
     }
-  }, [open]);
+  }, [isAuthenticated, fetchUnreadCount]);
 
-  // Poll for updates when dropdown is open
+  // Poll for unread count updates every 30 seconds when authenticated
   useEffect(() => {
-    if (!open) return;
+    if (!isAuthenticated) return;
 
     const interval = setInterval(() => {
-      getUnreadCount().then(res => setUnreadCount(res.data.count));
-    }, 10000); // Update every 10 seconds
+      fetchUnreadCount();
+    }, 30000); // Update every 30 seconds
 
     return () => clearInterval(interval);
-  }, [open]);
+  }, [isAuthenticated, fetchUnreadCount]);
+
+  // Fetch full notifications when dropdown opens
+  useEffect(() => {
+    if (open && isAuthenticated) {
+      fetchNotifications();
+    }
+  }, [open, isAuthenticated, fetchNotifications]);
+
+  // Poll for updates when dropdown is open (more frequent)
+  useEffect(() => {
+    if (!open || !isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 10000); // Update every 10 seconds when dropdown is open
+
+    return () => clearInterval(interval);
+  }, [open, isAuthenticated, fetchUnreadCount]);
 
   const handleMarkAllAsRead = async () => {
     try {
@@ -157,16 +191,12 @@ export function NotificationDropdown() {
             </div>
           )}
         </ScrollArea>
-        {notifications.length > 0 && (
-          <>
-            <DropdownMenuSeparator />
-            <div className="p-2">
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/notifications">Xem tất cả thông báo</Link>
-              </Button>
-            </div>
-          </>
-        )}
+        <DropdownMenuSeparator />
+        <div className="p-2">
+          <Button variant="outline" className="w-full" asChild>
+            <Link href="/notifications">Xem tất cả thông báo</Link>
+          </Button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

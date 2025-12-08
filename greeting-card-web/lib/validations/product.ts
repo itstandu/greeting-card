@@ -9,7 +9,6 @@ export const productSchema = z.object({
   name: z.string().min(2, 'Tên sản phẩm phải có ít nhất 2 ký tự'),
   description: z.string().optional(),
   price: z.coerce.number().min(1000, 'Giá phải lớn hơn 1.000đ'),
-  stock: z.coerce.number().min(0, 'Số lượng tồn kho phải >= 0'),
   sku: z.string().optional(),
   categoryId: z.string().min(1, 'Vui lòng chọn danh mục'),
   isActive: z.boolean(),

@@ -57,7 +57,6 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
       name: '',
       description: '',
       price: 0,
-      stock: 0,
       sku: '',
       categoryId: '',
       isActive: true,
@@ -90,7 +89,6 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
         name: product.name,
         description: product.description || '',
         price: product.price,
-        stock: product.stock,
         sku: product.sku || '',
         categoryId: product.category?.id.toString() || '',
         isActive: product.isActive,
@@ -103,7 +101,6 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
         name: '',
         description: '',
         price: 0,
-        stock: 0,
         sku: '',
         categoryId: '',
         isActive: true,
@@ -155,7 +152,7 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
         name: values.name,
         description: values.description,
         price: values.price,
-        stock: values.stock,
+        stock: product ? product.stock : 0,
         sku: values.sku || undefined,
         categoryId: parseInt(values.categoryId),
         isActive: values.isActive,
@@ -223,35 +220,19 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Giá bán (VNĐ)</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="stock"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Số lượng tồn kho</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Giá bán (VNĐ)</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField

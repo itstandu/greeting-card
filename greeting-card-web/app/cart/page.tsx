@@ -42,9 +42,10 @@ export default function CartPage() {
             )}
           </div>
           <div className="space-y-4">
-            {cart.items.map(item => (
-              <CartItemCard key={item.productId} item={item} onUpdate={handleUpdate} />
-            ))}
+            {cart.items.map(item => {
+              console.log('🔍 [CartPage] Item:', item);
+              return <CartItemCard key={item.productId} item={item} onUpdate={handleUpdate} />;
+            })}
           </div>
         </div>
 

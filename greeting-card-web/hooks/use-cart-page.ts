@@ -1,24 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from './use-auth';
 import { cartStorage } from '@/lib/store/cart/cart-storage';
+import { mapCartResponseToCart } from '@/lib/utils/cart';
 import { clearCart, getCart } from '@/services/cart.service';
-import type { Cart, CartResponse } from '@/types';
-
-function convertCartResponseToCart(cartResponse: CartResponse): Cart {
-  return {
-    items: cartResponse.items.map(item => ({
-      productId: item.product.id,
-      productName: item.product.name,
-      productSlug: item.product.slug,
-      productImage: item.product.imageUrl,
-      price: Number(item.product.price),
-      quantity: item.quantity,
-      stock: item.product.stock,
-    })),
-    total: Number(cartResponse.total),
-    totalItems: cartResponse.totalItems,
-  };
-}
+import type { Cart } from '@/types';
 
 export function useCartPage() {
   const { user, isAuthenticated } = useAuth();
@@ -30,7 +15,7 @@ export function useCartPage() {
       try {
         const response = await getCart();
         if (response.data) {
-          setCart(convertCartResponseToCart(response.data));
+          setCart(mapCartResponseToCart(response.data));
         } else {
           setCart({ items: [], total: 0, totalItems: 0 });
         }

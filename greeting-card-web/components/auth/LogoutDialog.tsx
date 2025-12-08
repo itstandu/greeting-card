@@ -18,10 +18,11 @@ import { toast } from 'sonner';
 interface LogoutDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  redirectPath?: string;
 }
 
 // Dialog component for confirming logout action
-export function LogoutDialog({ open, onOpenChange }: LogoutDialogProps) {
+export function LogoutDialog({ open, onOpenChange, redirectPath = '/' }: LogoutDialogProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector(state => state.auth);
@@ -37,7 +38,7 @@ export function LogoutDialog({ open, onOpenChange }: LogoutDialogProps) {
       onOpenChange(false);
       // Small delay to ensure toast is visible before navigation
       setTimeout(() => {
-        router.push('/');
+        router.push(redirectPath);
       }, 500);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Có lỗi xảy ra khi đăng xuất';

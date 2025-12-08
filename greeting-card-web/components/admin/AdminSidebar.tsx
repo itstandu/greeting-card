@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { LogoutDialog } from '@/components/auth/LogoutDialog';
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +17,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import { useAuth } from '@/hooks/use-auth';
 import {
   Bell,
   CreditCard,
@@ -37,7 +38,7 @@ import {
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const items = [
     {
@@ -161,7 +162,7 @@ export function AdminSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => logout()}>
+            <SidebarMenuButton onClick={() => setLogoutDialogOpen(true)}>
               <LogOut />
               <span>Đăng xuất</span>
             </SidebarMenuButton>
@@ -169,6 +170,11 @@ export function AdminSidebar() {
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
+      <LogoutDialog
+        open={logoutDialogOpen}
+        onOpenChange={setLogoutDialogOpen}
+        redirectPath="/auth/login"
+      />
     </Sidebar>
   );
 }

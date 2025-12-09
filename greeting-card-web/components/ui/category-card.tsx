@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,8 +28,25 @@ export function CategoryCard({
   showDescription = true,
   className,
 }: CategoryCardProps) {
-  const [imageLoading, setImageLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(!!category.imageUrl);
+  const imageRef = useRef<HTMLImageElement>(null);
   const displayProductCount = productCount ?? 0;
+
+  // Check if image is already loaded (from cache) when component mounts
+  useEffect(() => {
+    if (!category.imageUrl) {
+      setTimeout(() => {
+        setImageLoading(false);
+      }, 100);
+      return;
+    }
+
+    if (imageRef.current?.complete && imageRef.current.naturalHeight !== 0) {
+      setTimeout(() => {
+        setImageLoading(false);
+      }, 100);
+    }
+  }, [category.imageUrl]);
 
   // Compact variant - minimal card with padding
   if (variant === 'compact') {
@@ -47,6 +64,7 @@ export function CategoryCard({
               {imageLoading && <Skeleton className="absolute inset-0 rounded-lg" />}
               {category.imageUrl ? (
                 <SafeImage
+                  ref={imageRef}
                   src={category.imageUrl}
                   alt={category.name}
                   className={cn(
@@ -111,6 +129,7 @@ export function CategoryCard({
                 {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
                 {category.imageUrl ? (
                   <SafeImage
+                    ref={imageRef}
                     src={category.imageUrl}
                     alt={category.name}
                     className={cn(
@@ -179,6 +198,7 @@ export function CategoryCard({
               {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
               {category.imageUrl ? (
                 <SafeImage
+                  ref={imageRef}
                   src={category.imageUrl}
                   alt={category.name}
                   className={cn(
@@ -249,6 +269,7 @@ export function CategoryCard({
             {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
             {category.imageUrl ? (
               <SafeImage
+                ref={imageRef}
                 src={category.imageUrl}
                 alt={category.name}
                 className={cn(

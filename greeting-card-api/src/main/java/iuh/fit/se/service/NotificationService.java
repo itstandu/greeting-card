@@ -92,41 +92,41 @@ public class NotificationService {
 
   /** Tạo notification khi order status thay đổi */
   @Transactional
-  public void notifyOrderStatusChange(Long userId, String orderNumber, String status) {
+  public void notifyOrderStatusChange(Long userId, Long orderId, String orderNumber, String status) {
     String title = "Trạng thái đơn hàng thay đổi";
     String message =
         String.format("Đơn hàng %s đã chuyển sang trạng thái: %s", orderNumber, status);
-    String linkUrl = "/orders";
+    String linkUrl = "/orders/" + orderId;
 
     createNotification(userId, NotificationType.ORDER, title, message, linkUrl);
   }
 
   /** Tạo notification khi payment thành công */
   @Transactional
-  public void notifyPaymentSuccess(Long userId, String orderNumber, String amount) {
+  public void notifyPaymentSuccess(Long userId, Long orderId, String orderNumber, String amount) {
     String title = "Thanh toán thành công";
     String message =
         String.format(
             "Đơn hàng %s đã được thanh toán thành công. Số tiền: %s", orderNumber, amount);
-    String linkUrl = "/orders";
+    String linkUrl = "/orders/" + orderId;
 
     createNotification(userId, NotificationType.ORDER, title, message, linkUrl);
   }
 
   /** Tạo notification khi payment thất bại */
   @Transactional
-  public void notifyPaymentFailure(Long userId, String orderNumber, String reason) {
+  public void notifyPaymentFailure(Long userId, Long orderId, String orderNumber, String reason) {
     String title = "Thanh toán thất bại";
     String message =
         String.format("Thanh toán cho đơn hàng %s thất bại. Lý do: %s", orderNumber, reason);
-    String linkUrl = "/orders";
+    String linkUrl = "/orders/" + orderId;
 
     createNotification(userId, NotificationType.ORDER, title, message, linkUrl);
   }
 
   /** Gửi notification cho tất cả admin khi có đơn hàng mới */
   @Transactional
-  public void notifyAdminsNewOrder(String orderNumber, String customerName, String totalAmount) {
+  public void notifyAdminsNewOrder(Long orderId, String orderNumber, String customerName, String totalAmount) {
     List<User> admins = userRepository.findByRole(UserRole.ADMIN);
 
     if (admins.isEmpty()) {
@@ -139,7 +139,7 @@ public class NotificationService {
         String.format(
             "Khách hàng %s đã đặt đơn hàng %s với tổng tiền %s VNĐ",
             customerName, orderNumber, totalAmount);
-    String linkUrl = "/admin/orders";
+    String linkUrl = "/admin/orders/" + orderId;
 
     for (User admin : admins) {
       createNotification(admin.getId(), NotificationType.ORDER, title, message, linkUrl);

@@ -91,7 +91,7 @@ public class PaymentService {
         payment.setGatewayResponse(createFailureResponse(paymentMethod.getCode()));
 
         // Send notification
-        notificationService.notifyPaymentFailure(userId, order.getOrderNumber(), failureReason);
+        notificationService.notifyPaymentFailure(userId, order.getId(), order.getOrderNumber(), failureReason);
       } else {
         // Luôn thành công (trừ khi simulateFailure = true)
         payment.setStatus(PaymentStatus.PAID);
@@ -104,7 +104,7 @@ public class PaymentService {
 
         // Send notification
         notificationService.notifyPaymentSuccess(
-            userId, order.getOrderNumber(), payment.getAmount().toString());
+            userId, order.getId(), order.getOrderNumber(), payment.getAmount().toString());
       }
 
       payment = paymentRepository.save(payment);

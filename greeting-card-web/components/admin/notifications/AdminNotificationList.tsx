@@ -21,6 +21,7 @@ import {
   NOTIFICATION_TYPE,
   type NotificationType,
 } from '@/lib/constants';
+import { getNotificationLink } from '@/lib/notification-links';
 import { formatDate } from '@/lib/utils';
 import { getUnreadCount, getUserNotifications, markAllAsRead, markAsRead } from '@/services';
 import type { Notification, PaginationResponse } from '@/types';
@@ -328,7 +329,7 @@ export function AdminNotificationList() {
                           )}
                           {notification.linkUrl && (
                             <Button variant="ghost" size="icon" asChild title="Xem chi tiết">
-                              <Link href={notification.linkUrl}>
+                              <Link href={getNotificationLink(notification)}>
                                 <ShoppingBag className="h-4 w-4" />
                               </Link>
                             </Button>

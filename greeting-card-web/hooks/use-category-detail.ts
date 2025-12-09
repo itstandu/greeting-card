@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from './use-auth';
 import { getAllCategories, getCategoryBySlug } from '@/services';
 import { getProducts } from '@/services/product.service';
@@ -13,16 +13,30 @@ interface UseCategoryDetailReturn {
 }
 
 export function useCategoryDetail(slug: string | undefined): UseCategoryDetailReturn {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, hasCheckedAuth } = useAuth();
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const lastFetchedRef = useRef<{ slug: string | undefined; isAuthenticated: boolean }>({
+    slug: undefined,
+    isAuthenticated: false,
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       if (!slug) return;
+
+      if (!hasCheckedAuth) return;
+
+      if (
+        lastFetchedRef.current.slug === slug &&
+        lastFetchedRef.current.isAuthenticated === isAuthenticated
+      ) {
+        return;
+      }
 
       try {
         setLoading(true);
@@ -36,6 +50,8 @@ export function useCategoryDetail(slug: string | undefined): UseCategoryDetailRe
           setLoading(false);
           return;
         }
+
+        lastFetchedRef.current = { slug, isAuthenticated };
 
         setCategory(categoryData);
 
@@ -69,7 +85,7 @@ export function useCategoryDetail(slug: string | undefined): UseCategoryDetailRe
     };
 
     fetchData();
-  }, [slug, isAuthenticated]);
+  }, [slug, isAuthenticated, hasCheckedAuth]);
 
   return {
     category,

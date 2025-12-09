@@ -16,8 +16,9 @@ import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/hooks/use-auth';
 import { getNotificationTypeLabel } from '@/lib/constants';
+import { getNotificationLink } from '@/lib/notification-links';
 import { formatDate } from '@/lib/utils';
-import { getUnreadCount, getUserNotifications, markAllAsRead } from '@/services';
+import { getUnreadCount, getUserNotifications, markAllAsRead, markAsRead } from '@/services';
 import type { Notification } from '@/types';
 import { Bell, CheckCheck, Package, Settings, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
@@ -110,6 +111,25 @@ export function NotificationDropdown() {
     }
   };
 
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if not already read
+    if (!notification.isRead) {
+      try {
+        await markAsRead(notification.id);
+        // Update local state immediately for better UX
+        setNotifications(prev =>
+          prev.map(n =>
+            n.id === notification.id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
+          ),
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } catch {
+        // Silently fail - don't block navigation
+      }
+    }
+    setOpen(false);
+  };
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -150,7 +170,8 @@ export function NotificationDropdown() {
                 return (
                   <Link
                     key={notification.id}
-                    href={notification.linkUrl || '#'}
+                    href={getNotificationLink(notification)}
+                    onClick={() => handleNotificationClick(notification)}
                     className="hover:bg-accent block rounded-md p-2"
                   >
                     <div className="flex gap-3">
@@ -194,7 +215,9 @@ export function NotificationDropdown() {
         <DropdownMenuSeparator />
         <div className="p-2">
           <Button variant="outline" className="w-full" asChild>
-            <Link href="/notifications">Xem tất cả thông báo</Link>
+            <Link href="/notifications" onClick={() => setOpen(false)}>
+              Xem tất cả thông báo
+            </Link>
           </Button>
         </div>
       </DropdownMenuContent>

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,8 +29,21 @@ export function ProductListItem({
   onAddToCart,
   className,
 }: ProductListItemProps) {
-  const [imageLoading, setImageLoading] = useState(true);
   const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+  const [imageLoading, setImageLoading] = useState(!!primaryImage?.imageUrl);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  // Check if image is already loaded (from cache) when component mounts
+  useEffect(() => {
+    if (!primaryImage?.imageUrl) {
+      setImageLoading(false);
+      return;
+    }
+
+    if (imageRef.current?.complete && imageRef.current.naturalHeight !== 0) {
+      setImageLoading(false);
+    }
+  }, [primaryImage?.imageUrl]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,6 +68,7 @@ export function ProductListItem({
           <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-32 md:h-40 md:w-40">
             {imageLoading && <Skeleton className="absolute inset-0" />}
             <SafeImage
+              ref={imageRef}
               src={primaryImage?.imageUrl}
               alt={primaryImage?.altText || product.name}
               className={cn(

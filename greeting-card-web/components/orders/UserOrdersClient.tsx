@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { OrderCard } from './OrderCard';
 import { OrderDetailSheet } from './OrderDetailSheet';
@@ -11,6 +12,7 @@ import { Package } from 'lucide-react';
 
 export function UserOrdersClient() {
   const { orders, loading, pagination, fetchOrders } = useOrdersPage();
+  const searchParams = useSearchParams();
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,6 +22,20 @@ export function UserOrdersClient() {
     fetchOrders({ page: currentPage, size: 10 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
+
+  // Open order sheet when `orderId` is provided via query params (e.g. from notifications)
+  useEffect(() => {
+    const orderIdParam = searchParams.get('orderId');
+    if (orderIdParam) {
+      const orderId = parseInt(orderIdParam, 10);
+      if (!isNaN(orderId)) {
+        setSelectedOrderId(orderId);
+        setSheetOpen(true);
+        // Remove the query parameter after handling to keep URL clean
+        window.history.replaceState({}, '', '/orders');
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setPageInput(String(currentPage));

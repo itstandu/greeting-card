@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -35,8 +35,21 @@ export function ProductCard({
   onAddToCart,
   className,
 }: ProductCardProps) {
-  const [imageLoading, setImageLoading] = useState(true);
   const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+  const [imageLoading, setImageLoading] = useState(!!primaryImage?.imageUrl);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  // Check if image is already loaded (from cache) when component mounts
+  useEffect(() => {
+    if (!primaryImage?.imageUrl) {
+      setImageLoading(false);
+      return;
+    }
+
+    if (imageRef.current?.complete && imageRef.current.naturalHeight !== 0) {
+      setImageLoading(false);
+    }
+  }, [primaryImage?.imageUrl]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -63,6 +76,7 @@ export function ProductCard({
             <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
               {imageLoading && <Skeleton className="absolute inset-0 rounded-lg" />}
               <SafeImage
+                ref={imageRef}
                 src={primaryImage?.imageUrl}
                 alt={primaryImage?.altText || product.name}
                 className={cn(
@@ -129,6 +143,7 @@ export function ProductCard({
             <div className="bg-muted relative aspect-4/3 overflow-hidden rounded-xl">
               {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
               <SafeImage
+                ref={imageRef}
                 src={primaryImage?.imageUrl}
                 alt={primaryImage?.altText || product.name}
                 className={cn(
@@ -235,6 +250,7 @@ export function ProductCard({
           <div className="bg-muted relative aspect-square overflow-hidden rounded-xl">
             {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
             <SafeImage
+              ref={imageRef}
               src={primaryImage?.imageUrl}
               alt={primaryImage?.altText || product.name}
               className={cn(

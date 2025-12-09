@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import type { ImgHTMLAttributes, SyntheticEvent } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -10,37 +11,35 @@ type SafeImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   fallbackSrc?: string;
 };
 
-export function SafeImage({
-  src,
-  alt,
-  className,
-  fallbackSrc = FALLBACK_IMAGE_SRC,
-  onError,
-  ...props
-}: SafeImageProps) {
-  const handleError = (event: SyntheticEvent<HTMLImageElement>) => {
-    const imageElement = event.currentTarget;
+export const SafeImage = forwardRef<HTMLImageElement, SafeImageProps>(
+  ({ src, alt, className, fallbackSrc = FALLBACK_IMAGE_SRC, onError, ...props }, ref) => {
+    const handleError = (event: SyntheticEvent<HTMLImageElement>) => {
+      const imageElement = event.currentTarget;
 
-    if (!imageElement || imageElement.src.endsWith(fallbackSrc)) {
-      return;
-    }
+      if (!imageElement || imageElement.src.endsWith(fallbackSrc)) {
+        return;
+      }
 
-    imageElement.src = fallbackSrc;
+      imageElement.src = fallbackSrc;
 
-    if (onError) {
-      onError(event);
-    }
-  };
+      if (onError) {
+        onError(event);
+      }
+    };
 
-  return (
-    <img
-      {...props}
-      src={src || fallbackSrc}
-      alt={alt}
-      onError={handleError}
-      className={cn('object-cover', className)}
-      loading={props.loading ?? 'lazy'}
-      decoding={props.decoding ?? 'async'}
-    />
-  );
-}
+    return (
+      <img
+        {...props}
+        ref={ref}
+        src={src || fallbackSrc}
+        alt={alt}
+        onError={handleError}
+        className={cn('object-cover', className)}
+        loading={props.loading ?? 'lazy'}
+        decoding={props.decoding ?? 'async'}
+      />
+    );
+  },
+);
+
+SafeImage.displayName = 'SafeImage';

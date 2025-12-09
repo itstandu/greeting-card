@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAuth } from './use-auth';
 import { getProducts } from '@/services';
 import type { PaginationResponse, Product, ProductFilters as ProductFiltersType } from '@/types';
 
@@ -16,7 +17,6 @@ interface UseProductsOptions {
     categoriesKey: string;
     priceRangeKey: string;
   };
-  isAuthenticated: boolean;
   initialProducts?: Product[];
   initialPagination?: PaginationResponse;
 }
@@ -30,16 +30,24 @@ interface UseProductsReturn {
 
 export function useProducts({
   filters,
-  isAuthenticated,
   initialProducts = [],
   initialPagination,
 }: UseProductsOptions): UseProductsReturn {
+  const { isAuthenticated, hasCheckedAuth } = useAuth();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [pagination, setPagination] = useState<PaginationResponse>(
     initialPagination || { page: 1, size: 12, total: 0, totalPages: 0 },
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const lastFetchedRef = useRef<{
+    filtersKey: string;
+    isAuthenticated: boolean;
+  }>({
+    filtersKey: '',
+    isAuthenticated: false,
+  });
 
   // Map sortBy to API sortBy and sortDir
   const getSortParams = (sortBy: string): { sortBy?: string; sortDir?: 'asc' | 'desc' } => {
@@ -64,8 +72,31 @@ export function useProducts({
     let cancelled = false;
 
     const loadProducts = async () => {
+      if (!hasCheckedAuth) return;
+
+      // Create a unique key for filters (excluding isAuthenticated)
+      const filtersKey = JSON.stringify({
+        page: filters.page,
+        size: filters.size,
+        search: filters.search,
+        sort: filters.sort,
+        categoriesKey: filters.categoriesKey,
+        featured: filters.featured,
+        inStock: filters.inStock,
+        priceRangeKey: filters.priceRangeKey,
+      });
+
+      // Skip if filters and isAuthenticated haven't changed
+      if (
+        lastFetchedRef.current.filtersKey === filtersKey &&
+        lastFetchedRef.current.isAuthenticated === isAuthenticated
+      ) {
+        return;
+      }
+
       setLoading(true);
       setError(null);
+
       try {
         // Parse selectedCategories from key
         const selectedCategoriesArray = filters.categoriesKey
@@ -87,6 +118,8 @@ export function useProducts({
           isFeatured: filters.featured || undefined,
           ...sortParams,
         };
+
+        lastFetchedRef.current = { filtersKey, isAuthenticated };
 
         const productsResponse = await getProducts(apiFilters, isAuthenticated);
 
@@ -142,6 +175,7 @@ export function useProducts({
     filters.inStock,
     filters.priceRangeKey,
     isAuthenticated,
+    hasCheckedAuth,
   ]);
 
   // Reset to page 1 when filters change (except page itself)

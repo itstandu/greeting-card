@@ -17,6 +17,7 @@ import { PromoBanner, TrustBadges } from '@/components/ui/decorative-elements';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Pagination,
   PaginationContent,
@@ -138,7 +139,7 @@ export function ProductsPageClient({
   const [pagination, setPagination] = useState<PaginationResponse>(
     initialPagination || { page: 1, size: 12, total: 0, totalPages: 0 },
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(initialProducts.length === 0);
   const [searchQuery, setSearchQuery] = useState(urlState.search);
   const [sortBy, setSortBy] = useState(urlState.sort);
   const [viewMode, setViewMode] = useState<ViewMode>(urlState.view);
@@ -791,6 +792,11 @@ export function ProductsPageClient({
     </div>
   );
 
+  // Show full skeleton on initial load when no data
+  if (loading && products.length === 0 && categories.length === 0) {
+    return <ProductsPageSkeleton />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50/50">
       {/* Hero Header */}
@@ -1200,6 +1206,111 @@ export function ProductsPageClient({
         {/* Trust Badges */}
         <div className="mt-8">
           <TrustBadges />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Skeleton component for products page
+function ProductsPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="relative border-b bg-white">
+        <div className="container mx-auto px-4">
+          <div className="pt-8">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          </div>
+
+          <div className="py-12 md:py-16 lg:py-20">
+            <div className="mb-4">
+              <Skeleton className="h-10 w-48 md:h-12 md:w-64" />
+            </div>
+            <Skeleton className="mb-2 h-5 w-full max-w-2xl" />
+            <Skeleton className="h-5 w-3/4 max-w-2xl" />
+          </div>
+
+          <div className="pb-6">
+            <div className="flex flex-wrap items-center justify-center gap-8">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5" />
+                  <Skeleton className="h-4 w-24" />
+                  {i < 2 && <Skeleton className="bg-border hidden h-4 w-px sm:block" />}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <aside className="hidden w-64 shrink-0 lg:block">
+            <Card className="sticky top-24">
+              <CardContent className="p-4">
+                <div className="space-y-6">
+                  <div>
+                    <Skeleton className="mb-4 h-5 w-32" />
+                    <div className="space-y-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-4" />
+                          <Skeleton className="h-4 flex-1" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <Separator />
+                  <div>
+                    <Skeleton className="mb-4 h-5 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                    <div className="mt-4 flex justify-between">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  </div>
+                  <Separator />
+                  <div>
+                    <Skeleton className="mb-4 h-5 w-28" />
+                    <div className="space-y-3">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </aside>
+
+          <main className="min-w-0 flex-1">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <Skeleton className="h-10 max-w-md flex-1" />
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-24 lg:hidden" />
+                <Skeleton className="h-4 w-24" />
+                <div className="flex items-center gap-1 rounded-lg border p-1">
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <Skeleton className="h-4 w-48" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <ProductCardSkeleton key={i} variant="default" />
+              ))}
+            </div>
+          </main>
         </div>
       </div>
     </div>

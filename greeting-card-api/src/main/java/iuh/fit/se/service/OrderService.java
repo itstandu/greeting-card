@@ -329,7 +329,7 @@ public class OrderService {
     // 12. Send notification to admins about new order
     String orderTotalAmount = order.getFinalAmount().toString();
     notificationService.notifyAdminsNewOrder(
-        order.getOrderNumber(), user.getFullName(), orderTotalAmount);
+        order.getId(), order.getOrderNumber(), user.getFullName(), orderTotalAmount);
 
     // 13. Send email notification
     emailService.sendOrderConfirmationEmail(user, order);
@@ -461,7 +461,7 @@ public class OrderService {
     // Send notification to customer
     String statusLabel = getOrderStatusLabel(request.getStatus());
     notificationService.notifyOrderStatusChange(
-        order.getUser().getId(), order.getOrderNumber(), statusLabel);
+        order.getUser().getId(), order.getId(), order.getOrderNumber(), statusLabel);
 
     return orderMapper.toOrderResponse(order);
   }

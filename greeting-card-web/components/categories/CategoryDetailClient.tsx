@@ -173,18 +173,7 @@ export function CategoryDetailClient({
 
   // Early returns AFTER all hooks
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50/50">
-        <div className="container mx-auto px-4 py-8">
-          <Skeleton className="mb-8 h-16 w-64" />
-          <div className="grid grid-cols-1 gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <ProductCardSkeleton key={i} variant="default" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <CategoryDetailSkeleton />;
   }
 
   if (error || !category) {
@@ -394,6 +383,102 @@ export function CategoryDetailClient({
         {/* Trust Badges */}
         <div className="mt-12">
           <TrustBadges />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CategoryDetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="relative border-b bg-white">
+        <div className="container mx-auto px-4">
+          <div className="pt-8">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          </div>
+
+          <div className="py-12 md:py-16 lg:py-20">
+            <div className="mb-4 flex items-center gap-3">
+              <Skeleton className="h-10 w-48 md:h-12 md:w-64" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+            </div>
+            <Skeleton className="mb-2 h-5 w-full max-w-2xl" />
+            <Skeleton className="h-5 w-3/4 max-w-2xl" />
+          </div>
+
+          <div className="pb-6">
+            <div className="flex flex-wrap items-center gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 w-24" />
+                  {i < 3 && <Skeleton className="bg-border hidden h-4 w-px sm:block" />}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <aside className="w-full shrink-0 space-y-6 lg:w-64">
+            <Card>
+              <CardContent className="p-4">
+                <div className="mb-4 flex items-center gap-2">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+                <div className="space-y-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 shrink-0 rounded" />
+                      <Skeleton className="h-4 flex-1" />
+                    </div>
+                  ))}
+                </div>
+                <Skeleton className="mt-4 h-9 w-full" />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <Skeleton className="mb-3 h-5 w-24" />
+                <Skeleton className="mb-2 h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+            </Card>
+          </aside>
+
+          <main className="min-w-0 flex-1">
+            <div className="mb-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-1 items-center gap-3">
+                  <Skeleton className="h-10 max-w-xs flex-1" />
+                  <Skeleton className="h-10 w-40" />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-4 w-24" />
+                  <div className="flex items-center gap-1 rounded-lg border p-1">
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-x-5 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <ProductCardSkeleton key={i} variant="default" />
+              ))}
+            </div>
+          </main>
         </div>
       </div>
     </div>

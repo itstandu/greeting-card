@@ -18,6 +18,7 @@ import {
   NOTIFICATION_TYPE,
   type NotificationType,
 } from '@/lib/constants';
+import { getNotificationLink } from '@/lib/notification-links';
 import { formatDate } from '@/lib/utils';
 import { getUnreadCount, getUserNotifications, markAllAsRead, markAsRead } from '@/services';
 import type { Notification } from '@/types';
@@ -227,7 +228,12 @@ export function NotificationList() {
                           <>
                             <span>•</span>
                             <Link
-                              href={notification.linkUrl}
+                              href={getNotificationLink(notification)}
+                              onClick={() => {
+                                if (!notification.isRead) {
+                                  handleMarkAsRead(notification.id);
+                                }
+                              }}
                               className="text-primary hover:underline"
                             >
                               Xem chi tiết

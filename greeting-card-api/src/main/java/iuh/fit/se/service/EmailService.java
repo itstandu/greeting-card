@@ -27,7 +27,7 @@ public class EmailService {
   private static final DateTimeFormatter DATE_FORMATTER =
       DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
   private static final NumberFormat CURRENCY_FORMATTER =
-      NumberFormat.getCurrencyInstance(Locale.of("vi", "VN"));
+      NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
   @Async
   @SuppressWarnings("null")

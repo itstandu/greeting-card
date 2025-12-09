@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -29,11 +31,14 @@ import iuh.fit.se.entity.Notification;
 import iuh.fit.se.entity.Order;
 import iuh.fit.se.entity.OrderItem;
 import iuh.fit.se.entity.OrderStatusHistory;
+import iuh.fit.se.entity.Payment;
 import iuh.fit.se.entity.PaymentMethod;
 import iuh.fit.se.entity.Product;
 import iuh.fit.se.entity.ProductImage;
 import iuh.fit.se.entity.ProductReview;
 import iuh.fit.se.entity.ProductTag;
+import iuh.fit.se.entity.Promotion;
+import iuh.fit.se.entity.StockTransaction;
 import iuh.fit.se.entity.User;
 import iuh.fit.se.entity.UserAddress;
 import iuh.fit.se.entity.Wishlist;
@@ -42,6 +47,9 @@ import iuh.fit.se.entity.enumeration.DiscountType;
 import iuh.fit.se.entity.enumeration.NotificationType;
 import iuh.fit.se.entity.enumeration.OrderStatus;
 import iuh.fit.se.entity.enumeration.PaymentStatus;
+import iuh.fit.se.entity.enumeration.PromotionScope;
+import iuh.fit.se.entity.enumeration.PromotionType;
+import iuh.fit.se.entity.enumeration.StockTransactionType;
 import iuh.fit.se.entity.enumeration.UserRole;
 import iuh.fit.se.repository.CategoryRepository;
 import iuh.fit.se.repository.CouponRepository;
@@ -50,10 +58,13 @@ import iuh.fit.se.repository.OrderItemRepository;
 import iuh.fit.se.repository.OrderRepository;
 import iuh.fit.se.repository.OrderStatusHistoryRepository;
 import iuh.fit.se.repository.PaymentMethodRepository;
+import iuh.fit.se.repository.PaymentRepository;
 import iuh.fit.se.repository.ProductImageRepository;
 import iuh.fit.se.repository.ProductRepository;
 import iuh.fit.se.repository.ProductReviewRepository;
 import iuh.fit.se.repository.ProductTagRepository;
+import iuh.fit.se.repository.PromotionRepository;
+import iuh.fit.se.repository.StockTransactionRepository;
 import iuh.fit.se.repository.UserAddressRepository;
 import iuh.fit.se.repository.UserRepository;
 import iuh.fit.se.repository.WishlistItemRepository;
@@ -77,7 +88,10 @@ public class DataSeederService {
   private final ProductImageRepository productImageRepository;
   private final ProductReviewRepository productReviewRepository;
   private final PaymentMethodRepository paymentMethodRepository;
+  private final PaymentRepository paymentRepository;
   private final CouponRepository couponRepository;
+  private final PromotionRepository promotionRepository;
+  private final StockTransactionRepository stockTransactionRepository;
   private final UserAddressRepository userAddressRepository;
   private final OrderRepository orderRepository;
   private final OrderItemRepository orderItemRepository;
@@ -95,10 +109,19 @@ public class DataSeederService {
   private User adminUser;
   private Random random = new Random();
 
+  // Time reference for generating distributed data across multiple time periods
+  // This ensures meaningful weekly and monthly statistics
+  private LocalDateTime seedBaseDate;
+
   @Transactional(rollbackFor = Exception.class)
   public void seedAll() {
     log.info("=== Bắt đầu seed data ===");
     faker = new Faker(new java.util.Locale("vi"));
+
+    // Set base date to 6 months ago to create historical data for statistics
+    // This allows for meaningful weekly and monthly trend analysis
+    seedBaseDate = LocalDateTime.now().minusMonths(6);
+    log.info("Base date for seed data: {}", seedBaseDate);
 
     try {
       // Xóa sạch dữ liệu cũ
@@ -130,6 +153,10 @@ public class DataSeederService {
       entityManager.flush();
       log.info("✓ Coupons seeded");
 
+      seedPromotions();
+      entityManager.flush();
+      log.info("✓ Promotions seeded");
+
       seedUserAddresses();
       entityManager.flush();
       log.info("✓ UserAddresses seeded");
@@ -137,6 +164,14 @@ public class DataSeederService {
       seedOrders();
       entityManager.flush();
       log.info("✓ Orders seeded");
+
+      seedPayments();
+      entityManager.flush();
+      log.info("✓ Payments seeded");
+
+      seedStockTransactions();
+      entityManager.flush();
+      log.info("✓ StockTransactions seeded");
 
       seedProductReviews();
       entityManager.flush();
@@ -172,41 +207,54 @@ public class DataSeederService {
     entityManager.createNativeQuery("DELETE FROM product_reviews").executeUpdate();
     entityManager.createNativeQuery("DELETE FROM order_status_history").executeUpdate();
     entityManager.createNativeQuery("DELETE FROM order_items").executeUpdate();
+    entityManager.createNativeQuery("DELETE FROM stock_transactions").executeUpdate();
 
     // 2. Xóa payments trước (có FK đến orders và payment_methods)
     entityManager.createNativeQuery("DELETE FROM payments").executeUpdate();
 
-    // 3. Xóa orders (có FK đến users, payment_methods, coupons, user_addresses)
+    // 3. Xóa orders (có FK đến users, payment_methods, coupons, promotions, user_addresses)
     entityManager.createNativeQuery("DELETE FROM orders").executeUpdate();
 
     // 4. Xóa user_addresses (có FK đến users)
     entityManager.createNativeQuery("DELETE FROM user_addresses").executeUpdate();
 
-    // 5. Xóa product_images (có FK đến products)
+    // 5. Xóa cart_items (có FK đến carts và products)
+    entityManager.createNativeQuery("DELETE FROM cart_items").executeUpdate();
+
+    // 6. Xóa carts (có FK đến users)
+    entityManager.createNativeQuery("DELETE FROM carts").executeUpdate();
+
+    // 7. Xóa product_images (có FK đến products)
     entityManager.createNativeQuery("DELETE FROM product_images").executeUpdate();
 
-    // 6. Xóa product_tag_map (bảng trung gian)
+    // 8. Xóa product_tag_map (bảng trung gian)
     entityManager.createNativeQuery("DELETE FROM product_tag_map").executeUpdate();
 
-    // 7. Xóa products (có FK đến categories)
+    // 9. Xóa promotion_products (bảng trung gian cho promotions và products)
+    entityManager.createNativeQuery("DELETE FROM promotion_products").executeUpdate();
+
+    // 10. Xóa products (có FK đến categories)
     entityManager.createNativeQuery("DELETE FROM products").executeUpdate();
 
-    // 8. Xóa categories (có self-reference)
+    // 11. Xóa categories (có self-reference)
     entityManager.createNativeQuery("DELETE FROM categories").executeUpdate();
 
-    // 9. Xóa product_tags
+    // 12. Xóa product_tags
     entityManager.createNativeQuery("DELETE FROM product_tags").executeUpdate();
 
-    // 10. Xóa coupons (có thể có FK từ orders nhưng đã xóa orders rồi)
+    // 13. Xóa promotions (có thể có FK từ orders nhưng đã xóa orders rồi)
+    entityManager.createNativeQuery("DELETE FROM promotions").executeUpdate();
+
+    // 14. Xóa coupons (có thể có FK từ orders nhưng đã xóa orders rồi)
     entityManager.createNativeQuery("DELETE FROM coupons").executeUpdate();
 
-    // 11. Xóa payment_methods (sau khi đã xóa orders và payments)
+    // 15. Xóa payment_methods (sau khi đã xóa orders và payments)
     entityManager.createNativeQuery("DELETE FROM payment_methods").executeUpdate();
 
-    // 12. Xóa refresh_tokens (có FK đến users)
+    // 16. Xóa refresh_tokens (có FK đến users)
     entityManager.createNativeQuery("DELETE FROM refresh_tokens").executeUpdate();
 
-    // 13. Xóa users (cuối cùng)
+    // 17. Xóa users (cuối cùng)
     entityManager.createNativeQuery("DELETE FROM users").executeUpdate();
 
     entityManager.flush();
@@ -485,21 +533,27 @@ public class DataSeederService {
     log.info("Đã seed {} products với {} images", savedProducts.size(), totalImages);
   }
 
+  /**
+   * Seeds coupon data with time-distributed validity periods. Creates both fixed and random coupons
+   * with realistic validity ranges. Coupons are created with usage counts that reflect realistic
+   * adoption rates.
+   */
   @Transactional
   public void seedCoupons() {
     log.info("Đang seed Coupons...");
     List<Coupon> coupons = new ArrayList<>();
 
+    // Fixed coupons - always available with long validity periods
     Coupon coupon1 = new Coupon();
     coupon1.setCode("WELCOME10");
     coupon1.setDiscountType(DiscountType.PERCENTAGE);
     coupon1.setDiscountValue(BigDecimal.valueOf(10));
     coupon1.setMinPurchase(BigDecimal.valueOf(100000));
     coupon1.setMaxDiscount(BigDecimal.valueOf(50000));
-    coupon1.setValidFrom(LocalDateTime.now().minusDays(30));
+    coupon1.setValidFrom(seedBaseDate);
     coupon1.setValidUntil(LocalDateTime.now().plusDays(365));
     coupon1.setUsageLimit(1000);
-    coupon1.setUsedCount(faker.number().numberBetween(0, 100));
+    coupon1.setUsedCount(faker.number().numberBetween(50, 150));
     coupon1.setIsActive(true);
     coupons.add(coupon1);
 
@@ -509,10 +563,10 @@ public class DataSeederService {
     coupon2.setDiscountValue(BigDecimal.valueOf(20));
     coupon2.setMinPurchase(BigDecimal.valueOf(200000));
     coupon2.setMaxDiscount(BigDecimal.valueOf(100000));
-    coupon2.setValidFrom(LocalDateTime.now().minusDays(30));
+    coupon2.setValidFrom(seedBaseDate);
     coupon2.setValidUntil(LocalDateTime.now().plusDays(365));
     coupon2.setUsageLimit(500);
-    coupon2.setUsedCount(faker.number().numberBetween(0, 50));
+    coupon2.setUsedCount(faker.number().numberBetween(30, 80));
     coupon2.setIsActive(true);
     coupons.add(coupon2);
 
@@ -521,14 +575,14 @@ public class DataSeederService {
     coupon3.setDiscountType(DiscountType.FIXED_AMOUNT);
     coupon3.setDiscountValue(BigDecimal.valueOf(30000));
     coupon3.setMinPurchase(BigDecimal.valueOf(150000));
-    coupon3.setValidFrom(LocalDateTime.now().minusDays(30));
+    coupon3.setValidFrom(seedBaseDate);
     coupon3.setValidUntil(LocalDateTime.now().plusDays(365));
     coupon3.setUsageLimit(2000);
-    coupon3.setUsedCount(faker.number().numberBetween(0, 200));
+    coupon3.setUsedCount(faker.number().numberBetween(100, 300));
     coupon3.setIsActive(true);
     coupons.add(coupon3);
 
-    // Generate more random coupons
+    // Generate time-distributed random coupons for seasonal/promotional campaigns
     for (int i = 0; i < 10; i++) {
       Coupon coupon = new Coupon();
       coupon.setCode("CODE" + faker.number().numberBetween(1000, 9999));
@@ -540,10 +594,16 @@ public class DataSeederService {
         coupon.setDiscountValue(BigDecimal.valueOf(faker.number().numberBetween(10000, 100000)));
       }
       coupon.setMinPurchase(BigDecimal.valueOf(faker.number().numberBetween(50000, 500000)));
-      coupon.setValidFrom(LocalDateTime.now().minusDays(faker.number().numberBetween(0, 30)));
-      coupon.setValidUntil(LocalDateTime.now().plusDays(faker.number().numberBetween(30, 365)));
+
+      // Distribute coupon start dates over the past 6 months
+      int daysFromBase = faker.number().numberBetween(0, 150);
+      coupon.setValidFrom(seedBaseDate.plusDays(daysFromBase));
+      coupon.setValidUntil(coupon.getValidFrom().plusDays(faker.number().numberBetween(30, 180)));
+
       coupon.setUsageLimit(faker.number().numberBetween(100, 1000));
-      coupon.setUsedCount(faker.number().numberBetween(0, coupon.getUsageLimit()));
+      // Usage count should be proportional to how long the coupon has been active
+      int maxUsed = (int) (coupon.getUsageLimit() * 0.3);
+      coupon.setUsedCount(faker.number().numberBetween(0, maxUsed));
       coupon.setIsActive(this.random.nextDouble() < 0.8);
       coupons.add(coupon);
     }
@@ -551,6 +611,146 @@ public class DataSeederService {
     List<Coupon> savedCoupons = couponRepository.saveAll(coupons);
     entityManager.flush();
     log.info("Đã seed {} coupons", savedCoupons.size());
+  }
+
+  /**
+   * Seeds promotion data with various types and scopes. Creates ORDER-level, CATEGORY-level, and
+   * PRODUCT-level promotions. Includes DISCOUNT, BOGO, BUY_X_GET_Y, and BUY_X_PAY_Y promotion
+   * types.
+   */
+  @Transactional
+  public void seedPromotions() {
+    log.info("Đang seed Promotions...");
+    List<Category> categories = categoryRepository.findAll();
+    List<Product> products = productRepository.findAll();
+    List<Promotion> promotions = new ArrayList<>();
+
+    // ORDER scope promotions - apply to entire order
+    Promotion orderPromo1 = new Promotion();
+    orderPromo1.setName("Giảm giá đơn hàng 15%");
+    orderPromo1.setDescription("Giảm 15% cho đơn hàng từ 500.000đ");
+    orderPromo1.setType(PromotionType.DISCOUNT);
+    orderPromo1.setScope(PromotionScope.ORDER);
+    orderPromo1.setDiscountType(DiscountType.PERCENTAGE);
+    orderPromo1.setDiscountValue(BigDecimal.valueOf(15));
+    orderPromo1.setMinPurchase(BigDecimal.valueOf(500000));
+    orderPromo1.setMaxDiscount(BigDecimal.valueOf(150000));
+    orderPromo1.setValidFrom(seedBaseDate.plusMonths(2));
+    orderPromo1.setValidUntil(LocalDateTime.now().plusMonths(2));
+    orderPromo1.setUsageLimit(500);
+    orderPromo1.setUsedCount(faker.number().numberBetween(20, 100));
+    orderPromo1.setIsActive(true);
+    promotions.add(orderPromo1);
+
+    Promotion orderPromo2 = new Promotion();
+    orderPromo2.setName("Flash Sale - Giảm 50k");
+    orderPromo2.setDescription("Giảm ngay 50.000đ cho đơn hàng từ 300.000đ");
+    orderPromo2.setType(PromotionType.DISCOUNT);
+    orderPromo2.setScope(PromotionScope.ORDER);
+    orderPromo2.setDiscountType(DiscountType.FIXED_AMOUNT);
+    orderPromo2.setDiscountValue(BigDecimal.valueOf(50000));
+    orderPromo2.setMinPurchase(BigDecimal.valueOf(300000));
+    orderPromo2.setValidFrom(seedBaseDate.plusMonths(3));
+    orderPromo2.setValidUntil(LocalDateTime.now().plusDays(30));
+    orderPromo2.setUsageLimit(1000);
+    orderPromo2.setUsedCount(faker.number().numberBetween(50, 200));
+    orderPromo2.setIsActive(true);
+    promotions.add(orderPromo2);
+
+    // CATEGORY scope promotions - apply to specific categories
+    if (!categories.isEmpty()) {
+      for (int i = 0; i < Math.min(3, categories.size()); i++) {
+        Category category = categories.get(this.random.nextInt(categories.size()));
+
+        Promotion categoryPromo = new Promotion();
+        categoryPromo.setName("Khuyến mãi " + category.getName());
+        categoryPromo.setDescription("Giảm giá đặc biệt cho danh mục " + category.getName());
+        categoryPromo.setType(PromotionType.DISCOUNT);
+        categoryPromo.setScope(PromotionScope.CATEGORY);
+        categoryPromo.setCategory(category);
+        categoryPromo.setDiscountType(DiscountType.PERCENTAGE);
+        categoryPromo.setDiscountValue(BigDecimal.valueOf(faker.number().numberBetween(10, 30)));
+        categoryPromo.setMinPurchase(BigDecimal.ZERO);
+        categoryPromo.setMaxDiscount(
+            BigDecimal.valueOf(faker.number().numberBetween(50000, 100000)));
+
+        int monthsFromBase = faker.number().numberBetween(1, 4);
+        categoryPromo.setValidFrom(seedBaseDate.plusMonths(monthsFromBase));
+        categoryPromo.setValidUntil(
+            categoryPromo.getValidFrom().plusDays(faker.number().numberBetween(30, 90)));
+        categoryPromo.setUsageLimit(faker.number().numberBetween(200, 500));
+        categoryPromo.setUsedCount(faker.number().numberBetween(10, 100));
+        categoryPromo.setIsActive(this.random.nextDouble() < 0.8);
+        promotions.add(categoryPromo);
+      }
+    }
+
+    // PRODUCT scope promotions - apply to specific products
+    if (!products.isEmpty()) {
+      // BOGO Promotion
+      Promotion bogoPromo = new Promotion();
+      bogoPromo.setName("Mua 1 Tặng 1");
+      bogoPromo.setDescription("Mua 1 sản phẩm được tặng thêm 1 sản phẩm");
+      bogoPromo.setType(PromotionType.BOGO);
+      bogoPromo.setScope(PromotionScope.PRODUCT);
+      bogoPromo.setBuyQuantity(1);
+      bogoPromo.setGetQuantity(1);
+      Set<Product> bogoProducts = new HashSet<>();
+      for (int i = 0; i < Math.min(5, products.size()); i++) {
+        bogoProducts.add(products.get(this.random.nextInt(products.size())));
+      }
+      bogoPromo.setProducts(bogoProducts);
+      bogoPromo.setValidFrom(seedBaseDate.plusMonths(1));
+      bogoPromo.setValidUntil(LocalDateTime.now().plusDays(60));
+      bogoPromo.setUsageLimit(300);
+      bogoPromo.setUsedCount(faker.number().numberBetween(10, 50));
+      bogoPromo.setIsActive(true);
+      promotions.add(bogoPromo);
+
+      // BUY_X_GET_Y Promotion
+      Promotion buyXGetYPromo = new Promotion();
+      buyXGetYPromo.setName("Mua 2 Tặng 1");
+      buyXGetYPromo.setDescription("Mua 2 sản phẩm được tặng thêm 1 sản phẩm");
+      buyXGetYPromo.setType(PromotionType.BUY_X_GET_Y);
+      buyXGetYPromo.setScope(PromotionScope.PRODUCT);
+      buyXGetYPromo.setBuyQuantity(2);
+      buyXGetYPromo.setGetQuantity(1);
+      Set<Product> buyXGetYProducts = new HashSet<>();
+      for (int i = 0; i < Math.min(8, products.size()); i++) {
+        buyXGetYProducts.add(products.get(this.random.nextInt(products.size())));
+      }
+      buyXGetYPromo.setProducts(buyXGetYProducts);
+      buyXGetYPromo.setValidFrom(seedBaseDate.plusMonths(2));
+      buyXGetYPromo.setValidUntil(LocalDateTime.now().plusDays(45));
+      buyXGetYPromo.setUsageLimit(200);
+      buyXGetYPromo.setUsedCount(faker.number().numberBetween(5, 40));
+      buyXGetYPromo.setIsActive(true);
+      promotions.add(buyXGetYPromo);
+
+      // BUY_X_PAY_Y Promotion
+      Promotion buyXPayYPromo = new Promotion();
+      buyXPayYPromo.setName("Mua 3 Chỉ Tính Tiền 2");
+      buyXPayYPromo.setDescription("Mua 3 sản phẩm chỉ phải trả tiền 2 sản phẩm");
+      buyXPayYPromo.setType(PromotionType.BUY_X_PAY_Y);
+      buyXPayYPromo.setScope(PromotionScope.PRODUCT);
+      buyXPayYPromo.setBuyQuantity(3);
+      buyXPayYPromo.setPayQuantity(2);
+      Set<Product> buyXPayYProducts = new HashSet<>();
+      for (int i = 0; i < Math.min(6, products.size()); i++) {
+        buyXPayYProducts.add(products.get(this.random.nextInt(products.size())));
+      }
+      buyXPayYPromo.setProducts(buyXPayYProducts);
+      buyXPayYPromo.setValidFrom(seedBaseDate.plusMonths(3));
+      buyXPayYPromo.setValidUntil(LocalDateTime.now().plusDays(30));
+      buyXPayYPromo.setUsageLimit(150);
+      buyXPayYPromo.setUsedCount(faker.number().numberBetween(5, 30));
+      buyXPayYPromo.setIsActive(true);
+      promotions.add(buyXPayYPromo);
+    }
+
+    List<Promotion> savedPromotions = promotionRepository.saveAll(promotions);
+    entityManager.flush();
+    log.info("Đã seed {} promotions", savedPromotions.size());
   }
 
   @Transactional
@@ -585,6 +785,16 @@ public class DataSeederService {
     log.info("Đã seed {} user addresses", savedAddresses.size());
   }
 
+  /**
+   * Seeds order data with time-distributed dates for meaningful statistics.
+   *
+   * <p>Distribution strategy: - Orders are spread across 6 months of historical data - More recent
+   * orders (last 2 months) have higher frequency - Order statuses are correlated with order age
+   * (older orders more likely completed/delivered) - Payment status correlates with order status
+   * for data consistency - Applies coupons and promotions based on validity periods
+   *
+   * <p>This ensures weekly and monthly statistics show realistic trends and growth patterns.
+   */
   @Transactional
   public void seedOrders() {
     log.info("Đang seed Orders...");
@@ -593,17 +803,22 @@ public class DataSeederService {
     List<Product> products = productRepository.findAll();
     List<PaymentMethod> paymentMethods = paymentMethodRepository.findAll();
     List<Coupon> coupons = couponRepository.findAll();
+    List<Promotion> promotions = promotionRepository.findAll();
     List<Order> orders = new ArrayList<>();
     int orderCounter = 1;
 
-    for (int i = 0; i < 200; i++) {
+    // Generate 400 orders distributed over 6 months for better statistics
+    for (int i = 0; i < 400; i++) {
       User customer = customers.get(this.random.nextInt(customers.size()));
       List<UserAddress> addresses = userAddressRepository.findByUserId(customer.getId());
       if (addresses.isEmpty()) {
         continue;
       }
 
-      LocalDateTime orderDate = LocalDateTime.now().minusDays(faker.number().numberBetween(0, 90));
+      // Generate time-distributed order dates with weighted distribution
+      // 50% of orders in last 2 months, 30% in months 2-4, 20% in months 4-6
+      LocalDateTime orderDate = generateWeightedOrderDate();
+
       String orderNumber =
           "ORD-"
               + orderDate.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"))
@@ -615,14 +830,25 @@ public class DataSeederService {
       order.setOrderNumber(orderNumber);
       order.setOrderDate(orderDate);
       order.setPaymentMethod(paymentMethods.get(this.random.nextInt(paymentMethods.size())));
-      order.setPaymentStatus(
-          PaymentStatus.values()[this.random.nextInt(PaymentStatus.values().length)]);
       order.setShippingAddress(addresses.get(this.random.nextInt(addresses.size())));
-      order.setStatus(OrderStatus.values()[this.random.nextInt(OrderStatus.values().length)]);
 
-      // Random coupon
-      if (this.random.nextDouble() < 0.3 && !coupons.isEmpty()) {
-        order.setCoupon(coupons.get(this.random.nextInt(coupons.size())));
+      // Determine order status based on order age for realistic data
+      order.setStatus(determineOrderStatusByAge(orderDate));
+
+      // Set payment status based on order status for data coherence
+      order.setPaymentStatus(determinePaymentStatusByOrderStatus(order.getStatus()));
+
+      // Apply coupon if valid during order date
+      Coupon validCoupon = findValidCoupon(coupons, orderDate);
+      if (validCoupon != null && this.random.nextDouble() < 0.25) { // 25% of orders use coupons
+        order.setCoupon(validCoupon);
+      }
+
+      // Apply promotion if valid during order date
+      Promotion validPromotion = findValidPromotion(promotions, orderDate, PromotionScope.ORDER);
+      if (validPromotion != null
+          && this.random.nextDouble() < 0.15) { // 15% of orders use promotions
+        order.setPromotion(validPromotion);
       }
 
       // Calculate amounts
@@ -646,7 +872,7 @@ public class DataSeederService {
         totalAmount = totalAmount.add(subtotal);
       }
 
-      // Calculate discount
+      // Calculate discount from coupon
       BigDecimal discountAmount = BigDecimal.ZERO;
       if (order.getCoupon() != null) {
         Coupon coupon = order.getCoupon();
@@ -666,38 +892,190 @@ public class DataSeederService {
         }
       }
 
+      // Calculate promotion discount (simplified - only for ORDER scope DISCOUNT type)
+      BigDecimal promotionDiscount = BigDecimal.ZERO;
+      if (order.getPromotion() != null
+          && order.getPromotion().getType() == PromotionType.DISCOUNT) {
+        Promotion promo = order.getPromotion();
+        if (totalAmount.compareTo(promo.getMinPurchase()) >= 0) {
+          if (promo.getDiscountType() == DiscountType.PERCENTAGE) {
+            promotionDiscount =
+                totalAmount
+                    .multiply(promo.getDiscountValue())
+                    .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+            if (promo.getMaxDiscount() != null
+                && promotionDiscount.compareTo(promo.getMaxDiscount()) > 0) {
+              promotionDiscount = promo.getMaxDiscount();
+            }
+          } else {
+            promotionDiscount = promo.getDiscountValue();
+          }
+        }
+      }
+
       order.setTotalAmount(totalAmount);
       order.setDiscountAmount(discountAmount);
-      order.setFinalAmount(totalAmount.subtract(discountAmount));
+      order.setPromotionDiscountAmount(promotionDiscount);
+      order.setFinalAmount(totalAmount.subtract(discountAmount).subtract(promotionDiscount));
       order.setNotes(this.random.nextDouble() < 0.2 ? faker.lorem().sentence() : null);
 
       orders.add(order);
       orderRepository.save(order);
       orderItemRepository.saveAll(orderItems);
 
-      // Create order status history
-      // Note: createdAt will be auto-set by @CreationTimestamp, so we can't set custom dates
-      // This is a limitation, but acceptable for seed data
-      List<OrderStatusHistory> history = new ArrayList<>();
-      history.add(createStatusHistory(order, OrderStatus.PENDING, customer));
-
-      if (order.getStatus() != OrderStatus.PENDING) {
-        history.add(createStatusHistory(order, OrderStatus.CONFIRMED, adminUser));
-
-        if (order.getStatus() == OrderStatus.SHIPPED
-            || order.getStatus() == OrderStatus.DELIVERED) {
-          history.add(createStatusHistory(order, OrderStatus.SHIPPED, adminUser));
-
-          if (order.getStatus() == OrderStatus.DELIVERED) {
-            history.add(createStatusHistory(order, OrderStatus.DELIVERED, adminUser));
-          }
-        }
-      }
-
+      // Create order status history with realistic progression
+      List<OrderStatusHistory> history = createOrderStatusHistory(order, orderDate);
       orderStatusHistoryRepository.saveAll(history);
     }
 
-    log.info("Đã seed {} orders", orders.size());
+    log.info("Đã seed {} orders distributed over 6 months", orders.size());
+  }
+
+  /**
+   * Generates order dates with weighted distribution: - 50% in last 2 months (recent activity) -
+   * 30% in months 2-4 - 20% in months 4-6 (historical data)
+   */
+  private LocalDateTime generateWeightedOrderDate() {
+    double rand = this.random.nextDouble();
+    LocalDateTime now = LocalDateTime.now();
+
+    if (rand < 0.5) {
+      // Last 2 months - 50%
+      long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(now.minusMonths(2), now);
+      int daysOffset = faker.number().numberBetween(0, (int) daysBetween);
+      return now.minusDays(daysOffset);
+    } else if (rand < 0.8) {
+      // Months 2-4 - 30%
+      long daysBetween =
+          java.time.temporal.ChronoUnit.DAYS.between(now.minusMonths(4), now.minusMonths(2));
+      int daysOffset = faker.number().numberBetween(0, (int) daysBetween);
+      return now.minusMonths(2).minusDays(daysOffset);
+    } else {
+      // Months 4-6 - 20%
+      long daysBetween =
+          java.time.temporal.ChronoUnit.DAYS.between(seedBaseDate, now.minusMonths(4));
+      int daysOffset = faker.number().numberBetween(0, (int) daysBetween);
+      return now.minusMonths(4).minusDays(daysOffset);
+    }
+  }
+
+  /**
+   * Determines order status based on order age for realistic progression. Older orders are more
+   * likely to be delivered, recent orders more likely pending/confirmed.
+   */
+  private OrderStatus determineOrderStatusByAge(LocalDateTime orderDate) {
+    long daysOld = java.time.temporal.ChronoUnit.DAYS.between(orderDate, LocalDateTime.now());
+
+    // Orders from more than 30 days ago - mostly delivered or cancelled
+    if (daysOld > 30) {
+      double rand = this.random.nextDouble();
+      if (rand < 0.75) return OrderStatus.DELIVERED; // 75% delivered
+      if (rand < 0.90) return OrderStatus.CANCELLED; // 15% cancelled
+      return OrderStatus.SHIPPED; // 10% still shipped
+    }
+    // Orders from 15-30 days ago - mix of shipped and delivered
+    else if (daysOld > 15) {
+      double rand = this.random.nextDouble();
+      if (rand < 0.50) return OrderStatus.DELIVERED; // 50% delivered
+      if (rand < 0.80) return OrderStatus.SHIPPED; // 30% shipped
+      if (rand < 0.90) return OrderStatus.CONFIRMED; // 10% confirmed
+      return OrderStatus.CANCELLED; // 10% cancelled
+    }
+    // Orders from 7-15 days ago - mostly confirmed or shipped
+    else if (daysOld > 7) {
+      double rand = this.random.nextDouble();
+      if (rand < 0.40) return OrderStatus.SHIPPED; // 40% shipped
+      if (rand < 0.70) return OrderStatus.CONFIRMED; // 30% confirmed
+      if (rand < 0.85) return OrderStatus.DELIVERED; // 15% delivered
+      if (rand < 0.95) return OrderStatus.PENDING; // 10% pending
+      return OrderStatus.CANCELLED; // 5% cancelled
+    }
+    // Orders from last 7 days - mostly pending or confirmed
+    else {
+      double rand = this.random.nextDouble();
+      if (rand < 0.40) return OrderStatus.PENDING; // 40% pending
+      if (rand < 0.75) return OrderStatus.CONFIRMED; // 35% confirmed
+      if (rand < 0.90) return OrderStatus.SHIPPED; // 15% shipped
+      if (rand < 0.95) return OrderStatus.DELIVERED; // 5% delivered
+      return OrderStatus.CANCELLED; // 5% cancelled
+    }
+  }
+
+  /** Determines payment status based on order status for data coherence. */
+  private PaymentStatus determinePaymentStatusByOrderStatus(OrderStatus orderStatus) {
+    return switch (orderStatus) {
+      case PENDING -> this.random.nextDouble() < 0.3 ? PaymentStatus.PAID : PaymentStatus.PENDING;
+      case CONFIRMED -> this.random.nextDouble() < 0.8 ? PaymentStatus.PAID : PaymentStatus.PENDING;
+      case SHIPPED, DELIVERED -> PaymentStatus.PAID;
+      case CANCELLED ->
+          this.random.nextDouble() < 0.5 ? PaymentStatus.FAILED : PaymentStatus.REFUNDED;
+    };
+  }
+
+  /** Finds a valid coupon that was active during the order date. */
+  private Coupon findValidCoupon(List<Coupon> coupons, LocalDateTime orderDate) {
+    List<Coupon> validCoupons =
+        coupons.stream()
+            .filter(c -> c.getIsActive())
+            .filter(
+                c -> !orderDate.isBefore(c.getValidFrom()) && !orderDate.isAfter(c.getValidUntil()))
+            .toList();
+
+    return validCoupons.isEmpty()
+        ? null
+        : validCoupons.get(this.random.nextInt(validCoupons.size()));
+  }
+
+  /** Finds a valid promotion that was active during the order date. */
+  private Promotion findValidPromotion(
+      List<Promotion> promotions, LocalDateTime orderDate, PromotionScope scope) {
+    List<Promotion> validPromotions =
+        promotions.stream()
+            .filter(p -> p.getIsActive())
+            .filter(p -> p.getScope() == scope)
+            .filter(
+                p -> !orderDate.isBefore(p.getValidFrom()) && !orderDate.isAfter(p.getValidUntil()))
+            .toList();
+
+    return validPromotions.isEmpty()
+        ? null
+        : validPromotions.get(this.random.nextInt(validPromotions.size()));
+  }
+
+  /** Creates realistic order status history progression. */
+  private List<OrderStatusHistory> createOrderStatusHistory(Order order, LocalDateTime orderDate) {
+    List<OrderStatusHistory> history = new ArrayList<>();
+
+    // Always start with PENDING
+    history.add(createStatusHistory(order, OrderStatus.PENDING, order.getUser()));
+
+    if (order.getStatus() != OrderStatus.PENDING) {
+      // Add CONFIRMED if order progressed
+      if (order.getStatus() != OrderStatus.CANCELLED) {
+        history.add(createStatusHistory(order, OrderStatus.CONFIRMED, adminUser));
+      }
+
+      // Add SHIPPED if order progressed to shipping
+      if (order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED) {
+        history.add(createStatusHistory(order, OrderStatus.SHIPPED, adminUser));
+      }
+
+      // Add DELIVERED if order completed
+      if (order.getStatus() == OrderStatus.DELIVERED) {
+        history.add(createStatusHistory(order, OrderStatus.DELIVERED, adminUser));
+      }
+
+      // Add CANCELLED if order was cancelled
+      if (order.getStatus() == OrderStatus.CANCELLED) {
+        history.add(
+            createStatusHistory(
+                order,
+                OrderStatus.CANCELLED,
+                this.random.nextDouble() < 0.5 ? order.getUser() : adminUser));
+      }
+    }
+
+    return history;
   }
 
   private OrderStatusHistory createStatusHistory(Order order, OrderStatus status, User changedBy) {
@@ -708,6 +1086,153 @@ public class DataSeederService {
     history.setNotes(faker.lorem().sentence());
     // Note: createdAt will be set by @CreationTimestamp automatically
     return history;
+  }
+
+  /**
+   * Seeds payment records for orders. Creates payments that match order payment status and dates.
+   * Generates realistic transaction IDs and gateway responses.
+   */
+  @Transactional
+  public void seedPayments() {
+    log.info("Đang seed Payments...");
+    List<Order> orders = orderRepository.findAll();
+    List<Payment> payments = new ArrayList<>();
+
+    for (Order order : orders) {
+      // Only create payments for orders that have payment activity
+      if (order.getPaymentStatus() == PaymentStatus.PAID
+          || order.getPaymentStatus() == PaymentStatus.FAILED) {
+
+        Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setPaymentMethod(order.getPaymentMethod());
+        payment.setAmount(order.getFinalAmount());
+        payment.setStatus(order.getPaymentStatus());
+
+        // Generate realistic transaction ID
+        payment.setTransactionId(
+            "TXN-"
+                + order.getOrderNumber()
+                + "-"
+                + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+
+        // Set payment/failure timestamps based on order date
+        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+          // Payment usually happens within 1-3 days of order for completed orders
+          long daysOffset = faker.number().numberBetween(0, 3);
+          payment.setPaidAt(order.getOrderDate().plusDays(daysOffset));
+          payment.setGatewayResponse(
+              "{\"status\":\"success\",\"message\":\"Payment processed successfully\"}");
+        } else if (order.getPaymentStatus() == PaymentStatus.FAILED) {
+          // Failed payments happen quickly (same day or next day)
+          long hoursOffset = faker.number().numberBetween(1, 24);
+          payment.setFailedAt(order.getOrderDate().plusHours(hoursOffset));
+          payment.setFailureReason("Insufficient funds");
+          payment.setGatewayResponse("{\"status\":\"failed\",\"error\":\"Insufficient funds\"}");
+        }
+
+        payments.add(payment);
+      }
+    }
+
+    List<Payment> savedPayments = paymentRepository.saveAll(payments);
+    entityManager.flush();
+    log.info("Đã seed {} payments", savedPayments.size());
+  }
+
+  /**
+   * Seeds stock transaction history for products. Creates realistic inventory movements including:
+   * - Initial stock IN transactions - OUT transactions for sold products - Occasional ADJUSTMENT
+   * transactions
+   *
+   * <p>This provides audit trail for inventory management.
+   */
+  @Transactional
+  public void seedStockTransactions() {
+    log.info("Đang seed StockTransactions...");
+    List<Product> products = productRepository.findAll();
+    List<OrderItem> orderItems = orderItemRepository.findAll();
+    List<StockTransaction> transactions = new ArrayList<>();
+
+    // Create initial stock IN transactions for all products
+    for (Product product : products) {
+      StockTransaction initialStock = new StockTransaction();
+      initialStock.setProduct(product);
+      initialStock.setType(StockTransactionType.IN);
+      initialStock.setQuantity(product.getStock() + faker.number().numberBetween(50, 200));
+      initialStock.setStockBefore(0);
+      initialStock.setStockAfter(initialStock.getQuantity());
+      initialStock.setNotes("Nhập kho ban đầu");
+      initialStock.setCreatedBy(adminUser);
+      transactions.add(initialStock);
+    }
+
+    // Create OUT transactions for order items (product sales)
+    // Group by product to track running stock
+    Map<Long, Integer> productCurrentStock = new HashMap<>();
+    for (Product product : products) {
+      productCurrentStock.put(
+          product.getId(),
+          transactions.stream()
+              .filter(t -> t.getProduct().getId().equals(product.getId()))
+              .mapToInt(StockTransaction::getStockAfter)
+              .max()
+              .orElse(0));
+    }
+
+    // Sample ~30% of order items to create stock OUT transactions
+    List<OrderItem> sampledOrderItems =
+        orderItems.stream().filter(item -> this.random.nextDouble() < 0.3).toList();
+
+    for (OrderItem orderItem : sampledOrderItems) {
+      Long productId = orderItem.getProduct().getId();
+      Integer currentStock = productCurrentStock.get(productId);
+
+      if (currentStock != null && currentStock >= orderItem.getQuantity()) {
+        StockTransaction outTransaction = new StockTransaction();
+        outTransaction.setProduct(orderItem.getProduct());
+        outTransaction.setType(StockTransactionType.OUT);
+        outTransaction.setQuantity(-orderItem.getQuantity());
+        outTransaction.setStockBefore(currentStock);
+        outTransaction.setStockAfter(currentStock - orderItem.getQuantity());
+        outTransaction.setNotes("Xuất kho cho đơn hàng " + orderItem.getOrder().getOrderNumber());
+        outTransaction.setCreatedBy(adminUser);
+        transactions.add(outTransaction);
+
+        // Update running stock
+        productCurrentStock.put(productId, currentStock - orderItem.getQuantity());
+      }
+    }
+
+    // Create some random ADJUSTMENT transactions (inventory corrections)
+    for (int i = 0; i < 20; i++) {
+      Product product = products.get(this.random.nextInt(products.size()));
+      Integer currentStock = productCurrentStock.get(product.getId());
+      if (currentStock == null) continue;
+
+      // Random adjustment between -10 and +10
+      int adjustment = faker.number().numberBetween(-10, 11);
+      if (adjustment == 0) continue;
+
+      StockTransaction adjustmentTransaction = new StockTransaction();
+      adjustmentTransaction.setProduct(product);
+      adjustmentTransaction.setType(StockTransactionType.ADJUSTMENT);
+      adjustmentTransaction.setQuantity(adjustment);
+      adjustmentTransaction.setStockBefore(currentStock);
+      adjustmentTransaction.setStockAfter(currentStock + adjustment);
+      adjustmentTransaction.setNotes(
+          adjustment > 0
+              ? "Điều chỉnh tăng tồn kho do kiểm kê"
+              : "Điều chỉnh giảm tồn kho do hư hỏng");
+      adjustmentTransaction.setCreatedBy(adminUser);
+      transactions.add(adjustmentTransaction);
+
+      productCurrentStock.put(product.getId(), currentStock + adjustment);
+    }
+
+    List<StockTransaction> savedTransactions = stockTransactionRepository.saveAll(transactions);
+    entityManager.flush();
+    log.info("Đã seed {} stock transactions", savedTransactions.size());
   }
 
   @Transactional
@@ -803,6 +1328,10 @@ public class DataSeederService {
     log.info("Đã seed wishlists cho {} users", customers.size());
   }
 
+  /**
+   * Seeds notification data with realistic links and messages. Creates notifications for orders,
+   * products, and system messages. URLs are validated to ensure they follow proper format.
+   */
   @Transactional
   public void seedNotifications() {
     log.info("Đang seed Notifications...");
@@ -825,28 +1354,62 @@ public class DataSeederService {
           if (!orders.isEmpty()) {
             Order order = orders.get(this.random.nextInt(orders.size()));
             notification.setTitle("Đơn hàng " + order.getOrderNumber());
-            notification.setMessage(
-                "Đơn hàng của bạn đã được " + order.getStatus().name().toLowerCase());
+
+            // Create meaningful message based on order status
+            String statusMessage =
+                switch (order.getStatus()) {
+                  case PENDING -> "đang chờ xử lý";
+                  case CONFIRMED -> "đã được xác nhận";
+                  case SHIPPED -> "đang trên đường giao đến bạn";
+                  case DELIVERED -> "đã được giao thành công";
+                  case CANCELLED -> "đã bị hủy";
+                };
+            notification.setMessage("Đơn hàng của bạn " + statusMessage);
+
+            // Use relative URL format that works with frontend routing
             notification.setLinkUrl("/orders/" + order.getId());
           } else {
             notification.setTitle("Thông báo đơn hàng");
             notification.setMessage(faker.lorem().sentence());
+            notification.setLinkUrl("/orders");
           }
           break;
+
         case PRODUCT:
           if (!products.isEmpty()) {
             Product product = products.get(this.random.nextInt(products.size()));
-            notification.setTitle("Sản phẩm mới");
-            notification.setMessage("Có sản phẩm mới: " + product.getName());
+            String[] productMessages = {
+              "Sản phẩm mới: " + product.getName(),
+              "Đặc biệt dành cho bạn: " + product.getName(),
+              "Sản phẩm hot: " + product.getName() + " - Đừng bỏ lỡ!",
+              product.getName() + " đang có khuyến mãi đặc biệt"
+            };
+            notification.setTitle("Sản phẩm nổi bật");
+            notification.setMessage(productMessages[this.random.nextInt(productMessages.length)]);
+
+            // Use slug for SEO-friendly URLs
             notification.setLinkUrl("/products/" + product.getSlug());
           } else {
             notification.setTitle("Thông báo sản phẩm");
             notification.setMessage(faker.lorem().sentence());
+            notification.setLinkUrl("/products");
           }
           break;
+
         case SYSTEM:
-          notification.setTitle(faker.lorem().sentence(3));
+          String[] systemTitles = {
+            "Cập nhật hệ thống",
+            "Thông báo bảo trì",
+            "Chính sách mới",
+            "Khuyến mãi đặc biệt",
+            "Tin tức quan trọng"
+          };
+          notification.setTitle(systemTitles[this.random.nextInt(systemTitles.length)]);
           notification.setMessage(faker.lorem().paragraph());
+
+          // System notifications may link to various pages
+          String[] systemLinks = {"/", "/promotions", "/about", "/contact", "/faq"};
+          notification.setLinkUrl(systemLinks[this.random.nextInt(systemLinks.length)]);
           break;
       }
 
@@ -859,7 +1422,7 @@ public class DataSeederService {
     }
 
     notificationRepository.saveAll(notifications);
-    log.info("Đã seed {} notifications", notifications.size());
+    log.info("Đã seed {} notifications với validated URLs", notifications.size());
   }
 
   // Helper methods

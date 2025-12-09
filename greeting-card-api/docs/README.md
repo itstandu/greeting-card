@@ -115,6 +115,16 @@
 - Frontend integration
 - Testing strategies
 
+### 9. [Seed Data Strategy](./09-seed-data-strategy.md)
+
+- Chiến lược tạo dữ liệu mẫu
+- Phân phối dữ liệu theo thời gian (6 tháng)
+- Đảm bảo tính nhất quán dữ liệu
+- Hỗ trợ thống kê theo tuần/tháng
+- Các loại Promotions và Coupons
+- URL và Redirect strategy
+- Hướng dẫn mở rộng và troubleshooting
+
 ## Công Nghệ Sử Dụng
 
 - **Framework:** Spring Boot 3.5.7
@@ -139,6 +149,8 @@ greeting-card-api/
 │   ├── 05-technical-architecture.md
 │   ├── 06-implementation-guide.md
 │   ├── 07-spring-data-jpa-best-practices.md
+│   ├── 08-jwt-authentication-flow.md
+│   ├── 09-seed-data-strategy.md
 │   └── README.md                  # File này
 ├── src/
 │   ├── main/
@@ -170,6 +182,7 @@ greeting-card-api/
 6. **Triển khai:** [06-implementation-guide.md](./06-implementation-guide.md) - Hướng dẫn code
 7. **Best Practices:** [07-spring-data-jpa-best-practices.md](./07-spring-data-jpa-best-practices.md) - Best practices cho Spring Data JPA
 8. **JWT Authentication:** [08-jwt-authentication-flow.md](./08-jwt-authentication-flow.md) - Chi tiết về JWT authentication flow
+9. **Seed Data:** [09-seed-data-strategy.md](./09-seed-data-strategy.md) - Chiến lược tạo dữ liệu mẫu
 
 ## Lưu Ý Quan Trọng
 

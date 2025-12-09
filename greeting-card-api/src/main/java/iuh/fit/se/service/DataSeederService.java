@@ -520,7 +520,7 @@ public class DataSeederService {
     coupon3.setCode("FREESHIP");
     coupon3.setDiscountType(DiscountType.FIXED_AMOUNT);
     coupon3.setDiscountValue(BigDecimal.valueOf(30000));
-    coupon3.setMinPurchase(BigDecimal.valueOf(150000));
+    coupon3.setMinPurchase(BigDecimal.valueOf(500000));
     coupon3.setValidFrom(LocalDateTime.now().minusDays(30));
     coupon3.setValidUntil(LocalDateTime.now().plusDays(365));
     coupon3.setUsageLimit(2000);

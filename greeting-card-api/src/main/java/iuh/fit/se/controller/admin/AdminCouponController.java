@@ -36,19 +36,19 @@ public class AdminCouponController {
       @RequestParam(defaultValue = "createdAt") String sortBy,
       @RequestParam(defaultValue = "DESC") String sortDir) {
     Page<CouponResponse> coupons = couponService.getAllCoupons(page, size, sortBy, sortDir);
-    return ResponseEntity.ok(ApiResponse.success("Lấy danh sách coupon thành công", coupons));
+    return ResponseEntity.ok(ApiResponse.success("Lấy danh sách mã giảm giá thành công", coupons));
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<ApiResponse<CouponResponse>> getCouponById(@PathVariable Long id) {
     CouponResponse coupon = couponService.getCouponById(id);
-    return ResponseEntity.ok(ApiResponse.success("Lấy thông tin coupon thành công", coupon));
+    return ResponseEntity.ok(ApiResponse.success("Lấy thông tin mã giảm giá thành công", coupon));
   }
 
   @GetMapping("/code/{code}")
   public ResponseEntity<ApiResponse<CouponResponse>> getCouponByCode(@PathVariable String code) {
     CouponResponse coupon = couponService.getCouponByCode(code);
-    return ResponseEntity.ok(ApiResponse.success("Lấy thông tin coupon thành công", coupon));
+    return ResponseEntity.ok(ApiResponse.success("Lấy thông tin mã giảm giá thành công", coupon));
   }
 
   @PostMapping
@@ -56,19 +56,19 @@ public class AdminCouponController {
       @Valid @RequestBody CreateCouponRequest request) {
     CouponResponse coupon = couponService.createCoupon(request);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(ApiResponse.success("Tạo coupon thành công", coupon));
+        .body(ApiResponse.success("Tạo mã giảm giá thành công", coupon));
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<ApiResponse<CouponResponse>> updateCoupon(
       @PathVariable Long id, @Valid @RequestBody UpdateCouponRequest request) {
     CouponResponse coupon = couponService.updateCoupon(id, request);
-    return ResponseEntity.ok(ApiResponse.success("Cập nhật coupon thành công", coupon));
+    return ResponseEntity.ok(ApiResponse.success("Cập nhật mã giảm giá thành công", coupon));
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<ApiResponse<Void>> deleteCoupon(@PathVariable Long id) {
     couponService.deleteCoupon(id);
-    return ResponseEntity.ok(ApiResponse.success("Xóa coupon thành công", null));
+    return ResponseEntity.ok(ApiResponse.success("Xóa mã giảm giá thành công", null));
   }
 }

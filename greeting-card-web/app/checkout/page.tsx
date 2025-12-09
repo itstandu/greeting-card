@@ -19,7 +19,10 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
-  const { cart, addresses, paymentMethods, loading } = useCheckout(isAuthenticated, authLoading);
+  const { cart, addresses, paymentMethods, promotionPreview, loading } = useCheckout(
+    isAuthenticated,
+    authLoading,
+  );
 
   const {
     selectedAddressId,
@@ -106,6 +109,7 @@ export default function CheckoutPage() {
         <div className="lg:sticky lg:top-20 lg:h-fit">
           <CheckoutOrderSummary
             cart={cart}
+            promotionPreview={promotionPreview}
             couponCode={couponCode}
             couponDiscount={couponDiscount}
             couponValidating={couponValidating}

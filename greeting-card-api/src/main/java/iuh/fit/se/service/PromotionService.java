@@ -2,6 +2,7 @@ package iuh.fit.se.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,10 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import iuh.fit.se.dto.request.CreatePromotionRequest;
 import iuh.fit.se.dto.request.UpdatePromotionRequest;
+import iuh.fit.se.dto.response.CartPromotionPreviewResponse;
 import iuh.fit.se.dto.response.PromotionResponse;
+import iuh.fit.se.entity.Cart;
+import iuh.fit.se.entity.CartItem;
 import iuh.fit.se.entity.Category;
 import iuh.fit.se.entity.Product;
 import iuh.fit.se.entity.Promotion;
+import iuh.fit.se.entity.User;
 import iuh.fit.se.entity.enumeration.DiscountType;
 import iuh.fit.se.entity.enumeration.PromotionScope;
 import iuh.fit.se.entity.enumeration.PromotionType;
@@ -26,18 +31,26 @@ import iuh.fit.se.exception.AppException;
 import iuh.fit.se.exception.ErrorCode;
 import iuh.fit.se.exception.ResourceNotFoundException;
 import iuh.fit.se.mapper.PromotionMapper;
+import iuh.fit.se.repository.CartRepository;
 import iuh.fit.se.repository.CategoryRepository;
 import iuh.fit.se.repository.ProductRepository;
 import iuh.fit.se.repository.PromotionRepository;
+import iuh.fit.se.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class PromotionService {
+  // Shipping fee constants
+  private static final BigDecimal SHIPPING_FEE = new BigDecimal("30000");
+  private static final BigDecimal FREE_SHIPPING_THRESHOLD = new BigDecimal("500000");
+
   private final PromotionRepository promotionRepository;
   private final PromotionMapper promotionMapper;
   private final ProductRepository productRepository;
   private final CategoryRepository categoryRepository;
+  private final CartRepository cartRepository;
+  private final UserRepository userRepository;
 
   @Transactional(readOnly = true)
   public Page<PromotionResponse> getAllPromotions(
@@ -57,7 +70,7 @@ public class PromotionService {
     Promotion promotion =
         promotionRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Promotion không tồn tại"));
+            .orElseThrow(() -> new ResourceNotFoundException("Khuyến mãi không tồn tại"));
     return promotionMapper.toResponse(promotion);
   }
 
@@ -100,7 +113,7 @@ public class PromotionService {
     if (request.getScope() == PromotionScope.PRODUCT) {
       if (request.getProductIds() == null || request.getProductIds().isEmpty()) {
         throw new AppException(
-            "Phải chọn ít nhất một sản phẩm cho promotion loại PRODUCT",
+            "Phải chọn ít nhất một sản phẩm cho khuyến mãi loại sản phẩm",
             ErrorCode.VALIDATION_ERROR);
       }
       Set<Product> products = new HashSet<>();
@@ -118,7 +131,7 @@ public class PromotionService {
     } else if (request.getScope() == PromotionScope.CATEGORY) {
       if (request.getCategoryId() == null) {
         throw new AppException(
-            "Phải chọn danh mục cho promotion loại CATEGORY", ErrorCode.VALIDATION_ERROR);
+            "Phải chọn danh mục cho khuyến mãi loại danh mục", ErrorCode.VALIDATION_ERROR);
       }
       Category category =
           categoryRepository
@@ -146,7 +159,7 @@ public class PromotionService {
     Promotion promotion =
         promotionRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Promotion không tồn tại"));
+            .orElseThrow(() -> new ResourceNotFoundException("Khuyến mãi không tồn tại"));
 
     // Update fields if provided
     if (request.getName() != null) {
@@ -252,7 +265,7 @@ public class PromotionService {
 
     // Validate configuration
     if (!promotion.isValidConfiguration()) {
-      throw new AppException("Cấu hình promotion không hợp lệ", ErrorCode.VALIDATION_ERROR);
+      throw new AppException("Cấu hình khuyến mãi không hợp lệ", ErrorCode.VALIDATION_ERROR);
     }
 
     Promotion updatedPromotion = promotionRepository.save(promotion);
@@ -265,7 +278,7 @@ public class PromotionService {
     Promotion promotion =
         promotionRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Promotion không tồn tại"));
+            .orElseThrow(() -> new ResourceNotFoundException("Khuyến mãi không tồn tại"));
     promotionRepository.delete(promotion);
   }
 
@@ -275,12 +288,178 @@ public class PromotionService {
     return promotions.stream().map(promotionMapper::toResponse).toList();
   }
 
+  @Transactional(readOnly = true)
+  public CartPromotionPreviewResponse previewCartPromotions(Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
+
+    Cart cart =
+        cartRepository
+            .findByUserIdWithItems(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng trống"));
+
+    if (cart.getItems().isEmpty()) {
+      return CartPromotionPreviewResponse.builder()
+          .originalTotal(BigDecimal.ZERO)
+          .promotionDiscount(BigDecimal.ZERO)
+          .shippingFee(SHIPPING_FEE)
+          .freeShippingThreshold(FREE_SHIPPING_THRESHOLD)
+          .finalTotal(SHIPPING_FEE)
+          .itemPromotions(new ArrayList<>())
+          .freeItems(new ArrayList<>())
+          .build();
+    }
+
+    LocalDateTime now = LocalDateTime.now();
+    BigDecimal originalTotal = BigDecimal.ZERO;
+    BigDecimal totalPromotionDiscount = BigDecimal.ZERO;
+    List<CartPromotionPreviewResponse.ItemPromotion> itemPromotions = new ArrayList<>();
+    List<CartPromotionPreviewResponse.FreeItem> freeItems = new ArrayList<>();
+
+    for (CartItem cartItem : cart.getItems()) {
+      Product product = cartItem.getProduct();
+      BigDecimal itemSubtotal =
+          product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+      originalTotal = originalTotal.add(itemSubtotal);
+
+      // Find promotions for this product
+      List<Promotion> productPromotions =
+          promotionRepository.findActivePromotionsForProduct(product.getId(), now);
+
+      // Also check category promotions
+      if (product.getCategory() != null) {
+        List<Promotion> categoryPromotions =
+            promotionRepository.findActivePromotionsForCategory(product.getCategory().getId(), now);
+        productPromotions.addAll(categoryPromotions);
+      }
+
+      Promotion appliedPromotion = null;
+      int freeQuantity = 0;
+      BigDecimal discountAmount = BigDecimal.ZERO;
+
+      // Apply first valid promotion
+      for (Promotion promotion : productPromotions) {
+        if (promotion.getType() == PromotionType.BOGO) {
+          // Buy 1 Get 1 Free - for every 2 items, 1 is free
+          // Example: buy 2 -> 1 free, buy 4 -> 2 free
+          int qty = cartItem.getQuantity() / 2;
+          if (qty > 0) {
+            appliedPromotion = promotion;
+            freeQuantity = qty;
+            discountAmount = product.getPrice().multiply(BigDecimal.valueOf(freeQuantity));
+            break;
+          }
+        } else if (promotion.getType() == PromotionType.BUY_X_GET_Y) {
+          // Buy X Get Y - for every (X+Y) items, Y are free
+          int sets =
+              cartItem.getQuantity() / (promotion.getBuyQuantity() + promotion.getGetQuantity());
+          int qty = sets * promotion.getGetQuantity();
+          if (qty > 0) {
+            appliedPromotion = promotion;
+            freeQuantity = qty;
+            discountAmount = product.getPrice().multiply(BigDecimal.valueOf(freeQuantity));
+            break;
+          }
+        } else if (promotion.getType() == PromotionType.BUY_X_PAY_Y) {
+          // Buy X Pay Y - for every X items, only pay for Y
+          int sets = cartItem.getQuantity() / promotion.getBuyQuantity();
+          int paidQuantity = sets * promotion.getPayQuantity();
+          int remainder = cartItem.getQuantity() % promotion.getBuyQuantity();
+          paidQuantity += remainder;
+          int qty = cartItem.getQuantity() - paidQuantity;
+          if (qty > 0) {
+            appliedPromotion = promotion;
+            freeQuantity = qty;
+            discountAmount = product.getPrice().multiply(BigDecimal.valueOf(freeQuantity));
+            break;
+          }
+        }
+      }
+
+      // Get primary image
+      String productImage = null;
+      if (product.getImages() != null && !product.getImages().isEmpty()) {
+        productImage =
+            product.getImages().stream()
+                .filter(img -> Boolean.TRUE.equals(img.getIsPrimary()))
+                .findFirst()
+                .map(img -> img.getImageUrl())
+                .orElse(product.getImages().iterator().next().getImageUrl());
+      }
+
+      // Build item promotion info
+      CartPromotionPreviewResponse.ItemPromotion itemPromo =
+          CartPromotionPreviewResponse.ItemPromotion.builder()
+              .productId(product.getId())
+              .productName(product.getName())
+              .productImage(productImage)
+              .price(product.getPrice())
+              .quantity(cartItem.getQuantity())
+              .subtotal(itemSubtotal)
+              .promotionId(appliedPromotion != null ? appliedPromotion.getId() : null)
+              .promotionName(appliedPromotion != null ? appliedPromotion.getName() : null)
+              .promotionType(appliedPromotion != null ? appliedPromotion.getType() : null)
+              .freeQuantity(freeQuantity)
+              .discountAmount(discountAmount)
+              .build();
+      itemPromotions.add(itemPromo);
+
+      // Add to free items list if has promotion (BOGO, BUY_X_GET_Y)
+      // Only BUY_X_PAY_Y adds to discount, others are free items added to order
+      if (appliedPromotion != null && freeQuantity > 0) {
+        CartPromotionPreviewResponse.FreeItem freeItem =
+            CartPromotionPreviewResponse.FreeItem.builder()
+                .productId(product.getId())
+                .productName(product.getName())
+                .productImage(productImage)
+                .originalPrice(product.getPrice())
+                .freeQuantity(freeQuantity)
+                .promotionId(appliedPromotion.getId())
+                .promotionName(appliedPromotion.getName())
+                .promotionType(appliedPromotion.getType())
+                .build();
+        freeItems.add(freeItem);
+
+        // Only BUY_X_PAY_Y reduces the total (you pay less for what you buy)
+        // BOGO and BUY_X_GET_Y give free items (added to order, not reducing price)
+        if (appliedPromotion.getType() == PromotionType.BUY_X_PAY_Y) {
+          totalPromotionDiscount = totalPromotionDiscount.add(discountAmount);
+        }
+      }
+    }
+
+    BigDecimal subtotalAfterDiscount = originalTotal.subtract(totalPromotionDiscount);
+    if (subtotalAfterDiscount.compareTo(BigDecimal.ZERO) < 0) {
+      subtotalAfterDiscount = BigDecimal.ZERO;
+    }
+
+    // Calculate shipping fee (free if subtotal >= 500k)
+    BigDecimal shippingFee =
+        subtotalAfterDiscount.compareTo(FREE_SHIPPING_THRESHOLD) >= 0
+            ? BigDecimal.ZERO
+            : SHIPPING_FEE;
+
+    BigDecimal finalTotal = subtotalAfterDiscount.add(shippingFee);
+
+    return CartPromotionPreviewResponse.builder()
+        .originalTotal(originalTotal)
+        .promotionDiscount(totalPromotionDiscount)
+        .shippingFee(shippingFee)
+        .freeShippingThreshold(FREE_SHIPPING_THRESHOLD)
+        .finalTotal(finalTotal)
+        .itemPromotions(itemPromotions)
+        .freeItems(freeItems)
+        .build();
+  }
+
   // Helper method to validate promotion configuration
   private void validatePromotionConfiguration(CreatePromotionRequest request) {
     if (request.getType() == PromotionType.DISCOUNT) {
       if (request.getDiscountType() == null || request.getDiscountValue() == null) {
         throw new AppException(
-            "DISCOUNT type phải có discountType và discountValue", ErrorCode.VALIDATION_ERROR);
+            "Loại giảm giá phải có loại giảm giá và giá trị giảm giá", ErrorCode.VALIDATION_ERROR);
       }
       if (request.getDiscountType() == DiscountType.PERCENTAGE
           && request.getDiscountValue().compareTo(BigDecimal.valueOf(100)) > 0) {
@@ -292,23 +471,24 @@ public class PromotionService {
     } else if (request.getType() == PromotionType.BUY_X_GET_Y) {
       if (request.getBuyQuantity() == null || request.getBuyQuantity() <= 0) {
         throw new AppException(
-            "BUY_X_GET_Y type phải có buyQuantity > 0", ErrorCode.VALIDATION_ERROR);
+            "Loại mua X tặng Y phải có số lượng mua > 0", ErrorCode.VALIDATION_ERROR);
       }
-      if (request.getGetQuantity() == null || request.getGetQuantity() <= 0) {
+      if (request.getGetQuantity() == null || request.getGetQuantity() < 0) {
         throw new AppException(
-            "BUY_X_GET_Y type phải có getQuantity > 0", ErrorCode.VALIDATION_ERROR);
+            "Loại mua X tặng Y phải có số lượng tặng >= 0", ErrorCode.VALIDATION_ERROR);
       }
     } else if (request.getType() == PromotionType.BUY_X_PAY_Y) {
       if (request.getBuyQuantity() == null || request.getBuyQuantity() <= 0) {
         throw new AppException(
-            "BUY_X_PAY_Y type phải có buyQuantity > 0", ErrorCode.VALIDATION_ERROR);
+            "Loại mua X trả Y phải có số lượng mua > 0", ErrorCode.VALIDATION_ERROR);
       }
       if (request.getPayQuantity() == null || request.getPayQuantity() <= 0) {
         throw new AppException(
-            "BUY_X_PAY_Y type phải có payQuantity > 0", ErrorCode.VALIDATION_ERROR);
+            "Loại mua X trả Y phải có số lượng tính tiền > 0", ErrorCode.VALIDATION_ERROR);
       }
       if (request.getPayQuantity() >= request.getBuyQuantity()) {
-        throw new AppException("payQuantity phải nhỏ hơn buyQuantity", ErrorCode.VALIDATION_ERROR);
+        throw new AppException(
+            "Số lượng tính tiền phải nhỏ hơn số lượng mua", ErrorCode.VALIDATION_ERROR);
       }
     }
   }

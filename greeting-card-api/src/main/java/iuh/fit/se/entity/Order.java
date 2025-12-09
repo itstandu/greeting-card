@@ -101,6 +101,9 @@ public class Order extends BaseEntity {
   @Column(name = "promotion_discount_amount", precision = 10, scale = 2)
   private BigDecimal promotionDiscountAmount = BigDecimal.ZERO;
 
+  @Column(name = "shipping_fee", precision = 10, scale = 2)
+  private BigDecimal shippingFee = BigDecimal.ZERO;
+
   @Column(columnDefinition = "TEXT")
   private String notes;
 

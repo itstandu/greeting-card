@@ -21,6 +21,7 @@ public class OrderResponse {
   private LocalDateTime orderDate;
   private BigDecimal totalAmount;
   private BigDecimal discountAmount;
+  private BigDecimal shippingFee;
   private BigDecimal finalAmount;
   private OrderStatus status;
   private PaymentStatus paymentStatus;

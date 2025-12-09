@@ -34,8 +34,8 @@ const couponSchema = z
   .object({
     code: z
       .string()
-      .min(3, 'Mã coupon phải có ít nhất 3 ký tự')
-      .max(50, 'Mã coupon không được quá 50 ký tự')
+      .min(3, 'Mã giảm giá phải có ít nhất 3 ký tự')
+      .max(50, 'Mã giảm giá không được quá 50 ký tự')
       .regex(/^[A-Z0-9_-]+$/, 'Mã chỉ được chứa chữ in hoa, số, gạch ngang và gạch dưới'),
     discountType: z.enum(['PERCENTAGE', 'FIXED_AMOUNT']),
     discountValue: z.number().positive('Giá trị giảm giá phải lớn hơn 0'),
@@ -145,19 +145,33 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
 
       if (coupon) {
         await updateCoupon(coupon.id, payload);
-        toast.success('Cập nhật coupon thành công');
+        toast.success('Cập nhật mã giảm giá thành công');
       } else {
         await createCoupon(payload);
-        toast.success('Tạo coupon thành công');
+        toast.success('Tạo mã giảm giá thành công');
       }
 
       onSaved();
       onOpenChange(false);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error('Lỗi', {
-        description: err.response?.data?.message || 'Không thể lưu coupon',
-      });
+      const err = error as {
+        response?: { data?: { message?: string; errors?: Record<string, string> } };
+      };
+
+      // Set field errors from API response
+      if (err.response?.data?.errors) {
+        const errors = err.response.data.errors;
+        Object.entries(errors).forEach(([field, message]) => {
+          form.setError(field as keyof CouponFormValues, {
+            type: 'server',
+            message: message,
+          });
+        });
+      } else {
+        toast.error('Lỗi', {
+          description: err.response?.data?.message || 'Không thể lưu mã giảm giá',
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -167,20 +181,20 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col overflow-hidden sm:max-w-2xl">
         <SheetHeader className="shrink-0 border-b shadow-sm">
-          <SheetTitle>{coupon ? 'Cập nhật coupon' : 'Tạo coupon mới'}</SheetTitle>
+          <SheetTitle>{coupon ? 'Cập nhật mã giảm giá' : 'Tạo mã giảm giá mới'}</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-x-hidden overflow-y-auto px-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* Mã coupon */}
+              {/* Mã giảm giá */}
               <FormField
                 control={form.control}
                 name="code"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Mã coupon <span className="text-destructive">*</span>
+                      Mã giảm giá <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -239,7 +253,8 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
                       <Input
                         type="number"
                         placeholder={discountType === 'PERCENTAGE' ? '10' : '50000'}
-                        {...field}
+                        value={field.value ?? ''}
+                        onChange={e => field.onChange(e.target.value ? Number(e.target.value) : 0)}
                       />
                     </FormControl>
                     <FormDescription>
@@ -263,8 +278,10 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
                       <Input
                         type="number"
                         placeholder="Không giới hạn"
-                        {...field}
                         value={field.value ?? ''}
+                        onChange={e =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
                       />
                     </FormControl>
                     <FormDescription>Để trống nếu không yêu cầu</FormDescription>
@@ -285,8 +302,10 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
                         <Input
                           type="number"
                           placeholder="Không giới hạn"
-                          {...field}
                           value={field.value ?? ''}
+                          onChange={e =>
+                            field.onChange(e.target.value ? Number(e.target.value) : null)
+                          }
                         />
                       </FormControl>
                       <FormDescription>Giới hạn số tiền giảm tối đa khi dùng %</FormDescription>
@@ -312,9 +331,16 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
                           value={field.value ? new Date(field.value) : null}
                           onChange={date => {
                             if (date) {
-                              // Convert Date to ISO string format (YYYY-MM-DDTHH:mm:ss)
-                              const isoString = date.toISOString().slice(0, 19);
-                              field.onChange(isoString);
+                              // Format as local datetime string (YYYY-MM-DDTHH:mm:ss)
+                              const year = date.getFullYear();
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const day = String(date.getDate()).padStart(2, '0');
+                              const hours = String(date.getHours()).padStart(2, '0');
+                              const minutes = String(date.getMinutes()).padStart(2, '0');
+                              const seconds = String(date.getSeconds()).padStart(2, '0');
+                              field.onChange(
+                                `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`,
+                              );
                             } else {
                               field.onChange('');
                             }
@@ -340,9 +366,16 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
                           value={field.value ? new Date(field.value) : null}
                           onChange={date => {
                             if (date) {
-                              // Convert Date to ISO string format (YYYY-MM-DDTHH:mm:ss)
-                              const isoString = date.toISOString().slice(0, 19);
-                              field.onChange(isoString);
+                              // Format as local datetime string (YYYY-MM-DDTHH:mm:ss)
+                              const year = date.getFullYear();
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const day = String(date.getDate()).padStart(2, '0');
+                              const hours = String(date.getHours()).padStart(2, '0');
+                              const minutes = String(date.getMinutes()).padStart(2, '0');
+                              const seconds = String(date.getSeconds()).padStart(2, '0');
+                              field.onChange(
+                                `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`,
+                              );
                             } else {
                               field.onChange('');
                             }
@@ -366,8 +399,10 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
                       <Input
                         type="number"
                         placeholder="Không giới hạn"
-                        {...field}
                         value={field.value ?? ''}
+                        onChange={e =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
                       />
                     </FormControl>
                     <FormDescription>Để trống nếu không giới hạn</FormDescription>
@@ -384,7 +419,7 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">Kích hoạt</FormLabel>
-                      <FormDescription>Cho phép sử dụng coupon này</FormDescription>
+                      <FormDescription>Cho phép sử dụng mã giảm giá này</FormDescription>
                     </div>
                     <FormControl>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -406,7 +441,7 @@ export function CouponSheet({ open, coupon, onOpenChange, onSaved }: CouponSheet
             Hủy
           </Button>
           <Button type="button" disabled={isSubmitting} onClick={form.handleSubmit(onSubmit)}>
-            {isSubmitting ? 'Đang lưu...' : coupon ? 'Cập nhật coupon' : 'Tạo coupon'}
+            {isSubmitting ? 'Đang lưu...' : coupon ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </SheetFooter>
       </SheetContent>

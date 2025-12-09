@@ -26,8 +26,6 @@ import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  DISCOUNT_TYPE,
-  getDiscountTypeLabel,
   getPromotionScopeLabel,
   getPromotionTypeLabel,
   PROMOTION_SCOPE,
@@ -41,14 +39,14 @@ import { z } from 'zod';
 
 const promotionSchema = z
   .object({
-    name: z.string().min(3, 'Tên promotion phải có ít nhất 3 ký tự'),
+    name: z.string().min(3, 'Tên khuyến mãi phải có ít nhất 3 ký tự'),
     description: z.string().optional(),
-    type: z.enum(['DISCOUNT', 'BOGO', 'BUY_X_GET_Y', 'BUY_X_PAY_Y']),
-    scope: z.enum(['ORDER', 'PRODUCT', 'CATEGORY']),
-    discountType: z.enum(['PERCENTAGE', 'FIXED_AMOUNT']).optional(),
-    discountValue: z.coerce.number().positive().optional(),
-    minPurchase: z.coerce.number().min(0).optional().nullable(),
-    maxDiscount: z.coerce.number().min(0).optional().nullable(),
+    type: z.enum(['BOGO', 'BUY_X_GET_Y', 'BUY_X_PAY_Y'], {
+      message: 'Vui lòng chọn loại khuyến mãi',
+    }),
+    scope: z.enum(['ORDER', 'PRODUCT', 'CATEGORY'], {
+      message: 'Vui lòng chọn phạm vi áp dụng',
+    }),
     buyQuantity: z.coerce.number().positive().optional(),
     getQuantity: z.coerce.number().min(0).optional(),
     payQuantity: z.coerce.number().positive().optional(),
@@ -61,25 +59,13 @@ const promotionSchema = z
   })
   .refine(
     data => {
-      if (data.type === 'DISCOUNT') {
-        return data.discountType && data.discountValue;
-      }
-      return true;
-    },
-    {
-      message: 'DISCOUNT type phải có discountType và discountValue',
-      path: ['discountType'],
-    },
-  )
-  .refine(
-    data => {
       if (data.type === 'BUY_X_GET_Y') {
-        return data.buyQuantity && data.getQuantity;
+        return data.buyQuantity && data.getQuantity !== undefined && data.getQuantity >= 0;
       }
       return true;
     },
     {
-      message: 'BUY_X_GET_Y type phải có buyQuantity và getQuantity',
+      message: 'Loại mua X tặng Y phải có số lượng mua và số lượng tặng',
       path: ['buyQuantity'],
     },
   )
@@ -91,7 +77,8 @@ const promotionSchema = z
       return true;
     },
     {
-      message: 'BUY_X_PAY_Y type phải có buyQuantity và payQuantity (payQuantity < buyQuantity)',
+      message:
+        'Loại mua X trả Y phải có số lượng mua và số lượng tính tiền (số lượng tính tiền < số lượng mua)',
       path: ['payQuantity'],
     },
   )
@@ -103,7 +90,7 @@ const promotionSchema = z
       return true;
     },
     {
-      message: 'PRODUCT scope phải chọn ít nhất một sản phẩm',
+      message: 'Phạm vi sản phẩm phải chọn ít nhất một sản phẩm',
       path: ['productIds'],
     },
   )
@@ -115,7 +102,7 @@ const promotionSchema = z
       return true;
     },
     {
-      message: 'CATEGORY scope phải chọn danh mục',
+      message: 'Phạm vi danh mục phải chọn danh mục',
       path: ['categoryId'],
     },
   )
@@ -151,14 +138,10 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
     defaultValues: {
       name: '',
       description: '',
-      type: 'DISCOUNT',
-      scope: 'ORDER',
-      discountType: 'PERCENTAGE',
-      discountValue: 0,
-      minPurchase: null,
-      maxDiscount: null,
-      buyQuantity: undefined,
-      getQuantity: undefined,
+      type: 'BOGO',
+      scope: 'PRODUCT',
+      buyQuantity: 1,
+      getQuantity: 1,
       payQuantity: undefined,
       productIds: [],
       categoryId: null,
@@ -171,7 +154,6 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
 
   const promotionType = form.watch('type');
   const promotionScope = form.watch('scope');
-  const discountType = form.watch('discountType');
 
   useEffect(() => {
     const loadData = async () => {
@@ -196,14 +178,10 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
       form.reset({
         name: promotion.name,
         description: promotion.description || '',
-        type: promotion.type,
+        type: promotion.type as 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y',
         scope: promotion.scope,
-        discountType: promotion.discountType || undefined,
-        discountValue: promotion.discountValue || undefined,
-        minPurchase: promotion.minPurchase || null,
-        maxDiscount: promotion.maxDiscount || null,
-        buyQuantity: promotion.buyQuantity || undefined,
-        getQuantity: promotion.getQuantity || undefined,
+        buyQuantity: promotion.buyQuantity || 1,
+        getQuantity: promotion.getQuantity || 1,
         payQuantity: promotion.payQuantity || undefined,
         productIds: promotion.productIds || [],
         categoryId: promotion.categoryId || null,
@@ -216,14 +194,10 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
       form.reset({
         name: '',
         description: '',
-        type: 'DISCOUNT',
-        scope: 'ORDER',
-        discountType: 'PERCENTAGE',
-        discountValue: 0,
-        minPurchase: null,
-        maxDiscount: null,
-        buyQuantity: undefined,
-        getQuantity: undefined,
+        type: 'BOGO',
+        scope: 'PRODUCT',
+        buyQuantity: 1,
+        getQuantity: 1,
         payQuantity: undefined,
         productIds: [],
         categoryId: null,
@@ -244,10 +218,6 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
         description: data.description,
         type: data.type,
         scope: data.scope,
-        discountType: data.discountType,
-        discountValue: data.discountValue,
-        minPurchase: data.minPurchase ?? undefined,
-        maxDiscount: data.maxDiscount ?? undefined,
         buyQuantity: data.buyQuantity,
         getQuantity: data.getQuantity,
         payQuantity: data.payQuantity,
@@ -261,19 +231,32 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
 
       if (promotion) {
         await updatePromotion(promotion.id, payload);
-        toast.success('Cập nhật promotion thành công');
+        toast.success('Cập nhật khuyến mãi thành công');
       } else {
         await createPromotion(payload);
-        toast.success('Tạo promotion thành công');
+        toast.success('Tạo khuyến mãi thành công');
       }
 
       onSaved();
       onOpenChange(false);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error('Lỗi', {
-        description: err.response?.data?.message || 'Không thể lưu promotion',
-      });
+      const err = error as {
+        response?: { data?: { message?: string; errors?: Record<string, string> } };
+      };
+
+      if (err.response?.data?.errors) {
+        const errors = err.response.data.errors;
+        Object.entries(errors).forEach(([field, message]) => {
+          form.setError(field as keyof PromotionFormValues, {
+            type: 'server',
+            message: message,
+          });
+        });
+      } else {
+        toast.error('Lỗi', {
+          description: err.response?.data?.message || 'Không thể lưu khuyến mãi',
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -283,23 +266,23 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col overflow-hidden sm:max-w-2xl">
         <SheetHeader className="shrink-0 border-b shadow-sm">
-          <SheetTitle>{promotion ? 'Cập nhật promotion' : 'Tạo promotion mới'}</SheetTitle>
+          <SheetTitle>{promotion ? 'Cập nhật khuyến mãi' : 'Tạo khuyến mãi mới'}</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-x-hidden overflow-y-auto px-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* Tên promotion */}
+              {/* Tên khuyến mãi */}
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Tên promotion <span className="text-destructive">*</span>
+                      Tên khuyến mãi <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="VD: Khuyến mãi mùa hè" {...field} />
+                      <Input placeholder="VD: Mua 2 tặng 1 thiệp sinh nhật" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -314,26 +297,26 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                   <FormItem>
                     <FormLabel>Mô tả</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Mô tả chi tiết về promotion..." {...field} />
+                      <Textarea placeholder="Mô tả chi tiết về khuyến mãi..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Loại promotion */}
+              {/* Loại khuyến mãi */}
               <FormField
                 control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Loại promotion <span className="text-destructive">*</span>
+                      Loại khuyến mãi <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Chọn loại promotion" />
+                          <SelectValue placeholder="Chọn loại khuyến mãi" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -344,147 +327,16 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormDescription>
+                      {promotionType === 'BOGO' && 'Mua 1 sản phẩm, tặng 1 sản phẩm cùng loại'}
+                      {promotionType === 'BUY_X_GET_Y' && 'Mua X sản phẩm, tặng Y sản phẩm'}
+                      {promotionType === 'BUY_X_PAY_Y' &&
+                        'Mua X sản phẩm, chỉ tính tiền Y sản phẩm'}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
-              {/* Phạm vi áp dụng */}
-              <FormField
-                control={form.control}
-                name="scope"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Phạm vi áp dụng <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn phạm vi" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.values(PROMOTION_SCOPE).map(scope => (
-                          <SelectItem key={scope} value={scope}>
-                            {getPromotionScopeLabel(scope)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Fields cho DISCOUNT type */}
-              {promotionType === 'DISCOUNT' && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="discountType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Loại giảm giá <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Chọn loại giảm giá" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {Object.values(DISCOUNT_TYPE).map(type => (
-                              <SelectItem key={type} value={type}>
-                                {getDiscountTypeLabel(type)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="discountValue"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Giá trị giảm giá <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder={discountType === 'PERCENTAGE' ? '10' : '50000'}
-                            {...field}
-                            value={field.value ?? ''}
-                            onChange={e =>
-                              field.onChange(e.target.value ? Number(e.target.value) : undefined)
-                            }
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          {discountType === 'PERCENTAGE'
-                            ? 'Phần trăm giảm giá (0-100)'
-                            : 'Số tiền giảm (VNĐ)'}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="minPurchase"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giá trị đơn hàng tối thiểu</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="Không giới hạn"
-                            {...field}
-                            value={field.value ?? ''}
-                            onChange={e =>
-                              field.onChange(e.target.value ? Number(e.target.value) : null)
-                            }
-                          />
-                        </FormControl>
-                        <FormDescription>Để trống nếu không yêu cầu</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {discountType === 'PERCENTAGE' && (
-                    <FormField
-                      control={form.control}
-                      name="maxDiscount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Giảm giá tối đa (VNĐ)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Không giới hạn"
-                              {...field}
-                              value={field.value ?? ''}
-                              onChange={e =>
-                                field.onChange(e.target.value ? Number(e.target.value) : undefined)
-                              }
-                            />
-                          </FormControl>
-                          <FormDescription>Giới hạn số tiền giảm tối đa khi dùng %</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </>
-              )}
 
               {/* Fields cho BUY_X_GET_Y type */}
               {promotionType === 'BUY_X_GET_Y' && (
@@ -501,7 +353,6 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                           <Input
                             type="number"
                             placeholder="2"
-                            {...field}
                             value={field.value ?? ''}
                             onChange={e =>
                               field.onChange(e.target.value ? Number(e.target.value) : undefined)
@@ -525,7 +376,6 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                           <Input
                             type="number"
                             placeholder="1"
-                            {...field}
                             value={field.value ?? ''}
                             onChange={e =>
                               field.onChange(e.target.value ? Number(e.target.value) : undefined)
@@ -553,8 +403,7 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                         <FormControl>
                           <Input
                             type="number"
-                            placeholder="2"
-                            {...field}
+                            placeholder="3"
                             value={field.value ?? ''}
                             onChange={e =>
                               field.onChange(e.target.value ? Number(e.target.value) : undefined)
@@ -577,8 +426,7 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                         <FormControl>
                           <Input
                             type="number"
-                            placeholder="1"
-                            {...field}
+                            placeholder="2"
                             value={field.value ?? ''}
                             onChange={e =>
                               field.onChange(e.target.value ? Number(e.target.value) : undefined)
@@ -593,6 +441,34 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                 </div>
               )}
 
+              {/* Phạm vi áp dụng */}
+              <FormField
+                control={form.control}
+                name="scope"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Phạm vi áp dụng <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn phạm vi" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(PROMOTION_SCOPE).map(scope => (
+                          <SelectItem key={scope} value={scope}>
+                            {getPromotionScopeLabel(scope)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Fields cho PRODUCT scope */}
               {promotionScope === 'PRODUCT' && (
                 <FormField
@@ -601,7 +477,7 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Sản phẩm <span className="text-destructive">*</span>
+                        Sản phẩm áp dụng <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
                         <MultiSelectExpandable
@@ -634,7 +510,7 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Danh mục <span className="text-destructive">*</span>
+                        Danh mục áp dụng <span className="text-destructive">*</span>
                       </FormLabel>
                       <Select
                         onValueChange={value => field.onChange(value ? Number(value) : null)}
@@ -675,9 +551,15 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                           value={field.value ? new Date(field.value) : null}
                           onChange={date => {
                             if (date) {
-                              // Convert Date to ISO string format (YYYY-MM-DDTHH:mm:ss)
-                              const isoString = date.toISOString().slice(0, 19);
-                              field.onChange(isoString);
+                              const year = date.getFullYear();
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const day = String(date.getDate()).padStart(2, '0');
+                              const hours = String(date.getHours()).padStart(2, '0');
+                              const minutes = String(date.getMinutes()).padStart(2, '0');
+                              const seconds = String(date.getSeconds()).padStart(2, '0');
+                              field.onChange(
+                                `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`,
+                              );
                             } else {
                               field.onChange('');
                             }
@@ -703,9 +585,15 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                           value={field.value ? new Date(field.value) : null}
                           onChange={date => {
                             if (date) {
-                              // Convert Date to ISO string format (YYYY-MM-DDTHH:mm:ss)
-                              const isoString = date.toISOString().slice(0, 19);
-                              field.onChange(isoString);
+                              const year = date.getFullYear();
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const day = String(date.getDate()).padStart(2, '0');
+                              const hours = String(date.getHours()).padStart(2, '0');
+                              const minutes = String(date.getMinutes()).padStart(2, '0');
+                              const seconds = String(date.getSeconds()).padStart(2, '0');
+                              field.onChange(
+                                `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`,
+                              );
                             } else {
                               field.onChange('');
                             }
@@ -729,7 +617,6 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                       <Input
                         type="number"
                         placeholder="Không giới hạn"
-                        {...field}
                         value={field.value ?? ''}
                         onChange={e =>
                           field.onChange(e.target.value ? Number(e.target.value) : null)
@@ -750,7 +637,7 @@ export function PromotionSheet({ open, promotion, onOpenChange, onSaved }: Promo
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
                       <FormLabel>Kích hoạt</FormLabel>
-                      <FormDescription>Promotion sẽ áp dụng cho đơn hàng</FormDescription>
+                      <FormDescription>Khuyến mãi sẽ áp dụng cho đơn hàng</FormDescription>
                     </div>
                     <FormControl>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />

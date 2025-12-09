@@ -27,7 +27,6 @@ import iuh.fit.se.entity.Product;
 import iuh.fit.se.entity.Promotion;
 import iuh.fit.se.entity.User;
 import iuh.fit.se.entity.UserAddress;
-import iuh.fit.se.entity.enumeration.DiscountType;
 import iuh.fit.se.entity.enumeration.OrderStatus;
 import iuh.fit.se.entity.enumeration.PaymentStatus;
 import iuh.fit.se.entity.enumeration.PromotionType;
@@ -51,6 +50,10 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @Slf4j
 public class OrderService {
+  // Shipping fee constants
+  private static final BigDecimal SHIPPING_FEE = new BigDecimal("30000");
+  private static final BigDecimal FREE_SHIPPING_THRESHOLD = new BigDecimal("500000");
+
   private final OrderRepository orderRepository;
   private final OrderItemRepository orderItemRepository;
   private final OrderStatusHistoryRepository orderStatusHistoryRepository;
@@ -165,47 +168,23 @@ public class OrderService {
     BigDecimal promotionDiscountAmount = BigDecimal.ZERO;
     LocalDateTime now = LocalDateTime.now();
 
-    // Find ORDER scope promotions
-    List<Promotion> orderPromotions = promotionRepository.findActivePromotionsForOrder(now);
-    if (!orderPromotions.isEmpty()) {
-      // Apply first valid ORDER promotion (can be enhanced to find best promotion)
-      for (Promotion promotion : orderPromotions) {
-        if (promotion.getType() == PromotionType.DISCOUNT) {
-          // Check minimum purchase
-          if (promotion.getMinPurchase() != null
-              && totalAmount.compareTo(promotion.getMinPurchase()) < 0) {
-            continue;
-          }
+    // Note: ORDER scope promotions are now only for BOGO, BUY_X_GET_Y, BUY_X_PAY_Y
+    // DISCOUNT type has been moved to Coupon
+    // ORDER scope promotions will be applied at item level if applicable
 
-          // Calculate discount
-          BigDecimal promoDiscount = BigDecimal.ZERO;
-          if (promotion.getDiscountType() == DiscountType.PERCENTAGE) {
-            promoDiscount =
-                totalAmount.multiply(promotion.getDiscountValue()).divide(BigDecimal.valueOf(100));
-            if (promotion.getMaxDiscount() != null
-                && promoDiscount.compareTo(promotion.getMaxDiscount()) > 0) {
-              promoDiscount = promotion.getMaxDiscount();
-            }
-          } else {
-            promoDiscount = promotion.getDiscountValue();
-          }
-
-          // Ensure discount doesn't exceed order total
-          if (promoDiscount.compareTo(totalAmount) > 0) {
-            promoDiscount = totalAmount;
-          }
-
-          appliedPromotion = promotion;
-          promotionDiscountAmount = promoDiscount;
-          break; // Apply first valid promotion
-        }
-      }
+    BigDecimal subtotalAfterDiscount =
+        totalAmount.subtract(discountAmount).subtract(promotionDiscountAmount);
+    if (subtotalAfterDiscount.compareTo(BigDecimal.ZERO) < 0) {
+      subtotalAfterDiscount = BigDecimal.ZERO;
     }
 
-    BigDecimal finalAmount = totalAmount.subtract(discountAmount).subtract(promotionDiscountAmount);
-    if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
-      finalAmount = BigDecimal.ZERO;
-    }
+    // 7.6. Calculate shipping fee (free if subtotal >= 500k)
+    BigDecimal shippingFee =
+        subtotalAfterDiscount.compareTo(FREE_SHIPPING_THRESHOLD) >= 0
+            ? BigDecimal.ZERO
+            : SHIPPING_FEE;
+
+    BigDecimal finalAmount = subtotalAfterDiscount.add(shippingFee);
 
     // 8. Create order
     Order order = new Order();
@@ -213,6 +192,7 @@ public class OrderService {
     order.setOrderNumber(generateOrderNumber());
     order.setTotalAmount(totalAmount);
     order.setDiscountAmount(discountAmount);
+    order.setShippingFee(shippingFee);
     order.setFinalAmount(finalAmount);
     order.setStatus(OrderStatus.PENDING);
     order.setPaymentStatus(PaymentStatus.PENDING);
@@ -231,34 +211,24 @@ public class OrderService {
 
       // Find PRODUCT scope promotions for this product
       List<Promotion> productPromotions =
-          promotionRepository.findActivePromotionsForProduct(product.getId(), now);
+          new java.util.ArrayList<>(
+              promotionRepository.findActivePromotionsForProduct(product.getId(), now));
+
+      // Also check CATEGORY scope promotions
+      if (product.getCategory() != null) {
+        List<Promotion> categoryPromotions =
+            promotionRepository.findActivePromotionsForCategory(product.getCategory().getId(), now);
+        productPromotions.addAll(categoryPromotions);
+      }
+
       Promotion itemPromotion = null;
       BigDecimal itemPromotionDiscount = BigDecimal.ZERO;
       Integer itemPromotionQuantityFree = 0;
 
-      // Apply first valid PRODUCT promotion (can be enhanced to find best promotion)
+      // Apply first valid promotion (BOGO, BUY_X_GET_Y, BUY_X_PAY_Y)
+      // Note: DISCOUNT type has been moved to Coupon
       for (Promotion promotion : productPromotions) {
-        if (promotion.getType() == PromotionType.DISCOUNT) {
-          BigDecimal itemSubtotal =
-              product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
-          BigDecimal promoDiscount = BigDecimal.ZERO;
-          if (promotion.getDiscountType() == DiscountType.PERCENTAGE) {
-            promoDiscount =
-                itemSubtotal.multiply(promotion.getDiscountValue()).divide(BigDecimal.valueOf(100));
-            if (promotion.getMaxDiscount() != null
-                && promoDiscount.compareTo(promotion.getMaxDiscount()) > 0) {
-              promoDiscount = promotion.getMaxDiscount();
-            }
-          } else {
-            promoDiscount = promotion.getDiscountValue();
-          }
-          if (promoDiscount.compareTo(itemSubtotal) > 0) {
-            promoDiscount = itemSubtotal;
-          }
-          itemPromotion = promotion;
-          itemPromotionDiscount = promoDiscount;
-          break;
-        } else if (promotion.getType() == PromotionType.BOGO) {
+        if (promotion.getType() == PromotionType.BOGO) {
           // Buy 1 Get 1 Free
           int freeQuantity = cartItem.getQuantity() / 2; // For every 2, get 1 free
           if (freeQuantity > 0) {

@@ -81,7 +81,7 @@ export function PromotionList() {
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error('Lỗi', {
-        description: err.response?.data?.message || 'Không thể tải danh sách promotion',
+        description: err.response?.data?.message || 'Không thể tải danh sách khuyến mãi',
       });
     } finally {
       setLoading(false);
@@ -155,7 +155,7 @@ export function PromotionList() {
             setSearchKeyword(value);
             setCurrentPage(1);
           }}
-          searchPlaceholder="Tìm kiếm theo tên promotion..."
+          searchPlaceholder="Tìm kiếm theo tên khuyến mãi..."
           onRefresh={handleRefresh}
           onClearFilters={handleClearFilters}
           isLoading={loading}
@@ -168,7 +168,7 @@ export function PromotionList() {
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Tạo Promotion
+              Tạo khuyến mãi
             </Button>
           }
         />
@@ -230,7 +230,7 @@ export function PromotionList() {
                     <div className="flex flex-col items-center justify-center py-8">
                       <Sparkles className="text-muted-foreground mb-4 size-12" />
                       <p className="text-muted-foreground">
-                        Không có promotion nào khớp với tiêu chí lọc
+                        Không có khuyến mãi nào khớp với tiêu chí lọc
                       </p>
                     </div>
                   </TableCell>

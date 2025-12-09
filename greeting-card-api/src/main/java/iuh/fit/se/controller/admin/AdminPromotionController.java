@@ -37,13 +37,14 @@ public class AdminPromotionController {
       @RequestParam(defaultValue = "DESC") String sortDir) {
     Page<PromotionResponse> promotions =
         promotionService.getAllPromotions(page, size, sortBy, sortDir);
-    return ResponseEntity.ok(ApiResponse.success("Lấy danh sách promotion thành công", promotions));
+    return ResponseEntity.ok(
+        ApiResponse.success("Lấy danh sách khuyến mãi thành công", promotions));
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<ApiResponse<PromotionResponse>> getPromotionById(@PathVariable Long id) {
     PromotionResponse promotion = promotionService.getPromotionById(id);
-    return ResponseEntity.ok(ApiResponse.success("Lấy thông tin promotion thành công", promotion));
+    return ResponseEntity.ok(ApiResponse.success("Lấy thông tin khuyến mãi thành công", promotion));
   }
 
   @PostMapping
@@ -51,19 +52,19 @@ public class AdminPromotionController {
       @Valid @RequestBody CreatePromotionRequest request) {
     PromotionResponse promotion = promotionService.createPromotion(request);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(ApiResponse.success("Tạo promotion thành công", promotion));
+        .body(ApiResponse.success("Tạo khuyến mãi thành công", promotion));
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<ApiResponse<PromotionResponse>> updatePromotion(
       @PathVariable Long id, @Valid @RequestBody UpdatePromotionRequest request) {
     PromotionResponse promotion = promotionService.updatePromotion(id, request);
-    return ResponseEntity.ok(ApiResponse.success("Cập nhật promotion thành công", promotion));
+    return ResponseEntity.ok(ApiResponse.success("Cập nhật khuyến mãi thành công", promotion));
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<ApiResponse<Void>> deletePromotion(@PathVariable Long id) {
     promotionService.deletePromotion(id);
-    return ResponseEntity.ok(ApiResponse.success("Xóa promotion thành công", null));
+    return ResponseEntity.ok(ApiResponse.success("Xóa khuyến mãi thành công", null));
   }
 }

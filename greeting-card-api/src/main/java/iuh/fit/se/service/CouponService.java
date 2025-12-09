@@ -47,7 +47,7 @@ public class CouponService {
     Coupon coupon =
         couponRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Coupon không tồn tại"));
+            .orElseThrow(() -> new ResourceNotFoundException("Mã giảm giá không tồn tại"));
     return couponMapper.toResponse(coupon);
   }
 
@@ -64,7 +64,7 @@ public class CouponService {
   public CouponResponse createCoupon(CreateCouponRequest request) {
     // Validate coupon code unique
     if (couponRepository.findByCode(request.getCode()).isPresent()) {
-      throw new AppException("Mã coupon đã tồn tại", ErrorCode.VALIDATION_ERROR);
+      throw new AppException("Mã giảm giá đã tồn tại", ErrorCode.VALIDATION_ERROR);
     }
 
     // Validate date range
@@ -103,7 +103,7 @@ public class CouponService {
     Coupon coupon =
         couponRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Coupon không tồn tại"));
+            .orElseThrow(() -> new ResourceNotFoundException("Mã giảm giá không tồn tại"));
 
     // Update fields if provided
     if (request.getDiscountType() != null) {
@@ -151,7 +151,7 @@ public class CouponService {
     Coupon coupon =
         couponRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Coupon không tồn tại"));
+            .orElseThrow(() -> new ResourceNotFoundException("Mã giảm giá không tồn tại"));
     couponRepository.delete(coupon);
   }
 

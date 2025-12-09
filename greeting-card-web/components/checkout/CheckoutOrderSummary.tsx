@@ -1,16 +1,28 @@
 'use client';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { CartPromotionPreview } from '@/services/promotion.service';
 import type { Cart } from '@/types';
-import { AlertCircle, Check, CreditCard, LoaderIcon, ShoppingBag, Tag, Truck } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  CreditCard,
+  Gift,
+  LoaderIcon,
+  ShoppingBag,
+  Tag,
+  Truck,
+} from 'lucide-react';
 
 interface CheckoutOrderSummaryProps {
   cart: Cart;
+  promotionPreview: CartPromotionPreview | null;
   couponCode: string;
   couponDiscount: number;
   couponValidating: boolean;
@@ -23,8 +35,23 @@ interface CheckoutOrderSummaryProps {
   onSubmitOrder: () => Promise<void>;
 }
 
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+
+const getPromotionLabel = (type: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y') => {
+  switch (type) {
+    case 'BOGO':
+      return 'Mua 1 tặng 1';
+    case 'BUY_X_GET_Y':
+      return 'Mua X tặng Y';
+    case 'BUY_X_PAY_Y':
+      return 'Mua X trả Y';
+  }
+};
+
 export function CheckoutOrderSummary({
   cart,
+  promotionPreview,
   couponCode,
   couponDiscount,
   couponValidating,
@@ -36,7 +63,18 @@ export function CheckoutOrderSummary({
   onValidateCoupon,
   onSubmitOrder,
 }: CheckoutOrderSummaryProps) {
-  const finalAmount = cart.total - couponDiscount;
+  // Only BUY_X_PAY_Y gives discount, BOGO and BUY_X_GET_Y are free items (no discount from total)
+  const promotionDiscount =
+    promotionPreview?.itemPromotions
+      .filter(item => item.promotionType === 'BUY_X_PAY_Y')
+      .reduce((sum, item) => sum + item.discountAmount, 0) ?? 0;
+
+  // Shipping fee from backend
+  const shippingFee = promotionPreview?.shippingFee ?? 30000;
+  const freeShippingThreshold = promotionPreview?.freeShippingThreshold ?? 500000;
+  const subtotalAfterDiscount = cart.total - promotionDiscount - couponDiscount;
+  const isFreeShipping = subtotalAfterDiscount >= freeShippingThreshold;
+  const finalAmount = subtotalAfterDiscount + (isFreeShipping ? 0 : shippingFee);
 
   return (
     <Card>
@@ -49,7 +87,7 @@ export function CheckoutOrderSummary({
       <CardContent className="space-y-4">
         {/* Product List */}
         <div className="max-h-64 space-y-3 overflow-y-auto">
-          {cart.items.map(item => (
+          {promotionPreview?.itemPromotions.map(item => (
             <div key={item.productId} className="flex gap-3">
               <div className="bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
                 {item.productImage && (
@@ -63,22 +101,87 @@ export function CheckoutOrderSummary({
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-sm font-medium">{item.productName}</p>
                 <p className="text-muted-foreground text-sm">
-                  {new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  }).format(item.price)}{' '}
-                  x {item.quantity}
+                  {formatCurrency(item.price)} x {item.quantity}
                 </p>
+                {item.promotionType && item.freeQuantity > 0 && (
+                  <Badge variant="secondary" className="mt-1 text-xs">
+                    <Gift className="mr-1 h-3 w-3" />
+                    {getPromotionLabel(item.promotionType)}
+                  </Badge>
+                )}
               </div>
-              <p className="text-sm font-medium">
-                {new Intl.NumberFormat('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND',
-                }).format(item.price * item.quantity)}
-              </p>
+              <div className="text-right">
+                <p className="text-sm font-medium">{formatCurrency(item.subtotal)}</p>
+                {item.promotionType === 'BUY_X_PAY_Y' && item.discountAmount > 0 && (
+                  <p className="text-xs text-green-600">-{formatCurrency(item.discountAmount)}</p>
+                )}
+              </div>
             </div>
-          ))}
+          )) ??
+            cart.items.map(item => (
+              <div key={item.productId} className="flex gap-3">
+                <div className="bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
+                  {item.productImage && (
+                    <img
+                      src={item.productImage}
+                      alt={item.productName}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-sm font-medium">{item.productName}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {formatCurrency(item.price)} x {item.quantity}
+                  </p>
+                </div>
+                <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity)}</p>
+              </div>
+            ))}
         </div>
+
+        {/* Free Items from Promotion */}
+        {promotionPreview && promotionPreview.freeItems.length > 0 && (
+          <>
+            <Separator />
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-green-600">
+                <Gift className="h-4 w-4" />
+                Sản phẩm được tặng
+              </Label>
+              <div className="space-y-2">
+                {promotionPreview.freeItems.map(item => (
+                  <div
+                    key={`free-${item.productId}-${item.promotionId}`}
+                    className="flex items-center gap-3 rounded-md bg-green-50 p-2"
+                  >
+                    <div className="bg-muted relative h-10 w-10 shrink-0 overflow-hidden rounded-md">
+                      {item.productImage && (
+                        <img
+                          src={item.productImage}
+                          alt={item.productName}
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-1 text-sm font-medium">{item.productName}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {item.promotionName} - x{item.freeQuantity}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-green-600">0₫</p>
+                      <p className="text-muted-foreground text-xs line-through">
+                        {formatCurrency(item.originalPrice * item.freeQuantity)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         <Separator />
 
@@ -131,23 +234,21 @@ export function CheckoutOrderSummary({
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Tạm tính</span>
-            <span>
-              {new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND',
-              }).format(cart.total)}
-            </span>
+            <span>{formatCurrency(cart.total)}</span>
           </div>
+          {promotionDiscount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground flex items-center gap-1">
+                <Gift className="h-3 w-3" />
+                Khuyến mãi
+              </span>
+              <span className="text-green-600">-{formatCurrency(promotionDiscount)}</span>
+            </div>
+          )}
           {couponDiscount > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Giảm giá</span>
-              <span className="text-green-600">
-                -
-                {new Intl.NumberFormat('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND',
-                }).format(couponDiscount)}
-              </span>
+              <span className="text-muted-foreground">Mã giảm giá</span>
+              <span className="text-green-600">-{formatCurrency(couponDiscount)}</span>
             </div>
           )}
           <div className="flex justify-between text-sm">
@@ -155,16 +256,22 @@ export function CheckoutOrderSummary({
               <Truck className="h-4 w-4" />
               Phí vận chuyển
             </span>
-            <span className="text-green-600">Miễn phí</span>
+            {isFreeShipping ? (
+              <span className="text-green-600">Miễn phí</span>
+            ) : (
+              <span>{formatCurrency(shippingFee)}</span>
+            )}
           </div>
+          {!isFreeShipping && (
+            <p className="text-muted-foreground text-xs">
+              Miễn phí vận chuyển cho đơn hàng từ {formatCurrency(freeShippingThreshold)}
+            </p>
+          )}
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
             <span>Tổng cộng</span>
             <span className="text-primary">
-              {new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND',
-              }).format(finalAmount)}
+              {formatCurrency(finalAmount > 0 ? finalAmount : 0)}
             </span>
           </div>
         </div>

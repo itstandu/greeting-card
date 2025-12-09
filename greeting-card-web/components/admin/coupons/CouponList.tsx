@@ -85,7 +85,7 @@ export function CouponList() {
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error('Lỗi', {
-        description: err.response?.data?.message || 'Không thể tải danh sách coupon',
+        description: err.response?.data?.message || 'Không thể tải danh sách mã giảm giá',
       });
     } finally {
       setLoading(false);
@@ -148,7 +148,7 @@ export function CouponList() {
             setSearchKeyword(value);
             setCurrentPage(1);
           }}
-          searchPlaceholder="Tìm kiếm theo mã coupon..."
+          searchPlaceholder="Tìm kiếm theo mã giảm giá..."
           onRefresh={handleRefresh}
           onClearFilters={handleClearFilters}
           isLoading={loading}
@@ -161,7 +161,7 @@ export function CouponList() {
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Tạo Coupon
+              Tạo mã giảm giá
             </Button>
           }
         />
@@ -222,7 +222,7 @@ export function CouponList() {
                   <TableCell colSpan={7} className="text-center">
                     <div className="flex flex-col items-center justify-center py-8">
                       <Tag className="text-muted-foreground mb-4 size-12" />
-                      <p className="text-muted-foreground">Không có coupon nào</p>
+                      <p className="text-muted-foreground">Không có mã giảm giá nào</p>
                     </div>
                   </TableCell>
                 </TableRow>

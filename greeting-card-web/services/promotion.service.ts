@@ -31,6 +31,47 @@ export async function getActivePromotions(): Promise<ServiceResponse<Promotion[]
   };
 }
 
+export type CartPromotionPreview = {
+  originalTotal: number;
+  promotionDiscount: number;
+  shippingFee: number;
+  freeShippingThreshold: number;
+  finalTotal: number;
+  itemPromotions: Array<{
+    productId: number;
+    productName: string;
+    productImage: string | null;
+    price: number;
+    quantity: number;
+    subtotal: number;
+    promotionId: number | null;
+    promotionName: string | null;
+    promotionType: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y' | null;
+    freeQuantity: number;
+    discountAmount: number;
+  }>;
+  freeItems: Array<{
+    productId: number;
+    productName: string;
+    productImage: string | null;
+    originalPrice: number;
+    freeQuantity: number;
+    promotionId: number;
+    promotionName: string;
+    promotionType: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y';
+  }>;
+};
+
+export async function getCartPromotionPreview(): Promise<ServiceResponse<CartPromotionPreview>> {
+  const response = await apiClient.get<ApiResponse<CartPromotionPreview>>(
+    '/promotions/cart-preview',
+  );
+  return {
+    data: response.data.data!,
+    message: response.data.message,
+  };
+}
+
 // === ADMIN APIs ===
 
 export async function getAllPromotions(

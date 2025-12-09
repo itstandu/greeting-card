@@ -27,10 +27,7 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
 
   // Admin: Get all wishlists with user info (pagination optimized)
   @Query(
-      value =
-          "SELECT DISTINCT w FROM Wishlist w "
-              + "JOIN FETCH w.user "
-              + "JOIN FETCH w.items",
+      value = "SELECT DISTINCT w FROM Wishlist w " + "JOIN FETCH w.user " + "JOIN FETCH w.items",
       countQuery = "SELECT COUNT(DISTINCT w) FROM Wishlist w JOIN w.items")
   Page<Wishlist> findAllWithUserAndItems(Pageable pageable);
 

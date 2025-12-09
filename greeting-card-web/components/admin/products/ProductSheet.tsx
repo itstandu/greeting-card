@@ -31,11 +31,11 @@ import {
 } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { productSchema, type ProductFormValues } from '@/lib/validations/product';
 import * as categoryService from '@/services/category.service';
 import * as productService from '@/services/product.service';
 import * as uploadService from '@/services/upload.service';
 import type { Category, CreateProductRequest, Product, ProductImageRequest } from '@/types';
-import { productSchema, type ProductFormValues } from '@/lib/validations/product';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 

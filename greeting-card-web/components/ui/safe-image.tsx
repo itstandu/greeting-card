@@ -1,7 +1,6 @@
 'use client';
 
-import { forwardRef } from 'react';
-import type { ImgHTMLAttributes, SyntheticEvent } from 'react';
+import { forwardRef, type ImgHTMLAttributes, type SyntheticEvent } from 'react';
 import { cn } from '@/lib/utils';
 
 export const FALLBACK_IMAGE_SRC = '/images/fallback-image.jpg';

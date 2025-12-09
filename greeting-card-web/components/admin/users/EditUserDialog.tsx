@@ -27,9 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { editUserSchema, type EditUserFormValues } from '@/lib/validations/admin';
 import { updateAdminUser } from '@/services';
 import type { AdminUpdateUserRequest, User, UserRole } from '@/types';
-import { editUserSchema, type EditUserFormValues } from '@/lib/validations/admin';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 

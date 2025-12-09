@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { passwordSchema } from './auth';
+import { z } from 'zod';
 
 export const updateProfileSchema = z.object({
   fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự').max(255, 'Họ tên quá dài'),

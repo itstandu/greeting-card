@@ -60,9 +60,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       // Thêm thông báo nếu có wishlist được sync
       if (localWishlistItemCount > 0) {
         const wishlistMessage = `Danh sách yêu thích của bạn (${localWishlistItemCount} sản phẩm) đã được đồng bộ.`;
-        message = localCartItemCount > 0
-          ? `${message} ${wishlistMessage}`
-          : `${message}. ${wishlistMessage}`;
+        message =
+          localCartItemCount > 0
+            ? `${message} ${wishlistMessage}`
+            : `${message}. ${wishlistMessage}`;
       }
 
       toast.success('Đăng nhập thành công', {

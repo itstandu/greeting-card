@@ -31,9 +31,9 @@ import {
 } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { categorySchema, type CategoryFormValues } from '@/lib/validations/category';
 import * as categoryService from '@/services/category.service';
 import type { Category, CreateCategoryRequest } from '@/types';
-import { categorySchema, type CategoryFormValues } from '@/lib/validations/category';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 

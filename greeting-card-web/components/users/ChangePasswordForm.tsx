@@ -13,10 +13,7 @@ import {
 import { PasswordInput } from '@/components/ui/password-input';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { changeUserPassword } from '@/lib/store/users/users.slice';
-import {
-  changePasswordSchema,
-  type ChangePasswordFormValues,
-} from '@/lib/validations/user';
+import { changePasswordSchema, type ChangePasswordFormValues } from '@/lib/validations/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 

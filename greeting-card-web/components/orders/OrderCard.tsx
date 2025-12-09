@@ -58,7 +58,7 @@ export function OrderCard({ order, onViewDetail }: OrderCardProps) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-muted-foreground text-sm">Tổng tiền</p>
-            <p className="text-xl font-bold text-primary">{formatCurrency(order.finalAmount)}</p>
+            <p className="text-primary text-xl font-bold">{formatCurrency(order.finalAmount)}</p>
           </div>
           <Button variant="outline" onClick={() => onViewDetail(order.id)}>
             <Eye className="mr-2 h-4 w-4" />
@@ -69,4 +69,3 @@ export function OrderCard({ order, onViewDetail }: OrderCardProps) {
     </Card>
   );
 }
-

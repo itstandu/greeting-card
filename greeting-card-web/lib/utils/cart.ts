@@ -1,8 +1,6 @@
 import type { Cart, CartResponse } from '@/types';
 
-export function getProductImage(
-  product: CartResponse['items'][number]['product'],
-): string {
+export function getProductImage(product: CartResponse['items'][number]['product']): string {
   // Prefer primary image; fall back to the first image; default to empty string.
   if (product.images && product.images.length > 0) {
     const primary = product.images.find(img => img.isPrimary);
@@ -30,4 +28,3 @@ export function mapCartResponseToCart(cartResponse: CartResponse): Cart {
     totalItems: cartResponse.totalItems,
   };
 }
-

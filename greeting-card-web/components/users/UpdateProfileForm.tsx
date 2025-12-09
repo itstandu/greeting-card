@@ -16,11 +16,8 @@ import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { updateUserProfile } from '@/lib/store/users/users.slice';
 import { getInitials } from '@/lib/utils';
+import { updateProfileSchema, type UpdateProfileFormValues } from '@/lib/validations/user';
 import { uploadUserAvatar } from '@/services/upload.service';
-import {
-  updateProfileSchema,
-  type UpdateProfileFormValues,
-} from '@/lib/validations/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Camera, X } from 'lucide-react';
 import { toast } from 'sonner';

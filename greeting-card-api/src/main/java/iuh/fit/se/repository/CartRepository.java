@@ -27,10 +27,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
   // Admin: Get all carts with user info (pagination optimized)
   @Query(
-      value =
-          "SELECT DISTINCT c FROM Cart c "
-              + "JOIN FETCH c.user "
-              + "JOIN FETCH c.items",
+      value = "SELECT DISTINCT c FROM Cart c " + "JOIN FETCH c.user " + "JOIN FETCH c.items",
       countQuery = "SELECT COUNT(DISTINCT c) FROM Cart c JOIN c.items")
   Page<Cart> findAllWithUserAndItems(Pageable pageable);
 

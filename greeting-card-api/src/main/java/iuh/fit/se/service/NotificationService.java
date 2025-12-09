@@ -92,7 +92,8 @@ public class NotificationService {
 
   /** Tạo notification khi order status thay đổi */
   @Transactional
-  public void notifyOrderStatusChange(Long userId, Long orderId, String orderNumber, String status) {
+  public void notifyOrderStatusChange(
+      Long userId, Long orderId, String orderNumber, String status) {
     String title = "Trạng thái đơn hàng thay đổi";
     String message =
         String.format("Đơn hàng %s đã chuyển sang trạng thái: %s", orderNumber, status);
@@ -126,7 +127,8 @@ public class NotificationService {
 
   /** Gửi notification cho tất cả admin khi có đơn hàng mới */
   @Transactional
-  public void notifyAdminsNewOrder(Long orderId, String orderNumber, String customerName, String totalAmount) {
+  public void notifyAdminsNewOrder(
+      Long orderId, String orderNumber, String customerName, String totalAmount) {
     List<User> admins = userRepository.findByRole(UserRole.ADMIN);
 
     if (admins.isEmpty()) {

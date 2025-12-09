@@ -87,10 +87,14 @@ export function usePaymentProcessing(orderId: number | null): UsePaymentProcessi
             return;
           }
 
-          // Nếu COD, không cần thanh toán
+          // Nếu COD, không cần thanh toán online
           if (response.data.paymentMethod.code === 'COD') {
             setPaymentStatus('success');
             setLoading(false);
+            toast({
+              title: '🎉 Đặt hàng thành công!',
+              description: `Đơn hàng ${response.data.orderNumber} đã được đặt. Bạn sẽ thanh toán khi nhận hàng.`,
+            });
             return;
           }
 

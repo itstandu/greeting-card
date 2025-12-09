@@ -59,7 +59,7 @@ export function LatestOrdersTable({ orders }: LatestOrdersTableProps) {
   };
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle>Đơn hàng mới nhất</CardTitle>
         <CardDescription>Danh sách các đơn hàng gần đây</CardDescription>

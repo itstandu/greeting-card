@@ -67,7 +67,7 @@ export function ProductCard({
       <Link href={`/products/${product.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-lg',
+            'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
             className,
           )}
         >
@@ -134,7 +134,7 @@ export function ProductCard({
       <Link href={`/products/${product.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-xl',
+            'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-xl',
             className,
           )}
         >
@@ -241,7 +241,7 @@ export function ProductCard({
     <Link href={`/products/${product.slug}`} className="block">
       <Card
         className={cn(
-          'group hover:border-primary/30 flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg',
+          'group hover:border-primary/30 flex h-full flex-col overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
           className,
         )}
       >

@@ -54,7 +54,7 @@ export function CategoryCard({
       <Link href={`/categories/${category.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-lg',
+            'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
             className,
           )}
         >
@@ -118,7 +118,7 @@ export function CategoryCard({
       <Link href={`/categories/${category.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 overflow-hidden transition-all duration-300 hover:shadow-lg',
+            'group hover:border-primary/30 overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
             className,
           )}
         >
@@ -188,7 +188,7 @@ export function CategoryCard({
       <Link href={`/categories/${category.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-xl',
+            'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-xl',
             className,
           )}
         >
@@ -259,7 +259,7 @@ export function CategoryCard({
     <Link href={`/categories/${category.slug}`} className="block">
       <Card
         className={cn(
-          'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-lg',
+          'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
           className,
         )}
       >

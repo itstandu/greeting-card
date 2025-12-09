@@ -43,7 +43,7 @@ export function OrderStatusChart({ data }: OrderStatusChartProps) {
   }));
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle>Phân bố trạng thái đơn hàng</CardTitle>
         <CardDescription>Tổng quan các trạng thái đơn hàng hiện tại</CardDescription>

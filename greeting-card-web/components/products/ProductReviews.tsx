@@ -68,7 +68,7 @@ export function ProductReviews({
     <div className="space-y-8">
       {/* Review Stats */}
       {stats && (
-        <Card className="py-6">
+        <Card>
           <CardHeader>
             <CardTitle>Đánh giá sản phẩm</CardTitle>
           </CardHeader>
@@ -108,7 +108,7 @@ export function ProductReviews({
       {isAuthenticated && (
         <>
           {loadingCanReview ? (
-            <Card className="py-6">
+            <Card>
               <CardContent className="flex flex-col items-center justify-center py-8">
                 <div className="text-muted-foreground border-t-primary mb-3 h-8 w-8 animate-spin rounded-full border-4 border-r-transparent border-b-transparent border-l-transparent" />
                 <p className="text-muted-foreground text-center text-sm">
@@ -117,7 +117,7 @@ export function ProductReviews({
               </CardContent>
             </Card>
           ) : canReview ? (
-            <Card className="py-6">
+            <Card>
               <CardHeader>
                 <CardTitle>Viết đánh giá</CardTitle>
               </CardHeader>
@@ -174,7 +174,7 @@ export function ProductReviews({
               </CardContent>
             </Card>
           ) : (
-            <Card className="py-6">
+            <Card>
               <CardContent className="flex flex-col items-center justify-center py-8">
                 <Star className="text-muted-foreground/30 mb-3 h-10 w-10" />
                 <p className="text-muted-foreground text-center text-sm">
@@ -200,7 +200,7 @@ export function ProductReviews({
 
               return (
                 <Card key={review.id}>
-                  <CardContent className="py-6">
+                  <CardContent>
                     <div className="flex gap-4">
                       <Avatar className="h-10 w-10">
                         {/* Backend currently only returns user full name, so we use initials as avatar */}
@@ -241,7 +241,7 @@ export function ProductReviews({
       )}
 
       {reviews.length === 0 && (
-        <Card className="py-6">
+        <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Star className="text-muted-foreground/30 mb-4 h-12 w-12" />
             <p className="text-muted-foreground text-center">

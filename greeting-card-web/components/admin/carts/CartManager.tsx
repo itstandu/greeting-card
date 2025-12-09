@@ -80,7 +80,7 @@ export function CartManager() {
   return (
     <div className="space-y-6">
       {/* Search */}
-      <Card className="py-6">
+      <Card>
         <CardHeader>
           <CardTitle>Tìm kiếm giỏ hàng</CardTitle>
         </CardHeader>
@@ -103,7 +103,7 @@ export function CartManager() {
 
       {/* Loading State */}
       {loading && (
-        <Card className="py-6">
+        <Card>
           <CardContent className="py-12">
             <div className="flex flex-col items-center justify-center text-center">
               <div className="border-primary mb-4 size-12 animate-spin rounded-full border-4 border-t-transparent" />
@@ -115,7 +115,7 @@ export function CartManager() {
 
       {/* Initial State - Chưa tìm kiếm */}
       {!loading && !searched && (
-        <Card className="py-6">
+        <Card>
           <CardContent className="py-12">
             <div className="flex flex-col items-center justify-center text-center">
               <ShoppingCart className="text-muted-foreground mb-4 size-16" />
@@ -132,7 +132,7 @@ export function CartManager() {
 
       {/* Cart Display */}
       {!loading && searched && cart && (
-        <Card className="py-6">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Giỏ hàng của User #{userId}</CardTitle>
             {cart.items.length > 0 && (

@@ -24,7 +24,7 @@ export function BestSellingProductsTable({ products }: BestSellingProductsTableP
   };
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle>Sản phẩm bán chạy</CardTitle>
         <CardDescription>Top sản phẩm có doanh số cao nhất</CardDescription>

@@ -14,7 +14,7 @@ export function PaymentSuccessCard({ order }: PaymentSuccessCardProps) {
   const router = useRouter();
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-green-600">
           <CheckCircle2 className="h-6 w-6" />

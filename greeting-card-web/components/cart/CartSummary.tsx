@@ -13,7 +13,7 @@ interface CartSummaryProps {
 
 export function CartSummary({ cart, isAuthenticated }: CartSummaryProps) {
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle>Tóm tắt đơn hàng</CardTitle>
       </CardHeader>

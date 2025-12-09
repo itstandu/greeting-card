@@ -10,7 +10,7 @@ interface PaymentProcessingCardProps {
 
 export function PaymentProcessingCard({ order }: PaymentProcessingCardProps) {
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <LoaderIcon className="text-primary h-6 w-6 animate-spin" />

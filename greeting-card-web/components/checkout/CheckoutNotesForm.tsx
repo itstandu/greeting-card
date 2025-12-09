@@ -11,7 +11,7 @@ interface CheckoutNotesFormProps {
 
 export function CheckoutNotesForm({ notes, onNotesChange }: CheckoutNotesFormProps) {
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Package className="h-5 w-5" />

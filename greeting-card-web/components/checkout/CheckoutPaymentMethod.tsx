@@ -18,7 +18,7 @@ export function CheckoutPaymentMethod({
   onPaymentMethodSelect,
 }: CheckoutPaymentMethodProps) {
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CreditCard className="h-5 w-5" />

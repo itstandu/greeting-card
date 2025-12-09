@@ -36,7 +36,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
   };
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle>Doanh thu theo thời gian</CardTitle>
         <CardDescription>Tổng quan doanh thu trong 30 ngày qua</CardDescription>

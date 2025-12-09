@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 function RegisterContent() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md py-6">
+      <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Đăng ký</CardTitle>
           <CardDescription>Tạo tài khoản mới để bắt đầu sử dụng dịch vụ</CardDescription>

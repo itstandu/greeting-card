@@ -115,7 +115,7 @@ export function WishlistItemCard({ item, onRemove }: WishlistItemCardProps) {
   const isOutOfStock = item.stock <= 0;
 
   return (
-    <Card className="group hover:border-primary/30 flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg">
+    <Card className="group hover:border-primary/30 flex h-full flex-col overflow-hidden py-0 transition-all duration-300 hover:shadow-lg">
       <CardContent className="p-4">
         {/* Image Container with rounded corners */}
         <div className="bg-muted relative aspect-square overflow-hidden rounded-xl">

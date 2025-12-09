@@ -19,7 +19,7 @@ type LowStockProductsTableProps = {
 
 export function LowStockProductsTable({ products }: LowStockProductsTableProps) {
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertTriangle className="size-5 text-orange-500" />

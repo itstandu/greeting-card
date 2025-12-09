@@ -39,7 +39,7 @@ export function CheckoutOrderSummary({
   const finalAmount = cart.total - couponDiscount;
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShoppingBag className="h-5 w-5" />

@@ -402,7 +402,7 @@ export function AddressManagement() {
       </div>
 
       {addresses.length === 0 ? (
-        <Card className="py-6">
+        <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <MapPin className="text-muted-foreground mb-4 h-12 w-12" />
             <h3 className="mb-2 text-lg font-semibold">Chưa có địa chỉ</h3>

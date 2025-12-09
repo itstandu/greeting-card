@@ -17,7 +17,7 @@ export function ProfileClient() {
     return (
       <div className="container mx-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">
-          <Card className="py-6">
+          <Card>
             <CardHeader>
               <CardTitle>Thông tin cá nhân</CardTitle>
               <CardDescription>Đăng nhập để quản lý thông tin tài khoản của bạn</CardDescription>
@@ -57,7 +57,7 @@ export function ProfileClient() {
           </TabsList>
 
           <TabsContent value="profile">
-            <Card className="py-6">
+            <Card>
               <CardHeader>
                 <CardTitle>Thông tin cá nhân</CardTitle>
                 <CardDescription>Cập nhật thông tin cá nhân của bạn</CardDescription>
@@ -69,7 +69,7 @@ export function ProfileClient() {
           </TabsContent>
 
           <TabsContent value="addresses">
-            <Card className="py-6">
+            <Card>
               <CardHeader>
                 <CardTitle>Quản lý địa chỉ</CardTitle>
                 <CardDescription>Thêm, sửa và xóa địa chỉ giao hàng của bạn</CardDescription>
@@ -81,7 +81,7 @@ export function ProfileClient() {
           </TabsContent>
 
           <TabsContent value="password">
-            <Card className="py-6">
+            <Card>
               <CardHeader>
                 <CardTitle>Đổi mật khẩu</CardTitle>
                 <CardDescription>Thay đổi mật khẩu của bạn</CardDescription>

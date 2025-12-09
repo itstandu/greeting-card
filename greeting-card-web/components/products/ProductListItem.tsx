@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,20 +30,20 @@ export function ProductListItem({
   className,
 }: ProductListItemProps) {
   const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
-  const [imageLoading, setImageLoading] = useState(!!primaryImage?.imageUrl);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // Check if image is already loaded (from cache) when component mounts
-  useEffect(() => {
-    if (!primaryImage?.imageUrl) {
-      setImageLoading(false);
-      return;
-    }
+  // Initialize loading state: only true if there's an image URL to load
+  const [imageLoading, setImageLoading] = useState(() => {
+    return !!primaryImage?.imageUrl;
+  });
 
-    if (imageRef.current?.complete && imageRef.current.naturalHeight !== 0) {
+  // Check if image is already loaded (from cache) when ref is attached
+  const handleImageRef = (node: HTMLImageElement | null) => {
+    (imageRef as React.MutableRefObject<HTMLImageElement | null>).current = node;
+    if (node?.complete && node.naturalHeight !== 0) {
       setImageLoading(false);
     }
-  }, [primaryImage?.imageUrl]);
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,7 +59,7 @@ export function ProductListItem({
     <Link href={`/products/${product.slug}`}>
       <Card
         className={cn(
-          'group hover:border-primary/50 overflow-hidden transition-all hover:shadow-lg',
+          'group hover:border-primary/50 overflow-hidden py-0 transition-all hover:shadow-lg',
           className,
         )}
       >
@@ -68,7 +68,7 @@ export function ProductListItem({
           <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-32 md:h-40 md:w-40">
             {imageLoading && <Skeleton className="absolute inset-0" />}
             <SafeImage
-              ref={imageRef}
+              ref={handleImageRef}
               src={primaryImage?.imageUrl}
               alt={primaryImage?.altText || product.name}
               className={cn(

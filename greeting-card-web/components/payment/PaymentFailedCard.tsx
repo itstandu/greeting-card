@@ -16,7 +16,7 @@ export function PaymentFailedCard({ order, error, onRetry }: PaymentFailedCardPr
   const router = useRouter();
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle className="text-destructive flex items-center gap-2">
           <XCircle className="h-6 w-6" />

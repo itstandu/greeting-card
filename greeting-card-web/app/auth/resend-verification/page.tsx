@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 function ResendVerificationContent() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md py-6">
+      <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Gửi lại Email Xác Thực</CardTitle>
           <CardDescription>Nhập email của bạn để nhận lại email xác thực tài khoản</CardDescription>

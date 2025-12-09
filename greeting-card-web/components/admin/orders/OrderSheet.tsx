@@ -101,7 +101,7 @@ export function OrderSheet({ open, orderId, onOpenChange }: OrderSheetProps) {
               </div>
 
               {/* Thông tin đơn hàng - Gom chung tất cả */}
-              <Card className="py-6">
+              <Card>
                 <CardHeader>
                   <CardTitle>Thông tin đơn hàng</CardTitle>
                 </CardHeader>
@@ -211,7 +211,7 @@ export function OrderSheet({ open, orderId, onOpenChange }: OrderSheetProps) {
 
               {/* Lịch sử trạng thái */}
               {statusHistory.length > 0 && (
-                <Card className="py-6">
+                <Card>
                   <CardHeader>
                     <CardTitle>Lịch sử trạng thái</CardTitle>
                   </CardHeader>

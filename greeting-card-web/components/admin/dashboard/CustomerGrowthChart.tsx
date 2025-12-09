@@ -36,7 +36,7 @@ export function CustomerGrowthChart({ data }: CustomerGrowthChartProps) {
   };
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle>Tăng trưởng khách hàng</CardTitle>
         <CardDescription>Số lượng người dùng mới và tổng người dùng theo thời gian</CardDescription>

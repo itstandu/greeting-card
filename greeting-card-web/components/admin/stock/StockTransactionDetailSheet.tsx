@@ -83,7 +83,7 @@ export function StockTransactionDetailSheet({
               </div>
 
               {/* Thông tin giao dịch */}
-              <Card className="py-6">
+              <Card>
                 <CardHeader>
                   <CardTitle>Thông tin giao dịch</CardTitle>
                 </CardHeader>

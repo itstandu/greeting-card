@@ -33,7 +33,7 @@ export function CategorySalesChart({ data }: CategorySalesChartProps) {
   }));
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <CardTitle>Doanh thu theo danh mục</CardTitle>
         <CardDescription>Tất cả danh mục có doanh thu</CardDescription>

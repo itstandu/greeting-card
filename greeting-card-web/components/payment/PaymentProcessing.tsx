@@ -186,7 +186,7 @@ export function PaymentProcessing({
 
   if (order.paymentStatus === 'PAID') {
     return (
-      <Card className="py-6">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -200,7 +200,7 @@ export function PaymentProcessing({
 
   if (paymentMethod.code === 'COD') {
     return (
-      <Card className="py-6">
+      <Card>
         <CardHeader>
           <CardTitle>Thanh toán khi nhận hàng (COD)</CardTitle>
           <CardDescription>
@@ -213,7 +213,7 @@ export function PaymentProcessing({
 
   return (
     <>
-      <Card className="py-6">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {getPaymentIcon()}

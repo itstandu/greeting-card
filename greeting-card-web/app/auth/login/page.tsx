@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 function LoginContent() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md py-6">
+      <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Đăng nhập</CardTitle>
           <CardDescription>Nhập thông tin để đăng nhập vào tài khoản của bạn</CardDescription>

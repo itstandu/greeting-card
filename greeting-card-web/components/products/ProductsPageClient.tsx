@@ -17,7 +17,6 @@ import { PromoBanner, TrustBadges } from '@/components/ui/decorative-elements';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Pagination,
   PaginationContent,
@@ -42,6 +41,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { useAuth } from '@/hooks/use-auth';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -839,7 +839,7 @@ export function ProductsPageClient({
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Desktop Sidebar */}
           <aside className="hidden w-64 shrink-0 lg:block">
-            <Card className="sticky top-24">
+            <Card className="sticky top-24 py-0">
               <CardContent className="p-4">
                 <FilterContent />
               </CardContent>
@@ -1251,7 +1251,7 @@ function ProductsPageSkeleton() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-8 lg:flex-row">
           <aside className="hidden w-64 shrink-0 lg:block">
-            <Card className="sticky top-24">
+            <Card className="sticky top-24 py-0">
               <CardContent className="p-4">
                 <div className="space-y-6">
                   <div>

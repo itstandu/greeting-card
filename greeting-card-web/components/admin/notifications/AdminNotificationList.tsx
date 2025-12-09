@@ -175,7 +175,7 @@ export function AdminNotificationList() {
   }, [pagination]);
 
   return (
-    <Card className="py-6">
+    <Card>
       <CardHeader>
         <div className="flex flex-col gap-2">
           <CardTitle>Quản lý thông báo</CardTitle>

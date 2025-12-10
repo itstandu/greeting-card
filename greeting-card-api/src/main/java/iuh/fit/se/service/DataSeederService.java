@@ -98,7 +98,7 @@ public class DataSeederService {
   @Transactional(rollbackFor = Exception.class)
   public void seedAll() {
     log.info("=== Bắt đầu seed data ===");
-    faker = new Faker(new java.util.Locale("vi"));
+    faker = new Faker(java.util.Locale.of("vi"));
 
     try {
       // Xóa sạch dữ liệu cũ

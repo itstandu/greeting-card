@@ -59,11 +59,11 @@ export function ProductListItem({
     <Link href={`/products/${product.slug}`}>
       <Card
         className={cn(
-          'group hover:border-primary/50 overflow-hidden py-0 transition-all hover:shadow-lg',
+          'group hover:border-primary/50 overflow-hidden transition-all hover:shadow-lg',
           className,
         )}
       >
-        <CardContent className="flex gap-4 p-4 sm:gap-6">
+        <CardContent className="flex gap-4 px-4 sm:gap-6">
           {/* Image */}
           <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-32 md:h-40 md:w-40">
             {imageLoading && <Skeleton className="absolute inset-0" />}
@@ -170,7 +170,7 @@ export function ProductListItem({
 export function ProductListItemSkeleton() {
   return (
     <Card className="overflow-hidden">
-      <CardContent className="flex gap-4 p-4 sm:gap-6">
+      <CardContent className="flex gap-4 px-4 sm:gap-6">
         <Skeleton className="h-24 w-24 shrink-0 rounded-lg sm:h-32 sm:w-32 md:h-40 md:w-40" />
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           <div className="space-y-2">

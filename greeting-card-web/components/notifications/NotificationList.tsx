@@ -187,7 +187,7 @@ export function NotificationList() {
                 key={notification.id}
                 className={notification.isRead ? '' : 'border-primary/50 bg-primary/5'}
               >
-                <CardContent className="p-4">
+                <CardContent className="px-4">
                   <div className="flex gap-4">
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${

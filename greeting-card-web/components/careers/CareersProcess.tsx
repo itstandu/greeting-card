@@ -60,7 +60,7 @@ export function CareersProcess() {
 
                 {/* Content */}
                 <Card className="hover:border-primary/50 flex-1 border-2 transition-all hover:shadow-lg">
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="px-6 text-center">
                     <div className="text-primary mb-3 text-sm font-medium">Bước {step.step}</div>
                     <h3 className="text-foreground mb-3 text-lg font-semibold">{step.title}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">

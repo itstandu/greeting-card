@@ -47,7 +47,7 @@ export function CareersCulture() {
               key={index}
               className="hover:border-primary/50 border-2 transition-all hover:shadow-lg"
             >
-              <CardContent className="p-8">
+              <CardContent className="px-8">
                 <div className="bg-primary mb-6 inline-flex items-center justify-center rounded-xl p-3 shadow-lg">
                   <value.icon className="text-primary-foreground h-6 w-6" aria-hidden="true" />
                 </div>

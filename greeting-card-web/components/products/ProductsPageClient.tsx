@@ -839,8 +839,8 @@ export function ProductsPageClient({
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Desktop Sidebar */}
           <aside className="hidden w-64 shrink-0 lg:block">
-            <Card className="sticky top-24 py-0">
-              <CardContent className="p-4">
+            <Card className="sticky top-24">
+              <CardContent className="px-4">
                 <FilterContent />
               </CardContent>
             </Card>
@@ -1251,8 +1251,8 @@ function ProductsPageSkeleton() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-8 lg:flex-row">
           <aside className="hidden w-64 shrink-0 lg:block">
-            <Card className="sticky top-24 py-0">
-              <CardContent className="p-4">
+            <Card className="sticky top-24">
+              <CardContent className="px-4">
                 <div className="space-y-6">
                   <div>
                     <Skeleton className="mb-4 h-5 w-32" />

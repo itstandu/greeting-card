@@ -124,7 +124,7 @@ function StatCard({ stat, isVisible }: { stat: (typeof stats)[0]; isVisible: boo
 
   return (
     <Card className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-0 backdrop-blur-sm transition-all hover:shadow-xl">
-      <CardContent className="p-8 text-center">
+      <CardContent className="px-8 text-center">
         <div className="bg-primary-foreground/20 mb-4 inline-flex items-center justify-center rounded-full p-3">
           <stat.icon className="text-primary-foreground h-6 w-6" aria-hidden="true" />
         </div>

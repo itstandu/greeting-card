@@ -67,11 +67,11 @@ export function ProductCard({
       <Link href={`/products/${product.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
+            'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-lg',
             className,
           )}
         >
-          <CardContent className="p-3">
+          <CardContent className="px-3">
             {/* Image Container with padding */}
             <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
               {imageLoading && <Skeleton className="absolute inset-0 rounded-lg" />}
@@ -134,11 +134,11 @@ export function ProductCard({
       <Link href={`/products/${product.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-xl',
+            'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-xl',
             className,
           )}
         >
-          <CardContent className="p-4">
+          <CardContent className="px-4">
             {/* Image Container */}
             <div className="bg-muted relative aspect-4/3 overflow-hidden rounded-xl">
               {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
@@ -207,7 +207,7 @@ export function ProductCard({
 
           {/* Actions */}
           {(showAddToCart || showAddToWishlist) && (
-            <CardFooter className="px-4 pt-0 pb-4">
+            <CardFooter className="px-4 pt-0">
               <div className="flex w-full gap-2">
                 {showAddToCart && (
                   <Button
@@ -241,11 +241,11 @@ export function ProductCard({
     <Link href={`/products/${product.slug}`} className="block">
       <Card
         className={cn(
-          'group hover:border-primary/30 flex h-full flex-col overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
+          'group hover:border-primary/30 flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg',
           className,
         )}
       >
-        <CardContent className="p-4">
+        <CardContent className="px-4">
           {/* Image Container with rounded corners */}
           <div className="bg-muted relative aspect-square overflow-hidden rounded-xl">
             {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
@@ -321,7 +321,7 @@ export function ProductCard({
         </CardContent>
 
         {/* Footer Actions */}
-        <CardFooter className="mt-auto px-4 pt-0 pb-4">
+        <CardFooter className="mt-auto px-4 pt-0">
           <div className="flex w-full gap-2">
             <Button className="h-9 flex-1" size="sm" variant="outline">
               <Eye className="mr-2 h-4 w-4" />
@@ -394,7 +394,7 @@ export function ProductCardSkeleton({ variant = 'default' }: { variant?: Product
   if (variant === 'compact') {
     return (
       <Card className="overflow-hidden">
-        <CardContent className="p-3">
+        <CardContent className="px-3">
           <Skeleton className="aspect-square rounded-lg" />
           <div className="mt-3 space-y-2">
             <Skeleton className="h-4 w-full" />
@@ -409,7 +409,7 @@ export function ProductCardSkeleton({ variant = 'default' }: { variant?: Product
   if (variant === 'featured') {
     return (
       <Card className="h-full overflow-hidden">
-        <CardContent className="p-4">
+        <CardContent className="px-4">
           <Skeleton className="aspect-4/3 rounded-xl" />
           <div className="mt-4 space-y-3">
             <Skeleton className="h-5 w-20" />
@@ -420,7 +420,7 @@ export function ProductCardSkeleton({ variant = 'default' }: { variant?: Product
             <Skeleton className="h-3 w-1/3" />
           </div>
         </CardContent>
-        <CardFooter className="px-4 pt-0 pb-4">
+        <CardFooter className="px-4 pt-0">
           <Skeleton className="h-9 w-full" />
         </CardFooter>
       </Card>
@@ -429,7 +429,7 @@ export function ProductCardSkeleton({ variant = 'default' }: { variant?: Product
 
   return (
     <Card className="flex h-full flex-col overflow-hidden">
-      <CardContent className="flex-1 p-4">
+      <CardContent className="flex-1 px-4">
         <Skeleton className="aspect-square rounded-xl" />
         <div className="mt-4 space-y-2">
           <Skeleton className="h-5 w-20" />
@@ -441,7 +441,7 @@ export function ProductCardSkeleton({ variant = 'default' }: { variant?: Product
           <Skeleton className="h-3 w-1/3" />
         </div>
       </CardContent>
-      <CardFooter className="px-4 pt-0 pb-4">
+      <CardFooter className="px-4 pt-0">
         <Skeleton className="h-9 w-full" />
       </CardFooter>
     </Card>

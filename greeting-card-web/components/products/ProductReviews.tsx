@@ -173,19 +173,7 @@ export function ProductReviews({
                 </form>
               </CardContent>
             </Card>
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <Star className="text-muted-foreground/30 mb-3 h-10 w-10" />
-                <p className="text-muted-foreground text-center text-sm">
-                  Bạn cần mua sản phẩm này trước khi có thể đánh giá
-                </p>
-                <p className="text-muted-foreground/70 mt-1 text-center text-xs">
-                  Chỉ khách hàng đã mua sản phẩm mới có thể để lại đánh giá
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          ) : null}
         </>
       )}
 

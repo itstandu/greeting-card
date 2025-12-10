@@ -60,7 +60,7 @@ export function AboutTeam() {
               key={index}
               className="hover:border-primary/50 border-2 transition-all hover:shadow-xl"
             >
-              <CardContent className="p-6 text-center">
+              <CardContent className="px-6 text-center">
                 <Avatar className="mx-auto mb-4 h-24 w-24">
                   <AvatarFallback className="from-primary to-accent-foreground text-primary-foreground bg-gradient-to-br text-2xl font-bold">
                     {member.initials}

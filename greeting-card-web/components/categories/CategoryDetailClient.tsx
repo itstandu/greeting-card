@@ -250,7 +250,7 @@ export function CategoryDetailClient({
             {/* Related Categories */}
             {relatedCategories.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent className="px-4">
                   <h3 className="mb-4 flex items-center gap-2 font-semibold">
                     <FolderOpen className="text-primary h-4 w-4" />
                     Danh mục khác

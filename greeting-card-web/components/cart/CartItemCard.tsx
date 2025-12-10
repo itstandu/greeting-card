@@ -108,8 +108,8 @@ export function CartItemCard({ item, onUpdate }: CartItemCardProps) {
   const isOutOfStock = item.stock <= 0;
 
   return (
-    <Card className="py-0">
-      <CardContent className="p-4">
+    <Card>
+      <CardContent className="px-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           {/* Product Image */}
           <Link href={`/products/${item.productSlug}`} className="shrink-0">

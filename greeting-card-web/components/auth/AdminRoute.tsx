@@ -99,7 +99,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   if (!isAuthenticated || !user) {
     return (
       <div className="container py-10">
-        <Card className="mx-auto max-w-xl py-6">
+        <Card className="mx-auto max-w-xl">
           <CardHeader>
             <CardTitle>Yêu cầu đăng nhập</CardTitle>
             <CardDescription>

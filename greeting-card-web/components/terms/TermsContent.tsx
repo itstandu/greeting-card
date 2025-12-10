@@ -65,7 +65,7 @@ export function TermsContent() {
         <div className="mx-auto max-w-4xl">
           <div className="space-y-8">
             {sections.map((section, index) => (
-              <Card key={index} className="border-2 py-6">
+              <Card key={index} className="border-2">
                 <CardHeader>
                   <CardTitle className="text-foreground text-xl font-semibold">
                     {section.title}
@@ -81,7 +81,7 @@ export function TermsContent() {
           </div>
 
           {/* Contact Section */}
-          <Card className="border-primary/20 mt-12 border-2 py-6">
+          <Card className="border-primary/20 mt-12 border-2">
             <CardHeader>
               <CardTitle className="text-foreground text-xl font-semibold">
                 Câu hỏi về điều khoản?

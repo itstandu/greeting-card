@@ -115,7 +115,7 @@ export function TrustBadges({ className }: { className?: string }) {
     <div className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', className)}>
       {badges.map((badge, index) => (
         <Card key={index} className="border-dashed">
-          <CardContent className="flex items-center gap-3 p-4">
+          <CardContent className="flex items-center gap-3 px-4">
             <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
               <badge.icon className="text-primary h-5 w-5" />
             </div>
@@ -146,8 +146,8 @@ interface QuickLinksProps {
 
 export function QuickLinks({ title, links, className }: QuickLinksProps) {
   return (
-    <Card className={cn('', className)}>
-      <CardContent className="p-4">
+    <Card className={className}>
+      <CardContent className="px-4">
         {title && <h3 className="mb-3 font-semibold">{title}</h3>}
         <div className="flex flex-wrap gap-2">
           {links.map((link, index) => (

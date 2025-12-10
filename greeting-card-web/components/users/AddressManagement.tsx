@@ -220,7 +220,7 @@ export function AddressManagement() {
       <div className="space-y-4">
         {[1, 2].map(i => (
           <Card key={i}>
-            <CardContent className="p-6">
+            <CardContent className="px-6">
               <Skeleton className="mb-4 h-6 w-48" />
               <Skeleton className="mb-2 h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />

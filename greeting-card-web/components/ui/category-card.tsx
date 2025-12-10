@@ -54,11 +54,11 @@ export function CategoryCard({
       <Link href={`/categories/${category.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
+            'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-lg',
             className,
           )}
         >
-          <CardContent className="p-3">
+          <CardContent className="px-3">
             {/* Image Container with rounded corners */}
             <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
               {imageLoading && <Skeleton className="absolute inset-0 rounded-lg" />}
@@ -118,11 +118,11 @@ export function CategoryCard({
       <Link href={`/categories/${category.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
+            'group hover:border-primary/30 overflow-hidden transition-all duration-300 hover:shadow-lg',
             className,
           )}
         >
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="px-3 sm:px-4">
             <div className="flex gap-4">
               {/* Image Container */}
               <div className="bg-muted relative h-20 w-20 shrink-0 overflow-hidden rounded-xl sm:h-24 sm:w-24">
@@ -188,11 +188,11 @@ export function CategoryCard({
       <Link href={`/categories/${category.slug}`} className="block">
         <Card
           className={cn(
-            'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-xl',
+            'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-xl',
             className,
           )}
         >
-          <CardContent className="p-4">
+          <CardContent className="px-4">
             {/* Image Container */}
             <div className="bg-muted relative aspect-video overflow-hidden rounded-xl">
               {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
@@ -259,11 +259,11 @@ export function CategoryCard({
     <Link href={`/categories/${category.slug}`} className="block">
       <Card
         className={cn(
-          'group hover:border-primary/30 h-full overflow-hidden py-0 transition-all duration-300 hover:shadow-lg',
+          'group hover:border-primary/30 h-full overflow-hidden transition-all duration-300 hover:shadow-lg',
           className,
         )}
       >
-        <CardContent className="p-4">
+        <CardContent className="px-4">
           {/* Image Container with rounded corners */}
           <div className="bg-muted relative aspect-4/3 overflow-hidden rounded-xl">
             {imageLoading && <Skeleton className="absolute inset-0 rounded-xl" />}
@@ -339,7 +339,7 @@ export function CategoryCardSkeleton({ variant = 'default' }: { variant?: Catego
   if (variant === 'compact') {
     return (
       <Card className="overflow-hidden">
-        <CardContent className="p-3">
+        <CardContent className="px-3">
           <Skeleton className="aspect-square rounded-lg" />
           <div className="mt-3">
             <Skeleton className="mx-auto h-4 w-full" />
@@ -353,7 +353,7 @@ export function CategoryCardSkeleton({ variant = 'default' }: { variant?: Catego
   if (variant === 'horizontal') {
     return (
       <Card className="overflow-hidden">
-        <CardContent className="p-3 sm:p-4">
+        <CardContent className="px-3 sm:px-4">
           <div className="flex gap-4">
             <Skeleton className="h-20 w-20 shrink-0 rounded-xl sm:h-24 sm:w-24" />
             <div className="flex flex-1 flex-col justify-center space-y-2">
@@ -370,7 +370,7 @@ export function CategoryCardSkeleton({ variant = 'default' }: { variant?: Catego
   if (variant === 'featured') {
     return (
       <Card className="h-full overflow-hidden">
-        <CardContent className="p-4">
+        <CardContent className="px-4">
           <Skeleton className="aspect-video rounded-xl" />
           <div className="mt-4 space-y-3">
             <Skeleton className="h-4 w-full" />
@@ -384,7 +384,7 @@ export function CategoryCardSkeleton({ variant = 'default' }: { variant?: Catego
 
   return (
     <Card className="h-full overflow-hidden">
-      <CardContent className="p-4">
+      <CardContent className="px-4">
         <Skeleton className="aspect-4/3 rounded-xl" />
         <div className="mt-4 space-y-2">
           <Skeleton className="h-6 w-3/4" />

@@ -27,7 +27,7 @@ export function ProductHighlights({ variant = 'desktop' }: ProductHighlightsProp
         const Icon = highlight.icon;
         return (
           <Card key={index} className="border-dashed">
-            <CardContent className="flex items-center gap-3 p-3">
+            <CardContent className="flex items-center gap-3 px-3">
               <Icon className={`h-5 w-5 ${highlight.color}`} />
               <span className="text-sm font-medium">{highlight.text}</span>
             </CardContent>

@@ -67,7 +67,7 @@ export function AboutTimeline() {
                     <>
                       <div className="hidden flex-1 md:block">
                         <Card className="hover:border-primary/50 border-2 transition-all hover:shadow-lg">
-                          <CardContent className="p-6">
+                          <CardContent className="px-6">
                             <div className="text-primary mb-3 flex items-center gap-2 text-sm font-medium">
                               <Calendar className="h-4 w-4" />
                               <span>{milestone.year}</span>
@@ -95,7 +95,7 @@ export function AboutTimeline() {
                       {/* Mobile view - card on right */}
                       <div className="flex-1 md:hidden">
                         <Card className="hover:border-primary/50 border-2 transition-all hover:shadow-lg">
-                          <CardContent className="p-6">
+                          <CardContent className="px-6">
                             <div className="text-primary mb-3 flex items-center gap-2 text-sm font-medium">
                               <Calendar className="h-4 w-4" />
                               <span>{milestone.year}</span>
@@ -126,7 +126,7 @@ export function AboutTimeline() {
                       {/* Right side - Card for odd items */}
                       <div className="flex-1">
                         <Card className="hover:border-primary/50 border-2 transition-all hover:shadow-lg">
-                          <CardContent className="p-6">
+                          <CardContent className="px-6">
                             <div className="text-primary mb-3 flex items-center gap-2 text-sm font-medium md:flex-row-reverse md:justify-end">
                               <Calendar className="h-4 w-4" />
                               <span>{milestone.year}</span>

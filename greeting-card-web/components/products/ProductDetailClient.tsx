@@ -85,7 +85,7 @@ export function ProductDetailClient({
           {/* Left: Image Gallery */}
           <div className="space-y-4">
             <Card className="overflow-hidden">
-              <CardContent className="p-4 lg:p-6">
+              <CardContent className="px-4 lg:px-6">
                 <ProductImageGallery
                   images={product.images}
                   productName={product.name}
@@ -101,7 +101,7 @@ export function ProductDetailClient({
           {/* Right: Product Info */}
           <div className="space-y-6">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="px-6">
                 <ProductInfoClient product={product} />
               </CardContent>
             </Card>
@@ -121,7 +121,7 @@ export function ProductDetailClient({
 
         {/* Product Details Tabs */}
         <Card className="mb-8">
-          <CardContent className="p-6 lg:p-8">
+          <CardContent className="px-6 lg:px-8">
             <ProductDetailsTabs
               product={product}
               reviews={reviews}
@@ -143,7 +143,7 @@ export function ProductDetailClient({
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <Card>
-            <CardContent className="p-6 lg:p-8">
+            <CardContent className="px-6 lg:px-8">
               <RelatedProducts products={relatedProducts} currentProductId={product.id} />
             </CardContent>
           </Card>

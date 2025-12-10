@@ -165,7 +165,7 @@ export function ProductDetailsTabs({
         {/* Shipping Features */}
         <div className="grid gap-6 sm:grid-cols-3">
           <Card className="border-2 border-dashed">
-            <CardContent className="p-4 text-center">
+            <CardContent className="px-4 text-center">
               <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
                 <TruckIcon className="text-primary h-6 w-6" />
               </div>
@@ -174,7 +174,7 @@ export function ProductDetailsTabs({
             </CardContent>
           </Card>
           <Card className="border-2 border-dashed">
-            <CardContent className="p-4 text-center">
+            <CardContent className="px-4 text-center">
               <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
                 <Package className="text-primary h-6 w-6" />
               </div>
@@ -183,7 +183,7 @@ export function ProductDetailsTabs({
             </CardContent>
           </Card>
           <Card className="border-2 border-dashed">
-            <CardContent className="p-4 text-center">
+            <CardContent className="px-4 text-center">
               <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
                 <ShieldCheck className="text-primary h-6 w-6" />
               </div>

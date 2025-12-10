@@ -46,7 +46,7 @@ export type CartPromotionPreview = {
     subtotal: number;
     promotionId: number | null;
     promotionName: string | null;
-    promotionType: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y' | null;
+    promotionType: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y' | 'DISCOUNT' | null;
     freeQuantity: number;
     discountAmount: number;
   }>;
@@ -60,6 +60,19 @@ export type CartPromotionPreview = {
     promotionName: string;
     promotionType: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y';
   }>;
+  // ORDER scope promotion
+  appliedOrderPromotion: {
+    id: number;
+    name: string;
+    description: string | null;
+    type: 'DISCOUNT' | 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y';
+    scope: 'ORDER' | 'PRODUCT' | 'CATEGORY';
+    discountType: 'PERCENTAGE' | 'FIXED' | null;
+    discountValue: number | null;
+    minPurchase: number | null;
+    maxDiscount: number | null;
+  } | null;
+  orderDiscountAmount: number;
 };
 
 export async function getCartPromotionPreview(): Promise<ServiceResponse<CartPromotionPreview>> {

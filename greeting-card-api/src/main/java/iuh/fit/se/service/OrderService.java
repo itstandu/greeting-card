@@ -229,8 +229,8 @@ public class OrderService {
       // Note: DISCOUNT type has been moved to Coupon
       for (Promotion promotion : productPromotions) {
         if (promotion.getType() == PromotionType.BOGO) {
-          // Buy 1 Get 1 Free
-          int freeQuantity = cartItem.getQuantity() / 2; // For every 2, get 1 free
+          // Buy 1 Get 1 Free - mua bao nhiêu tặng bấy nhiêu
+          int freeQuantity = cartItem.getQuantity(); // Mua 1 tặng 1, mua 2 tặng 2, ...
           if (freeQuantity > 0) {
             itemPromotion = promotion;
             itemPromotionQuantityFree = freeQuantity;
@@ -273,11 +273,22 @@ public class OrderService {
       orderItem.setPromotionDiscountAmount(itemPromotionDiscount);
       orderItem.setPromotionQuantityFree(itemPromotionQuantityFree);
 
+      // Validate stock including free items
+      int totalQuantityNeeded = cartItem.getQuantity() + itemPromotionQuantityFree;
+      if (product.getStock() < totalQuantityNeeded) {
+        throw new IllegalArgumentException(
+            "Sản phẩm '"
+                + product.getName()
+                + "' không đủ số lượng (cần "
+                + totalQuantityNeeded
+                + " bao gồm sản phẩm tặng). Còn lại: "
+                + product.getStock());
+      }
+
       orderItemRepository.save(orderItem);
 
-      // Update product stock (subtract actual quantity, not including free items)
-      int stockToDeduct = cartItem.getQuantity() - itemPromotionQuantityFree;
-      product.setStock(product.getStock() - stockToDeduct);
+      // Update product stock (subtract quantity + free items - cả sản phẩm mua và tặng)
+      product.setStock(product.getStock() - totalQuantityNeeded);
       productRepository.save(product);
     }
 

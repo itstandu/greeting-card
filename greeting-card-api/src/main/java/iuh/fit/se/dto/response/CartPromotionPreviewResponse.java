@@ -22,6 +22,10 @@ public class CartPromotionPreviewResponse {
   private List<ItemPromotion> itemPromotions;
   private List<FreeItem> freeItems;
 
+  // ORDER scope promotion info
+  private PromotionResponse appliedOrderPromotion;
+  private BigDecimal orderDiscountAmount;
+
   @Data
   @Builder
   @NoArgsConstructor

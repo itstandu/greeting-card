@@ -1,6 +1,7 @@
-import type { DiscountType } from './coupon';
-
 export type PromotionType = 'DISCOUNT' | 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y';
+
+// Promotion uses FIXED, Coupon uses FIXED_AMOUNT
+export type PromotionDiscountType = 'PERCENTAGE' | 'FIXED';
 
 export type PromotionScope = 'ORDER' | 'PRODUCT' | 'CATEGORY';
 
@@ -10,7 +11,7 @@ export type Promotion = {
   description?: string;
   type: PromotionType;
   scope: PromotionScope;
-  discountType?: DiscountType;
+  discountType?: PromotionDiscountType;
   discountValue?: number;
   minPurchase?: number;
   maxDiscount?: number;
@@ -34,7 +35,7 @@ export type CreatePromotionRequest = {
   description?: string;
   type: PromotionType;
   scope: PromotionScope;
-  discountType?: DiscountType;
+  discountType?: PromotionDiscountType;
   discountValue?: number;
   minPurchase?: number;
   maxDiscount?: number;

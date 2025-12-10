@@ -23,7 +23,6 @@ import iuh.fit.se.entity.CartItem;
 import iuh.fit.se.entity.Category;
 import iuh.fit.se.entity.Product;
 import iuh.fit.se.entity.Promotion;
-import iuh.fit.se.entity.User;
 import iuh.fit.se.entity.enumeration.DiscountType;
 import iuh.fit.se.entity.enumeration.PromotionScope;
 import iuh.fit.se.entity.enumeration.PromotionType;
@@ -263,6 +262,14 @@ public class PromotionService {
       throw new AppException("Ngày kết thúc phải sau ngày bắt đầu", ErrorCode.VALIDATION_ERROR);
     }
 
+    // Validate: ORDER scope chỉ cho phép DISCOUNT type
+    if (promotion.getScope() == PromotionScope.ORDER
+        && promotion.getType() != PromotionType.DISCOUNT) {
+      throw new AppException(
+          "Phạm vi 'Toàn bộ đơn hàng' chỉ hỗ trợ loại khuyến mãi 'Giảm giá'",
+          ErrorCode.VALIDATION_ERROR);
+    }
+
     // Validate configuration
     if (!promotion.isValidConfiguration()) {
       throw new AppException("Cấu hình khuyến mãi không hợp lệ", ErrorCode.VALIDATION_ERROR);
@@ -290,10 +297,9 @@ public class PromotionService {
 
   @Transactional(readOnly = true)
   public CartPromotionPreviewResponse previewCartPromotions(Long userId) {
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
+    userRepository
+        .findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
 
     Cart cart =
         cartRepository
@@ -318,17 +324,51 @@ public class PromotionService {
     List<CartPromotionPreviewResponse.ItemPromotion> itemPromotions = new ArrayList<>();
     List<CartPromotionPreviewResponse.FreeItem> freeItems = new ArrayList<>();
 
+    // Tính tổng tiền gốc trước
     for (CartItem cartItem : cart.getItems()) {
       Product product = cartItem.getProduct();
       BigDecimal itemSubtotal =
           product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
       originalTotal = originalTotal.add(itemSubtotal);
+    }
 
-      // Find promotions for this product
+    // Lấy khuyến mãi ORDER scope (áp dụng cho toàn bộ đơn hàng)
+    List<Promotion> orderPromotions = promotionRepository.findActivePromotionsForOrder(now);
+    Promotion appliedOrderPromotion = null;
+    BigDecimal orderDiscountAmount = BigDecimal.ZERO;
+
+    // Áp dụng khuyến mãi ORDER scope (chỉ áp dụng 1 khuyến mãi tốt nhất)
+    for (Promotion promotion : orderPromotions) {
+      if (promotion.getType() == PromotionType.DISCOUNT) {
+        // Kiểm tra điều kiện minPurchase
+        if (promotion.getMinPurchase() != null
+            && originalTotal.compareTo(promotion.getMinPurchase()) < 0) {
+          continue;
+        }
+
+        BigDecimal discount = calculateDiscountAmount(promotion, originalTotal);
+        if (discount.compareTo(orderDiscountAmount) > 0) {
+          appliedOrderPromotion = promotion;
+          orderDiscountAmount = discount;
+        }
+      }
+    }
+
+    if (appliedOrderPromotion != null) {
+      totalPromotionDiscount = totalPromotionDiscount.add(orderDiscountAmount);
+    }
+
+    // Xử lý từng item trong giỏ hàng
+    for (CartItem cartItem : cart.getItems()) {
+      Product product = cartItem.getProduct();
+      BigDecimal itemSubtotal =
+          product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+
+      // Find promotions for this product (PRODUCT scope)
       List<Promotion> productPromotions =
-          promotionRepository.findActivePromotionsForProduct(product.getId(), now);
+          new ArrayList<>(promotionRepository.findActivePromotionsForProduct(product.getId(), now));
 
-      // Also check category promotions
+      // Also check category promotions (CATEGORY scope)
       if (product.getCategory() != null) {
         List<Promotion> categoryPromotions =
             promotionRepository.findActivePromotionsForCategory(product.getCategory().getId(), now);
@@ -339,12 +379,11 @@ public class PromotionService {
       int freeQuantity = 0;
       BigDecimal discountAmount = BigDecimal.ZERO;
 
-      // Apply first valid promotion
+      // Apply first valid promotion (ưu tiên BOGO/BUY_X_GET_Y/BUY_X_PAY_Y trước, sau đó DISCOUNT)
       for (Promotion promotion : productPromotions) {
         if (promotion.getType() == PromotionType.BOGO) {
-          // Buy 1 Get 1 Free - for every 2 items, 1 is free
-          // Example: buy 2 -> 1 free, buy 4 -> 2 free
-          int qty = cartItem.getQuantity() / 2;
+          // Buy 1 Get 1 Free - mua bao nhiêu tặng bấy nhiêu
+          int qty = cartItem.getQuantity(); // Mua 1 tặng 1, mua 2 tặng 2, ...
           if (qty > 0) {
             appliedPromotion = promotion;
             freeQuantity = qty;
@@ -373,6 +412,20 @@ public class PromotionService {
             appliedPromotion = promotion;
             freeQuantity = qty;
             discountAmount = product.getPrice().multiply(BigDecimal.valueOf(freeQuantity));
+            break;
+          }
+        } else if (promotion.getType() == PromotionType.DISCOUNT) {
+          // DISCOUNT type cho PRODUCT/CATEGORY scope
+          // Kiểm tra điều kiện minPurchase
+          if (promotion.getMinPurchase() != null
+              && itemSubtotal.compareTo(promotion.getMinPurchase()) < 0) {
+            continue;
+          }
+
+          BigDecimal discount = calculateDiscountAmount(promotion, itemSubtotal);
+          if (discount.compareTo(BigDecimal.ZERO) > 0) {
+            appliedPromotion = promotion;
+            discountAmount = discount;
             break;
           }
         }
@@ -406,8 +459,7 @@ public class PromotionService {
               .build();
       itemPromotions.add(itemPromo);
 
-      // Add to free items list if has promotion (BOGO, BUY_X_GET_Y)
-      // Only BUY_X_PAY_Y adds to discount, others are free items added to order
+      // Add to free items list if has promotion (BOGO, BUY_X_GET_Y, BUY_X_PAY_Y)
       if (appliedPromotion != null && freeQuantity > 0) {
         CartPromotionPreviewResponse.FreeItem freeItem =
             CartPromotionPreviewResponse.FreeItem.builder()
@@ -427,6 +479,13 @@ public class PromotionService {
         if (appliedPromotion.getType() == PromotionType.BUY_X_PAY_Y) {
           totalPromotionDiscount = totalPromotionDiscount.add(discountAmount);
         }
+      }
+
+      // Add DISCOUNT type discount to total
+      if (appliedPromotion != null
+          && appliedPromotion.getType() == PromotionType.DISCOUNT
+          && discountAmount.compareTo(BigDecimal.ZERO) > 0) {
+        totalPromotionDiscount = totalPromotionDiscount.add(discountAmount);
       }
     }
 
@@ -451,11 +510,44 @@ public class PromotionService {
         .finalTotal(finalTotal)
         .itemPromotions(itemPromotions)
         .freeItems(freeItems)
+        .appliedOrderPromotion(
+            appliedOrderPromotion != null ? promotionMapper.toResponse(appliedOrderPromotion) : null)
+        .orderDiscountAmount(orderDiscountAmount)
         .build();
+  }
+
+  // Helper method to calculate discount amount based on promotion type
+  private BigDecimal calculateDiscountAmount(Promotion promotion, BigDecimal amount) {
+    BigDecimal discount;
+    if (promotion.getDiscountType() == DiscountType.PERCENTAGE) {
+      discount =
+          amount.multiply(promotion.getDiscountValue()).divide(BigDecimal.valueOf(100));
+      // Apply max discount cap if set
+      if (promotion.getMaxDiscount() != null
+          && discount.compareTo(promotion.getMaxDiscount()) > 0) {
+        discount = promotion.getMaxDiscount();
+      }
+    } else {
+      // FIXED amount
+      discount = promotion.getDiscountValue();
+      // Don't discount more than the amount
+      if (discount.compareTo(amount) > 0) {
+        discount = amount;
+      }
+    }
+    return discount;
   }
 
   // Helper method to validate promotion configuration
   private void validatePromotionConfiguration(CreatePromotionRequest request) {
+    // Validate: ORDER scope chỉ cho phép DISCOUNT type
+    if (request.getScope() == PromotionScope.ORDER
+        && request.getType() != PromotionType.DISCOUNT) {
+      throw new AppException(
+          "Phạm vi 'Toàn bộ đơn hàng' chỉ hỗ trợ loại khuyến mãi 'Giảm giá'",
+          ErrorCode.VALIDATION_ERROR);
+    }
+
     if (request.getType() == PromotionType.DISCOUNT) {
       if (request.getDiscountType() == null || request.getDiscountValue() == null) {
         throw new AppException(

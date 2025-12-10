@@ -39,7 +39,7 @@ interface CheckoutOrderSummaryProps {
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
-const getPromotionLabel = (type: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y') => {
+const getPromotionLabel = (type: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y' | 'DISCOUNT') => {
   switch (type) {
     case 'BOGO':
       return 'Mua 1 tặng 1';
@@ -47,6 +47,8 @@ const getPromotionLabel = (type: 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y') => {
       return 'Mua X tặng Y';
     case 'BUY_X_PAY_Y':
       return 'Mua X trả Y';
+    case 'DISCOUNT':
+      return 'Giảm giá';
   }
 };
 
@@ -66,11 +68,17 @@ export function CheckoutOrderSummary({
 }: CheckoutOrderSummaryProps) {
   const [localCouponCode, setLocalCouponCode] = useState(couponCode);
 
-  // Only BUY_X_PAY_Y gives discount, BOGO and BUY_X_GET_Y are free items (no discount from total)
-  const promotionDiscount =
+  // Calculate item-level promotion discount (BUY_X_PAY_Y and DISCOUNT types)
+  const itemPromotionDiscount =
     promotionPreview?.itemPromotions
-      .filter(item => item.promotionType === 'BUY_X_PAY_Y')
+      .filter(item => item.promotionType === 'BUY_X_PAY_Y' || item.promotionType === 'DISCOUNT')
       .reduce((sum, item) => sum + item.discountAmount, 0) ?? 0;
+
+  // ORDER scope promotion discount
+  const orderPromotionDiscount = promotionPreview?.orderDiscountAmount ?? 0;
+
+  // Total promotion discount (item-level + order-level)
+  const promotionDiscount = itemPromotionDiscount + orderPromotionDiscount;
 
   // Shipping fee from backend
   const shippingFee = promotionPreview?.shippingFee ?? 30000;
@@ -115,9 +123,10 @@ export function CheckoutOrderSummary({
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium">{formatCurrency(item.subtotal)}</p>
-                {item.promotionType === 'BUY_X_PAY_Y' && item.discountAmount > 0 && (
-                  <p className="text-xs text-green-600">-{formatCurrency(item.discountAmount)}</p>
-                )}
+                {(item.promotionType === 'BUY_X_PAY_Y' || item.promotionType === 'DISCOUNT') &&
+                  item.discountAmount > 0 && (
+                    <p className="text-xs text-green-600">-{formatCurrency(item.discountAmount)}</p>
+                  )}
               </div>
             </div>
           )) ??
@@ -242,13 +251,22 @@ export function CheckoutOrderSummary({
             <span className="text-muted-foreground">Tạm tính</span>
             <span>{formatCurrency(cart.total)}</span>
           </div>
-          {promotionDiscount > 0 && (
+          {itemPromotionDiscount > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground flex items-center gap-1">
                 <Gift className="h-3 w-3" />
-                Khuyến mãi
+                Khuyến mãi sản phẩm
               </span>
-              <span className="text-green-600">-{formatCurrency(promotionDiscount)}</span>
+              <span className="text-green-600">-{formatCurrency(itemPromotionDiscount)}</span>
+            </div>
+          )}
+          {orderPromotionDiscount > 0 && promotionPreview?.appliedOrderPromotion && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground flex items-center gap-1">
+                <Tag className="h-3 w-3" />
+                {promotionPreview.appliedOrderPromotion.name}
+              </span>
+              <span className="text-green-600">-{formatCurrency(orderPromotionDiscount)}</span>
             </div>
           )}
           {couponDiscount > 0 && (

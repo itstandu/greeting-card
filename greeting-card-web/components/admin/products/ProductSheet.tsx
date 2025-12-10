@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, type Resolver } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,6 +50,8 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [uploadedImages, setUploadedImages] = useState<ProductImageRequest[]>([]); // Track images uploaded but not saved
+  const savedSuccessfullyRef = useRef(false); // Use ref to avoid stale closure issues
+  const wasOpenRef = useRef(false); // Track if sheet was previously open
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as Resolver<ProductFormValues>,
@@ -126,8 +128,11 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
   }, [watchedImages, product]);
 
   // Cleanup: Delete uploaded images when sheet closes without saving
+  // Only run when sheet transitions from open -> closed (not on initial mount)
   useEffect(() => {
-    if (!open && uploadedImages.length > 0) {
+    // Only cleanup if sheet was previously open and is now closing
+    // AND save was not successful
+    if (wasOpenRef.current && !open && uploadedImages.length > 0 && !savedSuccessfullyRef.current) {
       const cleanup = async () => {
         for (const image of uploadedImages) {
           if (image.imageUrl.includes('cloudinary.com')) {
@@ -141,6 +146,14 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
         setUploadedImages([]);
       };
       cleanup();
+    }
+
+    // Update wasOpenRef after checking
+    wasOpenRef.current = open;
+
+    // Reset savedSuccessfullyRef when sheet closes
+    if (!open) {
+      savedSuccessfullyRef.current = false;
     }
   }, [open, uploadedImages]);
 
@@ -168,7 +181,9 @@ export function ProductSheet({ open, product, onOpenChange, onSaved }: ProductSh
         toast.success('Tạo sản phẩm thành công');
       }
 
-      // Clear uploaded images after successful save
+      // Mark as saved successfully BEFORE closing sheet
+      // This prevents the cleanup useEffect from deleting the uploaded images
+      savedSuccessfullyRef.current = true;
       setUploadedImages([]);
       onSaved();
       onOpenChange(false);

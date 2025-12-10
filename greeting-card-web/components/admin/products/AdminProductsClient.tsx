@@ -37,8 +37,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useDebounce } from '@/hooks/use-debounce';
+import * as categoryService from '@/services/category.service';
 import * as productService from '@/services/product.service';
-import type { PaginationResponse, Product, ProductFilters } from '@/types';
+import type { Category, PaginationResponse, Product, ProductFilters } from '@/types';
 import { ExternalLink, Package, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -59,6 +60,19 @@ export function AdminProductsClient() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await categoryService.getAllCategories();
+        setCategories(response.data);
+      } catch (error: unknown) {
+        console.error('Failed to load categories:', error);
+      }
+    };
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -116,6 +130,17 @@ export function AdminProductsClient() {
   // Filter configuration
   const filterFields: FilterField[] = [
     {
+      key: 'categoryId',
+      label: 'Danh mục',
+      type: 'select',
+      placeholder: 'Danh mục',
+      value: filters.categoryId?.toString() || 'ALL',
+      options: [
+        { value: 'ALL', label: 'Tất cả danh mục' },
+        ...categories.map(cat => ({ value: cat.id.toString(), label: cat.name })),
+      ],
+    },
+    {
       key: 'isActive',
       label: 'Trạng thái',
       type: 'select',
@@ -131,6 +156,15 @@ export function AdminProductsClient() {
 
   const activeFilters: ActiveFilter[] = useMemo(() => {
     const result: ActiveFilter[] = [];
+    if (filters.categoryId !== undefined) {
+      const category = categories.find(c => c.id === filters.categoryId);
+      result.push({
+        key: 'categoryId',
+        label: 'Danh mục',
+        value: filters.categoryId.toString(),
+        displayValue: category?.name || filters.categoryId.toString(),
+      });
+    }
     if (filters.isActive !== undefined) {
       result.push({
         key: 'isActive',
@@ -140,14 +174,23 @@ export function AdminProductsClient() {
       });
     }
     return result;
-  }, [filters]);
+  }, [filters, categories]);
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      page: 1,
-      [key]: value === 'ALL' || value === '' ? undefined : value === 'true',
-    }));
+    setFilters(prev => {
+      if (key === 'categoryId') {
+        return {
+          ...prev,
+          page: 1,
+          categoryId: value === 'ALL' || value === '' ? undefined : parseInt(value, 10),
+        };
+      }
+      return {
+        ...prev,
+        page: 1,
+        [key]: value === 'ALL' || value === '' ? undefined : value === 'true',
+      };
+    });
   };
 
   const handleClearFilters = () => {

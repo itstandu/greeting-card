@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,6 +64,8 @@ export function CheckoutOrderSummary({
   onValidateCoupon,
   onSubmitOrder,
 }: CheckoutOrderSummaryProps) {
+  const [localCouponCode, setLocalCouponCode] = useState(couponCode);
+
   // Only BUY_X_PAY_Y gives discount, BOGO and BUY_X_GET_Y are free items (no discount from total)
   const promotionDiscount =
     promotionPreview?.itemPromotions
@@ -194,11 +197,14 @@ export function CheckoutOrderSummary({
           <div className="flex gap-2">
             <Input
               placeholder="Nhập mã giảm giá"
-              value={couponCode}
+              value={localCouponCode}
               onChange={e => {
-                onCouponCodeChange(e.target.value.toUpperCase());
+                const value = e.target.value;
+                setLocalCouponCode(value);
+                onCouponCodeChange(value.toUpperCase());
               }}
               disabled={couponDiscount > 0}
+              className="uppercase"
             />
             <Button
               variant="outline"

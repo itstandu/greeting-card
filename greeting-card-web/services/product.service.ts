@@ -25,6 +25,16 @@ export const getProducts = async (
   if (filters?.size) params.append('size', filters.size.toString());
   if (filters?.search) params.append('keyword', filters.search);
   if (filters?.categoryId) params.append('categoryId', filters.categoryId.toString());
+  if (filters?.categoryIds && filters.categoryIds.length > 0) {
+    filters.categoryIds.forEach(id => params.append('categoryIds', id.toString()));
+  }
+  if (filters?.minPrice !== undefined && filters.minPrice > 0) {
+    params.append('minPrice', filters.minPrice.toString());
+  }
+  if (filters?.maxPrice !== undefined && filters.maxPrice < 1000000) {
+    params.append('maxPrice', filters.maxPrice.toString());
+  }
+  if (filters?.inStock !== undefined) params.append('inStock', filters.inStock.toString());
   if (filters?.isActive !== undefined) params.append('isActive', filters.isActive.toString());
   if (filters?.isFeatured !== undefined) params.append('isFeatured', filters.isFeatured.toString());
   if (filters?.sortBy) params.append('sortBy', filters.sortBy);

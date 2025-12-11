@@ -48,7 +48,7 @@ export function StockTransactionList() {
   const pageSize = 10;
 
   const paginationSummary = useMemo(() => {
-    const start = (currentPage - 1) * pageSize + 1;
+    const start = totalTransactions > 0 ? (currentPage - 1) * pageSize + 1 : 0;
     const end = Math.min(currentPage * pageSize, totalTransactions);
     return totalTransactions > 0 ? `${start} - ${end} / ${totalTransactions}` : 'Không có dữ liệu';
   }, [currentPage, totalTransactions, pageSize]);

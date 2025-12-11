@@ -169,9 +169,11 @@ export function AdminNotificationList() {
   };
 
   const paginationSummary = useMemo(() => {
-    const start = (pagination.page - 1) * pagination.size + 1;
+    const start = pagination.total > 0 ? (pagination.page - 1) * pagination.size + 1 : 0;
     const end = Math.min(pagination.page * pagination.size, pagination.total);
-    return `Hiển thị ${start}-${end} trong tổng số ${pagination.total} thông báo`;
+    return pagination.total > 0
+      ? `Hiển thị ${start}-${end} trong tổng số ${pagination.total} thông báo`
+      : 'Không có thông báo nào';
   }, [pagination]);
 
   return (

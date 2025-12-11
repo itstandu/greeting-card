@@ -42,7 +42,7 @@ export function CartList() {
   const pageSize = 10;
 
   const paginationSummary = useMemo(() => {
-    const start = (currentPage - 1) * pageSize + 1;
+    const start = totalCarts > 0 ? (currentPage - 1) * pageSize + 1 : 0;
     const end = Math.min(currentPage * pageSize, totalCarts);
     return totalCarts > 0 ? `${start} - ${end} / ${totalCarts}` : 'Không có dữ liệu';
   }, [currentPage, totalCarts, pageSize]);

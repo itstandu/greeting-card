@@ -154,6 +154,9 @@ export function ProductsPageClient({
   const [currentPage, setCurrentPage] = useState(urlState.page);
   const [itemsPerPage, setItemsPerPage] = useState(urlState.size);
 
+  // Flag to skip debounced URL updates when clearing all filters
+  const skipDebouncedUrlUpdate = React.useRef(false);
+
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Debounce price range to avoid too many API calls while dragging slider
@@ -391,6 +394,10 @@ export function ProductsPageClient({
 
   // Debounce URL updates for price range and categories
   React.useEffect(() => {
+    // Skip if we just cleared all filters (URL already updated)
+    if (skipDebouncedUrlUpdate.current) {
+      return;
+    }
     const urlState = getInitialStateFromUrl();
     // Only update URL if debounced values differ from URL state
     if (
@@ -406,6 +413,10 @@ export function ProductsPageClient({
   }, [debouncedPriceRange, updateUrl, getInitialStateFromUrl]);
 
   React.useEffect(() => {
+    // Skip if we just cleared all filters (URL already updated)
+    if (skipDebouncedUrlUpdate.current) {
+      return;
+    }
     const urlState = getInitialStateFromUrl();
     const urlCategoriesKey = [...urlState.categories].sort((a, b) => a - b).join(',');
     const debouncedCategoriesKey = [...debouncedSelectedCategories].sort((a, b) => a - b).join(',');
@@ -427,21 +438,28 @@ export function ProductsPageClient({
       try {
         // Parse selectedCategories from key
         const selectedCategoriesArray = selectedCategoriesKey
-          ? selectedCategoriesKey.split(',').map(Number)
+          ? selectedCategoriesKey.split(',').map(Number).filter(Boolean)
           : [];
 
         // Parse priceRange from key
         const [priceMin, priceMax] = priceRangeKey.split(',').map(Number);
 
         const sortParams = getSortParams(sortBy);
-        const categoryId =
-          selectedCategoriesArray.length === 1 ? selectedCategoriesArray[0] : undefined;
+
+        // Build filters - all filtering is now done server-side
         const filters: ProductFiltersType = {
           page: currentPage,
           size: itemsPerPage,
           isActive: true,
           search: debouncedSearch || undefined,
-          categoryId,
+          // Use categoryIds for multiple categories, categoryId for single
+          categoryId: selectedCategoriesArray.length === 1 ? selectedCategoriesArray[0] : undefined,
+          categoryIds: selectedCategoriesArray.length > 1 ? selectedCategoriesArray : undefined,
+          // Price range filter (only send if not default values)
+          minPrice: priceMin > 0 ? priceMin : undefined,
+          maxPrice: priceMax < 1000000 ? priceMax : undefined,
+          // In stock filter
+          inStock: showInStockOnly || undefined,
           isFeatured: showFeaturedOnly || undefined,
           ...sortParams,
         };
@@ -450,23 +468,8 @@ export function ProductsPageClient({
 
         if (cancelled) return;
 
-        let fetchedProducts = productsResponse.data?.products || [];
-
-        // Apply client-side filters that API doesn't support
-        // Price range filter
-        fetchedProducts = fetchedProducts.filter(p => p.price >= priceMin && p.price <= priceMax);
-
-        // Multiple categories filter (API only supports single categoryId)
-        if (selectedCategoriesArray.length > 1) {
-          fetchedProducts = fetchedProducts.filter(p =>
-            selectedCategoriesArray.includes(p.category?.id),
-          );
-        }
-
-        // In stock filter
-        if (showInStockOnly) {
-          fetchedProducts = fetchedProducts.filter(p => p.stock > 0);
-        }
+        // All filtering is now done server-side, no client-side filtering needed
+        const fetchedProducts = productsResponse.data?.products || [];
 
         setProducts(fetchedProducts);
         if (productsResponse.data?.pagination) {
@@ -624,7 +627,7 @@ export function ProductsPageClient({
   ]);
 
   const totalPages = pagination.totalPages;
-  const startIndex = (pagination.page - 1) * pagination.size + 1;
+  const startIndex = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.size + 1;
   const endIndex = Math.min(pagination.page * pagination.size, pagination.total);
 
   // Active categories
@@ -653,7 +656,10 @@ export function ProductsPageClient({
   );
 
   const handleClearFilters = useCallback(() => {
-    // Update all state values
+    // Set flag to skip debounced URL updates since we're updating URL directly
+    skipDebouncedUrlUpdate.current = true;
+
+    // Update all state values using React 18 automatic batching
     setSelectedCategories([]);
     setPriceRange([0, 1000000]);
     setShowFeaturedOnly(false);
@@ -670,6 +676,11 @@ export function ProductsPageClient({
       search: '',
       page: 1,
     });
+
+    // Reset the flag after debounce timers would have fired (500ms is the longest debounce)
+    setTimeout(() => {
+      skipDebouncedUrlUpdate.current = false;
+    }, 600);
   }, [updateUrl]);
 
   const breadcrumbs = [{ label: 'Tất cả sản phẩm' }];
@@ -914,7 +925,11 @@ export function ProductsPageClient({
             </div>
 
             {/* Active Filters Tags */}
-            {(selectedCategories.length > 0 || showFeaturedOnly || showInStockOnly) && (
+            {(selectedCategories.length > 0 ||
+              showFeaturedOnly ||
+              showInStockOnly ||
+              priceRange[0] > 0 ||
+              priceRange[1] < 1000000) && (
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <span className="text-muted-foreground text-sm">Đang lọc:</span>
                 {selectedCategories.map(catId => {
@@ -931,6 +946,16 @@ export function ProductsPageClient({
                     </Badge>
                   ) : null;
                 })}
+                {(priceRange[0] > 0 || priceRange[1] < 1000000) && (
+                  <Badge
+                    variant="secondary"
+                    className="cursor-pointer"
+                    onClick={() => updatePriceRange([0, 1000000])}
+                  >
+                    {formatCurrency(priceRange[0])} - {formatCurrency(priceRange[1])}
+                    <X className="ml-1 h-3 w-3" />
+                  </Badge>
+                )}
                 {showFeaturedOnly && (
                   <Badge
                     variant="secondary"

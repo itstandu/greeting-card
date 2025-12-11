@@ -47,7 +47,7 @@ export function PromotionList() {
   const pageSize = 10;
 
   const paginationSummary = useMemo(() => {
-    const start = (currentPage - 1) * pageSize + 1;
+    const start = totalPromotions > 0 ? (currentPage - 1) * pageSize + 1 : 0;
     const end = Math.min(currentPage * pageSize, totalPromotions);
     return totalPromotions > 0 ? `${start} - ${end} / ${totalPromotions}` : 'Không có dữ liệu';
   }, [currentPage, totalPromotions, pageSize]);

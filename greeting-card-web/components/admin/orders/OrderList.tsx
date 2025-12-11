@@ -69,7 +69,7 @@ export function OrderList() {
   const pageSize = 10;
 
   const paginationSummary = useMemo(() => {
-    const start = (currentPage - 1) * pageSize + 1;
+    const start = totalOrders > 0 ? (currentPage - 1) * pageSize + 1 : 0;
     const end = Math.min(currentPage * pageSize, totalOrders);
     return totalOrders > 0 ? `${start} - ${end} / ${totalOrders}` : 'Không có dữ liệu';
   }, [currentPage, totalOrders, pageSize]);

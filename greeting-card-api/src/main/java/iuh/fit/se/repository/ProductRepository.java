@@ -54,6 +54,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             AND (:categoryId IS NULL OR p.category_id = :categoryId)
             AND (:isActive IS NULL OR p.is_active = :isActive)
             AND (:isFeatured IS NULL OR p.is_featured = :isFeatured)
+            AND (:minPrice IS NULL OR p.price >= :minPrice)
+            AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+            AND (:inStock IS NULL OR (:inStock = true AND p.stock > 0) OR (:inStock = false))
             AND (:keywordPattern IS NULL
                 OR LOWER(p.name) LIKE LOWER(:keywordPattern)
                 OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(:keywordPattern))
@@ -69,6 +72,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             AND (:categoryId IS NULL OR p.category_id = :categoryId)
             AND (:isActive IS NULL OR p.is_active = :isActive)
             AND (:isFeatured IS NULL OR p.is_featured = :isFeatured)
+            AND (:minPrice IS NULL OR p.price >= :minPrice)
+            AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+            AND (:inStock IS NULL OR (:inStock = true AND p.stock > 0) OR (:inStock = false))
             AND (:keywordPattern IS NULL
                 OR LOWER(p.name) LIKE LOWER(:keywordPattern)
                 OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(:keywordPattern))
@@ -80,6 +86,57 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
       @Param("categoryId") Long categoryId,
       @Param("isActive") Boolean isActive,
       @Param("isFeatured") Boolean isFeatured,
+      @Param("minPrice") Double minPrice,
+      @Param("maxPrice") Double maxPrice,
+      @Param("inStock") Boolean inStock,
+      @Param("keywordPattern") String keywordPattern,
+      Pageable pageable);
+
+  // Search products with multiple category IDs
+  @Query(
+      value =
+          """
+            SELECT DISTINCT p.* FROM products p
+            LEFT JOIN categories c ON c.id = p.category_id AND c.deleted_at IS NULL
+            WHERE p.deleted_at IS NULL
+            AND p.category_id IN (:categoryIds)
+            AND (:isActive IS NULL OR p.is_active = :isActive)
+            AND (:isFeatured IS NULL OR p.is_featured = :isFeatured)
+            AND (:minPrice IS NULL OR p.price >= :minPrice)
+            AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+            AND (:inStock IS NULL OR (:inStock = true AND p.stock > 0) OR (:inStock = false))
+            AND (:keywordPattern IS NULL
+                OR LOWER(p.name) LIKE LOWER(:keywordPattern)
+                OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(:keywordPattern))
+                OR LOWER(p.sku) LIKE LOWER(:keywordPattern)
+            )
+            ORDER BY p.created_at DESC
+            """,
+      countQuery =
+          """
+            SELECT COUNT(DISTINCT p.id) FROM products p
+            LEFT JOIN categories c ON c.id = p.category_id AND c.deleted_at IS NULL
+            WHERE p.deleted_at IS NULL
+            AND p.category_id IN (:categoryIds)
+            AND (:isActive IS NULL OR p.is_active = :isActive)
+            AND (:isFeatured IS NULL OR p.is_featured = :isFeatured)
+            AND (:minPrice IS NULL OR p.price >= :minPrice)
+            AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+            AND (:inStock IS NULL OR (:inStock = true AND p.stock > 0) OR (:inStock = false))
+            AND (:keywordPattern IS NULL
+                OR LOWER(p.name) LIKE LOWER(:keywordPattern)
+                OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(:keywordPattern))
+                OR LOWER(p.sku) LIKE LOWER(:keywordPattern)
+            )
+            """,
+      nativeQuery = true)
+  Page<Product> searchProductsByCategories(
+      @Param("categoryIds") List<Long> categoryIds,
+      @Param("isActive") Boolean isActive,
+      @Param("isFeatured") Boolean isFeatured,
+      @Param("minPrice") Double minPrice,
+      @Param("maxPrice") Double maxPrice,
+      @Param("inStock") Boolean inStock,
       @Param("keywordPattern") String keywordPattern,
       Pageable pageable);
 

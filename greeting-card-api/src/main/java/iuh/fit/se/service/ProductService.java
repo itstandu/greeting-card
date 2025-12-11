@@ -50,8 +50,12 @@ public class ProductService {
   @Transactional(readOnly = true)
   public Page<ProductResponse> getProducts(
       Long categoryId,
+      List<Long> categoryIds,
       Boolean isActive,
       Boolean isFeatured,
+      Double minPrice,
+      Double maxPrice,
+      Boolean inStock,
       String keyword,
       Pageable pageable,
       Long userId) {
@@ -71,9 +75,17 @@ public class ProductService {
       }
     }
 
-    Page<Product> productPage =
-        productRepository.searchProducts(
-            categoryId, isActive, isFeatured, keywordPattern, pageableWithoutSort);
+    Page<Product> productPage;
+    // Use different query methods based on whether we have multiple categories
+    if (categoryIds != null && !categoryIds.isEmpty()) {
+      // Multiple categories - use IN query
+      productPage = productRepository.searchProductsByCategories(
+          categoryIds, isActive, isFeatured, minPrice, maxPrice, inStock, keywordPattern, pageableWithoutSort);
+    } else {
+      // Single category or no category filter
+      productPage = productRepository.searchProducts(
+          categoryId, isActive, isFeatured, minPrice, maxPrice, inStock, keywordPattern, pageableWithoutSort);
+    }
 
     // Query wishlist/cart product IDs once for the user (not per product!)
     Set<Long> wishlistProductIds = Collections.emptySet();
@@ -108,7 +120,7 @@ public class ProductService {
   @Transactional(readOnly = true)
   public Page<ProductResponse> getProducts(
       Long categoryId, Boolean isActive, Boolean isFeatured, String keyword, Pageable pageable) {
-    return getProducts(categoryId, isActive, isFeatured, keyword, pageable, null);
+    return getProducts(categoryId, null, isActive, isFeatured, null, null, null, keyword, pageable, null);
   }
 
   @Transactional(readOnly = true)

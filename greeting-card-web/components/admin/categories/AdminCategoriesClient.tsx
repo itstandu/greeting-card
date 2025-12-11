@@ -110,7 +110,7 @@ export function AdminCategoriesClient() {
     if (!pagination || pagination.page === undefined || pagination.size === undefined) {
       return 'Không có dữ liệu';
     }
-    const start = (pagination.page - 1) * pagination.size + 1;
+    const start = pagination.total > 0 ? (pagination.page - 1) * pagination.size + 1 : 0;
     const end = Math.min(pagination.page * pagination.size, pagination.total || 0);
     return pagination.total > 0 ? `${start} - ${end} / ${pagination.total}` : 'Không có dữ liệu';
   }, [pagination]);

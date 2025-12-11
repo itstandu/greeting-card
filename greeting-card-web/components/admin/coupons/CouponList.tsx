@@ -42,7 +42,7 @@ export function CouponList() {
   const pageSize = 10;
 
   const paginationSummary = useMemo(() => {
-    const start = (currentPage - 1) * pageSize + 1;
+    const start = totalCoupons > 0 ? (currentPage - 1) * pageSize + 1 : 0;
     const end = Math.min(currentPage * pageSize, totalCoupons);
     return totalCoupons > 0 ? `${start} - ${end} / ${totalCoupons}` : 'Không có dữ liệu';
   }, [currentPage, totalCoupons, pageSize]);

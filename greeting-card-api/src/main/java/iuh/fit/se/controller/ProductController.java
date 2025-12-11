@@ -41,8 +41,12 @@ public class ProductController {
   public ResponseEntity<ApiResponse<List<ProductResponse>>> getProducts(
       @AuthenticationPrincipal UserDetails userDetails,
       @RequestParam(required = false) Long categoryId,
+      @RequestParam(required = false) List<Long> categoryIds,
       @RequestParam(required = false) Boolean isActive,
       @RequestParam(required = false) Boolean isFeatured,
+      @RequestParam(required = false) Double minPrice,
+      @RequestParam(required = false) Double maxPrice,
+      @RequestParam(required = false) Boolean inStock,
       @RequestParam(required = false) String keyword,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int size,
@@ -58,7 +62,7 @@ public class ProductController {
     Long userId = getUserIdFromAuth(userDetails);
 
     Page<ProductResponse> productPage =
-        productService.getProducts(categoryId, isActive, isFeatured, keyword, pageable, userId);
+        productService.getProducts(categoryId, categoryIds, isActive, isFeatured, minPrice, maxPrice, inStock, keyword, pageable, userId);
 
     return ResponseEntity.ok(
         ApiResponse.successWithPagination(

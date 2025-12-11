@@ -99,7 +99,8 @@ export function UserOrdersClient() {
     );
   }
 
-  const start = pagination ? (pagination.page - 1) * pagination.size + 1 : 0;
+  const start =
+    pagination && pagination.total > 0 ? (pagination.page - 1) * pagination.size + 1 : 0;
   const end = pagination ? Math.min(pagination.page * pagination.size, pagination.total) : 0;
   const paginationSummary =
     pagination && pagination.total > 0 ? `${start} - ${end} / ${pagination.total}` : '';

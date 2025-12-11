@@ -43,7 +43,7 @@ export function WishlistsTable() {
   const pageSize = 10;
 
   const paginationSummary = useMemo(() => {
-    const start = (currentPage - 1) * pageSize + 1;
+    const start = totalWishlists > 0 ? (currentPage - 1) * pageSize + 1 : 0;
     const end = Math.min(currentPage * pageSize, totalWishlists);
     return totalWishlists > 0 ? `${start} - ${end} / ${totalWishlists}` : 'Không có dữ liệu';
   }, [currentPage, totalWishlists, pageSize]);

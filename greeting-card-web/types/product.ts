@@ -70,6 +70,10 @@ export type ProductFilters = {
   size?: number;
   search?: string;
   categoryId?: number;
+  categoryIds?: number[];
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
   isActive?: boolean;
   isFeatured?: boolean;
   sortBy?: string;

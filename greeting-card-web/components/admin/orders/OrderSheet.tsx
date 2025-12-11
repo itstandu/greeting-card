@@ -20,8 +20,24 @@ import {
 } from '@/lib/constants';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { getOrderDetailAdmin, getOrderStatusHistoryAdmin } from '@/services';
-import { Order, OrderStatusHistory } from '@/types';
+import { Order, OrderItem, OrderStatusHistory } from '@/types';
+import { Gift } from 'lucide-react';
 import { toast } from 'sonner';
+
+const getPromotionTypeLabel = (type: OrderItem['promotionType']) => {
+  switch (type) {
+    case 'DISCOUNT':
+      return 'Giảm giá';
+    case 'BOGO':
+      return 'Mua 1 tặng 1';
+    case 'BUY_X_GET_Y':
+      return 'Mua X tặng Y';
+    case 'BUY_X_PAY_Y':
+      return 'Mua X trả Y';
+    default:
+      return type;
+  }
+};
 
 type OrderSheetProps = {
   open: boolean;
@@ -124,10 +140,74 @@ export function OrderSheet({ open, orderId, onOpenChange }: OrderSheetProps) {
                             <p className="text-muted-foreground text-sm">
                               {formatCurrency(item.price)} x {item.quantity}
                             </p>
+                            {/* Hiển thị thông tin khuyến mãi sản phẩm */}
+                            {item.promotionName && (
+                              <div className="mt-1 flex items-center gap-1">
+                                <Badge variant="secondary" className="text-xs">
+                                  {getPromotionTypeLabel(item.promotionType)}: {item.promotionName}
+                                </Badge>
+                                {item.promotionDiscountAmount &&
+                                  item.promotionDiscountAmount > 0 && (
+                                    <span className="text-xs text-green-600">
+                                      (-{formatCurrency(item.promotionDiscountAmount)})
+                                    </span>
+                                  )}
+                              </div>
+                            )}
                           </div>
                           <p className="font-medium">{formatCurrency(item.subtotal)}</p>
                         </div>
                       ))}
+
+                      {/* Hiển thị sản phẩm tặng */}
+                      {order.items.some(
+                        item => item.promotionQuantityFree && item.promotionQuantityFree > 0,
+                      ) && (
+                        <>
+                          <Separator />
+                          <div>
+                            <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-green-600">
+                              <Gift className="size-4" />
+                              Sản phẩm tặng kèm
+                            </h4>
+                            <div className="space-y-2">
+                              {order.items
+                                .filter(
+                                  item =>
+                                    item.promotionQuantityFree && item.promotionQuantityFree > 0,
+                                )
+                                .map(item => (
+                                  <div
+                                    key={`gift-${item.id}`}
+                                    className="flex items-center gap-3 rounded-md bg-green-50 p-2"
+                                  >
+                                    {item.productImage && (
+                                      <img
+                                        src={item.productImage}
+                                        alt={item.productName}
+                                        className="size-10 rounded object-cover"
+                                      />
+                                    )}
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium">{item.productName}</p>
+                                      <p className="text-xs text-green-600">
+                                        Tặng {item.promotionQuantityFree} sản phẩm
+                                        {item.promotionName && ` (${item.promotionName})`}
+                                      </p>
+                                    </div>
+                                    <Badge
+                                      variant="outline"
+                                      className="border-green-500 text-green-600"
+                                    >
+                                      Miễn phí
+                                    </Badge>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
                       <Separator />
                       <div className="space-y-2">
                         <div className="flex justify-between">
@@ -136,7 +216,7 @@ export function OrderSheet({ open, orderId, onOpenChange }: OrderSheetProps) {
                         </div>
                         {order.discountAmount > 0 && (
                           <div className="flex justify-between text-green-600">
-                            <span>Giảm giá{order.couponCode && ` (${order.couponCode})`}:</span>
+                            <span>Giảm giá{order.couponCode && ` (Mã: ${order.couponCode})`}:</span>
                             <span>-{formatCurrency(order.discountAmount)}</span>
                           </div>
                         )}

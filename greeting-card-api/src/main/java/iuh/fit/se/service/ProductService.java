@@ -57,12 +57,18 @@ public class ProductService {
       Long userId) {
     Pageable pageableWithoutSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
 
-    // Create keyword pattern for LIKE query (avoid CONCAT/LENGTH in JPQL to prevent PostgreSQL
-    // bytea casting issues)
-    // Process keyword in Java to avoid PostgreSQL type casting problems
+    // Create keyword pattern for LIKE query (case-insensitive search)
+    // Normalize keyword: trim, collapse multiple spaces, remove special characters
     String keywordPattern = null;
     if (keyword != null && !keyword.trim().isEmpty()) {
-      keywordPattern = "%" + keyword.trim() + "%";
+      String normalizedKeyword =
+          keyword
+              .trim()
+              .replaceAll("\\s+", " ") // Collapse multiple spaces to single space
+              .replaceAll("[%_]", ""); // Remove SQL wildcard characters for safety
+      if (!normalizedKeyword.isEmpty()) {
+        keywordPattern = "%" + normalizedKeyword + "%";
+      }
     }
 
     Page<Product> productPage =

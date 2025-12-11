@@ -87,6 +87,13 @@ export function CheckoutOrderSummary({
   const isFreeShipping = subtotalAfterDiscount >= freeShippingThreshold;
   const finalAmount = subtotalAfterDiscount + (isFreeShipping ? 0 : shippingFee);
 
+  // Kiểm tra sản phẩm hết hàng hoặc vượt quá tồn kho
+  const outOfStockItems = cart.items.filter(item => item.stock <= 0);
+  const insufficientStockItems = cart.items.filter(
+    item => item.stock > 0 && item.quantity > item.stock,
+  );
+  const hasStockIssue = outOfStockItems.length > 0 || insufficientStockItems.length > 0;
+
   return (
     <Card>
       <CardHeader>
@@ -130,26 +137,46 @@ export function CheckoutOrderSummary({
               </div>
             </div>
           )) ??
-            cart.items.map(item => (
-              <div key={item.productId} className="flex gap-3">
-                <div className="bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
-                  {item.productImage && (
-                    <img
-                      src={item.productImage}
-                      alt={item.productName}
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-sm font-medium">{item.productName}</p>
-                  <p className="text-muted-foreground text-sm">
-                    {formatCurrency(item.price)} x {item.quantity}
+            cart.items.map(item => {
+              const isOutOfStock = item.stock <= 0;
+              const isInsufficientStock = item.stock > 0 && item.quantity > item.stock;
+
+              return (
+                <div
+                  key={item.productId}
+                  className={`flex gap-3 ${isOutOfStock || isInsufficientStock ? 'opacity-60' : ''}`}
+                >
+                  <div className="bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
+                    {item.productImage && (
+                      <img
+                        src={item.productImage}
+                        alt={item.productName}
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-2 text-sm font-medium">{item.productName}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {formatCurrency(item.price)} x {item.quantity}
+                    </p>
+                    {isOutOfStock && (
+                      <Badge variant="destructive" className="mt-1 text-xs">
+                        Hết hàng
+                      </Badge>
+                    )}
+                    {isInsufficientStock && (
+                      <Badge variant="destructive" className="mt-1 text-xs">
+                        Chỉ còn {item.stock}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium">
+                    {formatCurrency(item.price * item.quantity)}
                   </p>
                 </div>
-                <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity)}</p>
-              </div>
-            ))}
+              );
+            })}
         </div>
 
         {/* Free Items from Promotion */}
@@ -300,12 +327,34 @@ export function CheckoutOrderSummary({
           </div>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col gap-3">
+        {/* Cảnh báo sản phẩm hết hàng */}
+        {outOfStockItems.length > 0 && (
+          <Alert variant="destructive" className="w-full">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Có {outOfStockItems.length} sản phẩm đã hết hàng. Vui lòng xóa khỏi giỏ hàng để tiếp
+              tục.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Cảnh báo số lượng vượt quá tồn kho */}
+        {insufficientStockItems.length > 0 && (
+          <Alert variant="destructive" className="w-full">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Có {insufficientStockItems.length} sản phẩm vượt quá số lượng tồn kho. Vui lòng điều
+              chỉnh số lượng.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Button
           className="w-full"
           size="lg"
           onClick={onSubmitOrder}
-          disabled={submitting || !selectedAddressId || !selectedPaymentMethodId}
+          disabled={submitting || !selectedAddressId || !selectedPaymentMethodId || hasStockIssue}
         >
           {submitting ? (
             <>

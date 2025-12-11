@@ -48,32 +48,34 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
   @Query(
       value =
           """
-            SELECT DISTINCT p FROM Product p
-            LEFT JOIN FETCH p.category
-            WHERE p.deletedAt IS NULL
-            AND (:categoryId IS NULL OR p.category.id = :categoryId)
-            AND (:isActive IS NULL OR p.isActive = :isActive)
-            AND (:isFeatured IS NULL OR p.isFeatured = :isFeatured)
+            SELECT DISTINCT p.* FROM products p
+            LEFT JOIN categories c ON c.id = p.category_id AND c.deleted_at IS NULL
+            WHERE p.deleted_at IS NULL
+            AND (:categoryId IS NULL OR p.category_id = :categoryId)
+            AND (:isActive IS NULL OR p.is_active = :isActive)
+            AND (:isFeatured IS NULL OR p.is_featured = :isFeatured)
             AND (:keywordPattern IS NULL
-                OR p.name LIKE :keywordPattern
-                OR (p.description IS NOT NULL AND p.description LIKE :keywordPattern)
-                OR p.sku LIKE :keywordPattern
+                OR LOWER(p.name) LIKE LOWER(:keywordPattern)
+                OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(:keywordPattern))
+                OR LOWER(p.sku) LIKE LOWER(:keywordPattern)
             )
-            ORDER BY p.createdAt DESC
+            ORDER BY p.created_at DESC
             """,
       countQuery =
           """
-            SELECT COUNT(DISTINCT p.id) FROM Product p
-            WHERE p.deletedAt IS NULL
-            AND (:categoryId IS NULL OR p.category.id = :categoryId)
-            AND (:isActive IS NULL OR p.isActive = :isActive)
-            AND (:isFeatured IS NULL OR p.isFeatured = :isFeatured)
+            SELECT COUNT(DISTINCT p.id) FROM products p
+            LEFT JOIN categories c ON c.id = p.category_id AND c.deleted_at IS NULL
+            WHERE p.deleted_at IS NULL
+            AND (:categoryId IS NULL OR p.category_id = :categoryId)
+            AND (:isActive IS NULL OR p.is_active = :isActive)
+            AND (:isFeatured IS NULL OR p.is_featured = :isFeatured)
             AND (:keywordPattern IS NULL
-                OR p.name LIKE :keywordPattern
-                OR (p.description IS NOT NULL AND p.description LIKE :keywordPattern)
-                OR p.sku LIKE :keywordPattern
+                OR LOWER(p.name) LIKE LOWER(:keywordPattern)
+                OR (p.description IS NOT NULL AND LOWER(p.description) LIKE LOWER(:keywordPattern))
+                OR LOWER(p.sku) LIKE LOWER(:keywordPattern)
             )
-            """)
+            """,
+      nativeQuery = true)
   Page<Product> searchProducts(
       @Param("categoryId") Long categoryId,
       @Param("isActive") Boolean isActive,

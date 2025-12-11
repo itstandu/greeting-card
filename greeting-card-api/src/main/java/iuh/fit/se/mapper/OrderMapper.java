@@ -81,14 +81,20 @@ public class OrderMapper {
             .orElse(
                 product.getImages().isEmpty() ? null : product.getImages().get(0).getImageUrl());
 
-    return new OrderItemResponse(
-        item.getId(),
-        product.getId(),
-        product.getName(),
-        primaryImageUrl,
-        item.getQuantity(),
-        item.getPrice(),
-        item.getSubtotal());
+    return OrderItemResponse.builder()
+        .id(item.getId())
+        .productId(product.getId())
+        .productName(product.getName())
+        .productImage(primaryImageUrl)
+        .quantity(item.getQuantity())
+        .price(item.getPrice())
+        .subtotal(item.getSubtotal())
+        .promotionId(item.getPromotion() != null ? item.getPromotion().getId() : null)
+        .promotionName(item.getPromotion() != null ? item.getPromotion().getName() : null)
+        .promotionType(item.getPromotion() != null ? item.getPromotion().getType() : null)
+        .promotionDiscountAmount(item.getPromotionDiscountAmount())
+        .promotionQuantityFree(item.getPromotionQuantityFree())
+        .build();
   }
 
   public UserAddressResponse toUserAddressResponse(UserAddress address) {

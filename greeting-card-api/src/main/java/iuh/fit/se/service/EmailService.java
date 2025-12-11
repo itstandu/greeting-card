@@ -76,21 +76,138 @@ public class EmailService {
 
   private String buildOrderConfirmationHtml(User user, Order order) {
     StringBuilder itemsHtml = new StringBuilder();
+    StringBuilder giftItemsHtml = new StringBuilder();
+    boolean hasGiftItems = false;
+
     for (OrderItem item : order.getOrderItems()) {
+      // Build promotion info for item
+      String promotionInfo = "";
+      if (item.getPromotion() != null) {
+        String promotionTypeLabel = getPromotionTypeLabel(item.getPromotion().getType().name());
+        promotionInfo =
+            String.format(
+                "<br><span style=\"color: #10b981; font-size: 12px;\">🏷️ %s: %s</span>",
+                promotionTypeLabel, item.getPromotion().getName());
+
+        if (item.getPromotionDiscountAmount() != null
+            && item.getPromotionDiscountAmount().compareTo(java.math.BigDecimal.ZERO) > 0) {
+          promotionInfo +=
+              String.format(
+                  "<br><span style=\"color: #10b981; font-size: 12px;\">Tiết kiệm: %s</span>",
+                  formatCurrency(item.getPromotionDiscountAmount()));
+        }
+      }
+
       itemsHtml.append(
           String.format(
               """
               <tr>
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">%s</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">%s%s</td>
                 <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">%d</td>
                 <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">%s</td>
                 <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">%s</td>
               </tr>
               """,
               item.getProduct().getName(),
+              promotionInfo,
               item.getQuantity(),
               formatCurrency(item.getPrice()),
               formatCurrency(item.getSubtotal())));
+
+      // Build gift items section
+      if (item.getPromotionQuantityFree() != null && item.getPromotionQuantityFree() > 0) {
+        hasGiftItems = true;
+        giftItemsHtml.append(
+            String.format(
+                """
+                <tr style="background-color: #f0fdf4;">
+                  <td style="padding: 12px; border-bottom: 1px solid #bbf7d0;">
+                    🎁 %s
+                    <br><span style="color: #10b981; font-size: 12px;">Quà tặng từ: %s</span>
+                  </td>
+                  <td style="padding: 12px; border-bottom: 1px solid #bbf7d0; text-align: center;">%d</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #bbf7d0; text-align: right;">%s</td>
+                  <td style="padding: 12px; border-bottom: 1px solid #bbf7d0; text-align: right; color: #10b981; font-weight: bold;">MIỄN PHÍ</td>
+                </tr>
+                """,
+                item.getProduct().getName(),
+                item.getPromotion() != null ? item.getPromotion().getName() : "Khuyến mãi",
+                item.getPromotionQuantityFree(),
+                formatCurrency(item.getPrice())));
+      }
+    }
+
+    // Build coupon info
+    String couponInfo = "";
+    if (order.getCoupon() != null) {
+      couponInfo =
+          String.format(
+              """
+              <tr>
+                <td>Mã giảm giá (<strong>%s</strong>):</td>
+                <td style="text-align: right; color: #e53e3e;">-%s</td>
+              </tr>
+              """,
+              order.getCoupon().getCode(), formatCurrency(order.getDiscountAmount()));
+    } else if (order.getDiscountAmount().compareTo(java.math.BigDecimal.ZERO) > 0) {
+      couponInfo =
+          String.format(
+              """
+              <tr>
+                <td>Giảm giá:</td>
+                <td style="text-align: right; color: #e53e3e;">-%s</td>
+              </tr>
+              """,
+              formatCurrency(order.getDiscountAmount()));
+    }
+
+    // Build shipping fee info
+    String shippingFeeInfo = "";
+    if (order.getShippingFee() != null) {
+      if (order.getShippingFee().compareTo(java.math.BigDecimal.ZERO) == 0) {
+        shippingFeeInfo =
+            """
+            <tr>
+              <td>Phí vận chuyển:</td>
+              <td style="text-align: right; color: #10b981;">Miễn phí</td>
+            </tr>
+            """;
+      } else {
+        shippingFeeInfo =
+            String.format(
+                """
+                <tr>
+                  <td>Phí vận chuyển:</td>
+                  <td style="text-align: right;">%s</td>
+                </tr>
+                """,
+                formatCurrency(order.getShippingFee()));
+      }
+    }
+
+    // Build gift items section HTML
+    String giftItemsSectionHtml = "";
+    if (hasGiftItems) {
+      giftItemsSectionHtml =
+          String.format(
+              """
+              <h3 style="color: #10b981;">🎁 Quà tặng kèm</h3>
+              <table class="table">
+                <thead>
+                  <tr style="background-color: #dcfce7;">
+                    <th>Sản phẩm</th>
+                    <th style="text-align: center;">Số lượng</th>
+                    <th style="text-align: right;">Giá gốc</th>
+                    <th style="text-align: right;">Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  %s
+                </tbody>
+              </table>
+              """,
+              giftItemsHtml.toString());
+
     }
 
     return String.format(
@@ -110,6 +227,7 @@ public class EmailService {
             .total-row { font-weight: bold; font-size: 1.1em; }
             .footer { text-align: center; padding: 20px; color: #666; font-size: 0.9em; }
             .btn { display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 20px; }
+            .promo-badge { display: inline-block; background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 4px; }
           </style>
         </head>
         <body>
@@ -143,16 +261,17 @@ public class EmailService {
                 </tbody>
               </table>
 
+              %s
+
               <div class="order-info">
+                <h3>💰 Tổng kết thanh toán</h3>
                 <table style="width: 100%%;">
                   <tr>
                     <td>Tạm tính:</td>
                     <td style="text-align: right;">%s</td>
                   </tr>
-                  <tr>
-                    <td>Giảm giá:</td>
-                    <td style="text-align: right; color: #e53e3e;">-%s</td>
-                  </tr>
+                  %s
+                  %s
                   <tr class="total-row">
                     <td style="padding-top: 10px; border-top: 2px solid #333;">Tổng thanh toán:</td>
                     <td style="padding-top: 10px; border-top: 2px solid #333; text-align: right; color: #667eea;">%s</td>
@@ -189,8 +308,10 @@ public class EmailService {
         order.getOrderNumber(),
         order.getOrderDate().format(DATE_FORMATTER),
         itemsHtml.toString(),
+        giftItemsSectionHtml,
         formatCurrency(order.getTotalAmount()),
-        formatCurrency(order.getDiscountAmount()),
+        couponInfo,
+        shippingFeeInfo,
         formatCurrency(order.getFinalAmount()),
         order.getShippingAddress().getRecipientName(),
         order.getShippingAddress().getAddressLine1(),
@@ -200,6 +321,16 @@ public class EmailService {
         order.getShippingAddress().getCity(),
         order.getShippingAddress().getPhone(),
         order.getPaymentMethod().getName());
+  }
+
+  private String getPromotionTypeLabel(String type) {
+    return switch (type) {
+      case "DISCOUNT" -> "Giảm giá";
+      case "BOGO" -> "Mua 1 tặng 1";
+      case "BUY_X_GET_Y" -> "Mua X tặng Y";
+      case "BUY_X_PAY_Y" -> "Mua X trả Y";
+      default -> "Khuyến mãi";
+    };
   }
 
   private String buildOrderStatusUpdateHtml(

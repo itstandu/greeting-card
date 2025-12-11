@@ -9,6 +9,12 @@ export type OrderItem = {
   quantity: number;
   price: number;
   subtotal: number;
+  // Promotion info
+  promotionId?: number;
+  promotionName?: string;
+  promotionType?: 'DISCOUNT' | 'BOGO' | 'BUY_X_GET_Y' | 'BUY_X_PAY_Y';
+  promotionDiscountAmount?: number;
+  promotionQuantityFree?: number; // Số lượng được tặng miễn phí
 };
 
 export type UserAddress = {

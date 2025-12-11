@@ -180,6 +180,28 @@ export function useCheckoutForm({
       return;
     }
 
+    // Kiểm tra sản phẩm hết hàng
+    const outOfStockItems = cart.items.filter(item => item.stock <= 0);
+    if (outOfStockItems.length > 0) {
+      toast({
+        title: 'Không thể đặt hàng',
+        description: `Có ${outOfStockItems.length} sản phẩm đã hết hàng. Vui lòng xóa khỏi giỏ hàng.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Kiểm tra số lượng vượt quá tồn kho
+    const insufficientStockItems = cart.items.filter(item => item.quantity > item.stock);
+    if (insufficientStockItems.length > 0) {
+      toast({
+        title: 'Không thể đặt hàng',
+        description: `Có ${insufficientStockItems.length} sản phẩm vượt quá số lượng tồn kho. Vui lòng điều chỉnh số lượng.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const response = await createOrder({

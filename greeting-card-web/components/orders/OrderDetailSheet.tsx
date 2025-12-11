@@ -23,9 +23,24 @@ import {
 } from '@/lib/constants';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { getOrderDetail, getOrderStatusHistory } from '@/services/order.service';
-import type { Order, OrderStatusHistory } from '@/types';
-import { Clock, CreditCard, History, MapPin, Package } from 'lucide-react';
+import type { Order, OrderItem, OrderStatusHistory } from '@/types';
+import { Clock, CreditCard, Gift, History, MapPin, Package } from 'lucide-react';
 import { toast } from 'sonner';
+
+const getPromotionTypeLabel = (type: OrderItem['promotionType']) => {
+  switch (type) {
+    case 'DISCOUNT':
+      return 'Giảm giá';
+    case 'BOGO':
+      return 'Mua 1 tặng 1';
+    case 'BUY_X_GET_Y':
+      return 'Mua X tặng Y';
+    case 'BUY_X_PAY_Y':
+      return 'Mua X trả Y';
+    default:
+      return type;
+  }
+};
 
 interface OrderDetailSheetProps {
   orderId: number | null;
@@ -262,10 +277,72 @@ export function OrderDetailSheet({
                           <p className="text-muted-foreground text-sm">
                             Số lượng: {item.quantity} × {formatCurrency(item.price)}
                           </p>
+                          {/* Hiển thị thông tin khuyến mãi sản phẩm */}
+                          {item.promotionName && (
+                            <div className="mt-1 flex items-center gap-1">
+                              <Badge variant="secondary" className="text-xs">
+                                {getPromotionTypeLabel(item.promotionType)}: {item.promotionName}
+                              </Badge>
+                              {item.promotionDiscountAmount && item.promotionDiscountAmount > 0 && (
+                                <span className="text-xs text-green-600">
+                                  (-{formatCurrency(item.promotionDiscountAmount)})
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <p className="font-semibold">{formatCurrency(item.subtotal)}</p>
                         </div>
                       </div>
                     ))}
+
+                    {/* Hiển thị sản phẩm tặng */}
+                    {order.items.some(
+                      item => item.promotionQuantityFree && item.promotionQuantityFree > 0,
+                    ) && (
+                      <>
+                        <Separator />
+                        <div>
+                          <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-green-600">
+                            <Gift className="size-4" />
+                            Sản phẩm tặng kèm
+                          </h4>
+                          <div className="space-y-2">
+                            {order.items
+                              .filter(
+                                item =>
+                                  item.promotionQuantityFree && item.promotionQuantityFree > 0,
+                              )
+                              .map(item => (
+                                <div
+                                  key={`gift-${item.id}`}
+                                  className="flex items-center gap-3 rounded-md bg-green-50 p-2"
+                                >
+                                  <div className="bg-muted relative h-10 w-10 shrink-0 overflow-hidden rounded">
+                                    <SafeImage
+                                      src={item.productImage || '/placeholder.jpg'}
+                                      alt={item.productName}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium">{item.productName}</p>
+                                    <p className="text-xs text-green-600">
+                                      Tặng {item.promotionQuantityFree} sản phẩm
+                                      {item.promotionName && ` (${item.promotionName})`}
+                                    </p>
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className="border-green-500 text-green-600"
+                                  >
+                                    Miễn phí
+                                  </Badge>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
